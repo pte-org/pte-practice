@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
-import { COMMON_TEXT } from "@/features/common/constants";
-import { AppIcon, ProductMark } from "@/features/icons/AppIcon";
+import { COMMON_TEXT } from "@/common/constants";
+import { AppIcon, ProductMark } from "@/common/components";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
 

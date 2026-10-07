@@ -1,7 +1,7 @@
 "use client";
 
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
-import { AppIcon } from "@/features/icons/AppIcon";
+import { AppIcon } from "@/common/components";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { CatalogGrid } from "./CatalogGrid";
 

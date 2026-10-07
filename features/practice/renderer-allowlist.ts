@@ -1,4 +1,4 @@
-const ALLOWED_RENDERER_KEYS = new Set([
+export const ALLOWED_RENDERER_KEYS = [
   "AUDIO_RECORDING",
   "AUDIO_PLAYBACK",
   "RECORD_RESPONSE",
@@ -35,8 +35,27 @@ const ALLOWED_RENDERER_KEYS = new Set([
   "SELECT_MISSING_WORD_V1",
   "HIGHLIGHT_INCORRECT_WORDS_V1",
   "WRITE_FROM_DICTATION_V1",
+ ] as const;
+
+export type AllowlistedRendererKey = typeof ALLOWED_RENDERER_KEYS[number];
+
+const ALLOWED_RENDERER_SET = new Set<string>(ALLOWED_RENDERER_KEYS);
+
+const CLIENT_RUNTIME_RENDERERS = new Set<AllowlistedRendererKey>([
+  "SUMMARIZE_WRITTEN_TEXT_V1",
+  "WRITE_ESSAY_V1",
+  "MC_READING_SINGLE_V1",
+  "MC_READING_MULTIPLE_V1",
+  "RE_ORDER_PARAGRAPHS_V1",
+  "FILL_IN_THE_BLANKS_DRAG_AND_DROP_V1",
+  "FILL_IN_THE_BLANKS_DROPDOWN_V1",
 ]);
 
-export function allowlistedRendererKey(value: unknown): string | null {
-  return typeof value === "string" && ALLOWED_RENDERER_KEYS.has(value) ? value : null;
+export function allowlistedRendererKey(value: unknown): AllowlistedRendererKey | null {
+  return typeof value === "string" && ALLOWED_RENDERER_SET.has(value)
+    ? value as AllowlistedRendererKey : null;
+}
+
+export function isClientRuntimeSupported(value: unknown): value is AllowlistedRendererKey {
+  return allowlistedRendererKey(value) !== null && CLIENT_RUNTIME_RENDERERS.has(value as AllowlistedRendererKey);
 }

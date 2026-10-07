@@ -1,7 +1,10 @@
-import { allowlistedRendererKey } from "./renderer-allowlist";
+import { allowlistedRendererKey, isClientRuntimeSupported } from "./renderer-allowlist";
 
 export type EntitlementState = "UNLOCKED" | "LOCKED" | "AMBIGUOUS" | "UNAVAILABLE" | "UNKNOWN";
 export type CatalogAvailability = "RUNNABLE" | "VISIBLE" | "UNAVAILABLE";
+export type PracticeSessionStatus = "OVERVIEW" | "IN_PROGRESS" | "COMPLETED" | "DISCARDED" | "EXPIRED";
+export type PracticeSessionItemStatus = "PENDING" | "ANSWERED" | "SKIPPED";
+export type ResponseConfidence = "LOW" | "MEDIUM" | "HIGH";
 
 export interface PracticeSessionTokens {
   accessToken: string;
@@ -57,6 +60,43 @@ export interface PracticeCatalog {
   sections: PracticeCatalogSection[];
 }
 
+export interface PracticeTaskResponse {
+  publicId: string;
+  orderIndex: number;
+  taskCode: string;
+  displayName: string;
+  section: string;
+  rendererKey: string | null;
+  contractVersion: number | null;
+  answerSchemaVersion: number | null;
+  status: PracticeSessionItemStatus;
+  savedPayload: string | null;
+  confidence: ResponseConfidence | null;
+}
+
+export interface PracticeSession {
+  publicId: string;
+  sourceType: string;
+  productCode: string;
+  title: string;
+  organizationId: string;
+  catalogVersion: string;
+  timeLimitSeconds: number;
+  status: PracticeSessionStatus;
+  version: number;
+  startedAt: string | null;
+  deadlineAt: string | null;
+  completedAt: string | null;
+  discardedAt: string | null;
+  saveAndExitAvailable: boolean;
+  canAdvance: boolean;
+  nextAction: string | null;
+  answeredItemCount: number;
+  totalItemCount: number;
+  sections: PracticeCatalogSection[];
+  currentTask: PracticeTaskResponse | null;
+}
+
 export interface PracticeChallenge {
   challengeId: string;
   expiresAt: string;
@@ -101,11 +141,44 @@ export function normalizeCatalogResponse(value: unknown): PracticeCatalog | null
   };
 }
 
+export function normalizePracticeSessionResponse(value: unknown): PracticeSession | null {
+  const record = asRecord(value);
+  const publicId = asString(record.publicId, "");
+  const status = normalizeSessionStatus(record.status);
+  if (!publicId || !status) return null;
+
+  return {
+    publicId,
+    sourceType: asString(record.sourceType, "PRACTICE"),
+    productCode: asString(record.productCode, "PTE_CORE_PRACTICE"),
+    title: asString(record.title, "PTE Practice"),
+    organizationId: asString(record.organizationId, ""),
+    catalogVersion: asString(record.catalogVersion, "unknown"),
+    timeLimitSeconds: asNumber(record.timeLimitSeconds, 0),
+    status,
+    version: asNumber(record.version, 0),
+    startedAt: asNullableString(record.startedAt),
+    deadlineAt: asNullableString(record.deadlineAt),
+    completedAt: asNullableString(record.completedAt),
+    discardedAt: asNullableString(record.discardedAt),
+    saveAndExitAvailable: Boolean(record.saveAndExitAvailable),
+    canAdvance: Boolean(record.canAdvance),
+    nextAction: asNullableString(record.nextAction),
+    answeredItemCount: asNumber(record.answeredItemCount, 0),
+    totalItemCount: asNumber(record.totalItemCount, 0),
+    sections: asArray(record.sections)
+      .map(normalizeCatalogSection)
+      .filter((section): section is PracticeCatalogSection => section !== null),
+    currentTask: normalizePracticeTask(record.currentTask),
+  };
+}
+
 export function canStartPractice(
   entitlementState: EntitlementState | null,
-  task: Pick<PracticeCatalogTask, "availability">,
+  task: Pick<PracticeCatalogTask, "availability" | "rendererKey">,
 ): boolean {
-  return entitlementState === "UNLOCKED" && task.availability === "RUNNABLE";
+  return entitlementState === "UNLOCKED" && task.availability === "RUNNABLE"
+    && isClientRuntimeSupported(task.rendererKey);
 }
 
 function normalizeCatalogSection(value: unknown): PracticeCatalogSection | null {
@@ -167,6 +240,38 @@ function normalizeEntitlementState(value: unknown): EntitlementState {
 function normalizeAvailability(value: unknown): CatalogAvailability {
   if (value === "RUNNABLE" || value === "VISIBLE" || value === "UNAVAILABLE") return value;
   return "UNAVAILABLE";
+}
+
+function normalizeSessionStatus(value: unknown): PracticeSessionStatus | null {
+  if (value === "OVERVIEW" || value === "IN_PROGRESS" || value === "COMPLETED"
+    || value === "DISCARDED" || value === "EXPIRED") return value;
+  return null;
+}
+
+function normalizePracticeTask(value: unknown): PracticeTaskResponse | null {
+  const record = asRecord(value);
+  const publicId = asString(record.publicId, "");
+  const taskCode = asString(record.taskCode, "");
+  const status = record.status === "PENDING" || record.status === "ANSWERED" || record.status === "SKIPPED"
+    ? record.status
+    : null;
+  if (!publicId || !taskCode || !status) return null;
+  const confidence = record.confidence === "LOW" || record.confidence === "MEDIUM" || record.confidence === "HIGH"
+    ? record.confidence
+    : null;
+  return {
+    publicId,
+    orderIndex: asNumber(record.orderIndex, 0),
+    taskCode,
+    displayName: asString(record.displayName, humanize(taskCode)),
+    section: asString(record.section, "UNKNOWN"),
+    rendererKey: allowlistedRendererKey(record.rendererKey),
+    contractVersion: asNullableNumber(record.contractVersion),
+    answerSchemaVersion: asNullableNumber(record.answerSchemaVersion),
+    status,
+    savedPayload: asNullableString(record.savedPayload),
+    confidence,
+  };
 }
 
 function humanize(value: string): string {

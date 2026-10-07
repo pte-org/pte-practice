@@ -21,7 +21,29 @@ export type IconName =
   | "responses"
   | "check"
   | "signOut"
-  | "info";
+  | "info"
+  | "personalIntroduction"
+  | "readAloud"
+  | "repeatSentence"
+  | "describeImage"
+  | "reTellLecture"
+  | "shortQuestion"
+  | "respondSituation"
+  | "groupDiscussion"
+  | "summarizeWritten"
+  | "writeEmail"
+  | "writeEssay"
+  | "multipleChoiceSingle"
+  | "multipleChoiceMultiple"
+  | "reorderParagraphs"
+  | "dragDrop"
+  | "dropdown"
+  | "summarizeSpoken"
+  | "fillTypeIn"
+  | "highlightSummary"
+  | "missingWord"
+  | "highlightIncorrect"
+  | "dictation";
 
 interface AppIconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -89,6 +111,50 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
       return <svg {...svgProps}><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10M14 8l4 4-4 4M18 12H9" /></svg>;
     case "info":
       return <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><path d="M12 10.5v5M12 7.5h.1" /></svg>;
+    case "personalIntroduction":
+      return <svg {...svgProps}><circle cx="12" cy="8" r="3" /><path d="M6.5 20a5.5 5.5 0 0 1 11 0M4.5 5.5h2M17.5 5.5h2M5.5 9.5h1.5M17 9.5h1.5" /></svg>;
+    case "readAloud":
+      return <svg {...svgProps}><circle cx="8.2" cy="8.4" r="2.5" /><path d="M3.8 17a4.4 4.4 0 0 1 8.8 0M16 9.5a3 3 0 0 1 0 5M18.5 7a6.5 6.5 0 0 1 0 10" /></svg>;
+    case "repeatSentence":
+      return <svg {...svgProps}><path d="M3.5 12h2l1.5-4 2.2 8 2.2-11 2.2 14 2.2-8 1.7 3h2.5" /></svg>;
+    case "describeImage":
+      return <svg {...svgProps}><rect x="3.5" y="4.5" width="17" height="15" rx="2" /><circle cx="8.5" cy="9" r="1.4" /><path d="m5.5 17 4.2-4.2 3.1 2.8 2-2 3.7 3.4" /></svg>;
+    case "reTellLecture":
+      return <svg {...svgProps}><rect x="3.5" y="4" width="12" height="10" rx="1.5" /><path d="M6.5 8h6M6.5 11h3M9.5 14v3M6.5 20h6" /><path d="M18 9.5v5M16.5 11a2.2 2.2 0 0 0 0 2M19.5 9a4 4 0 0 1 0 6" /></svg>;
+    case "shortQuestion":
+      return <svg {...svgProps}><path d="M5 5.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><path d="M9.5 9.5a2.5 2.5 0 1 1 4.1 1.9c-.9.7-1.6 1-1.6 2M12 16h.1" /></svg>;
+    case "respondSituation":
+      return <svg {...svgProps}><path d="M4 5.5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 3v-3H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" /><path d="M7 10h10M7 13h6" /></svg>;
+    case "groupDiscussion":
+      return <svg {...svgProps}><circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="8" r="2.5" /><path d="M3.5 18a4.5 4.5 0 0 1 9 0M11.5 18a4.5 4.5 0 0 1 9 0M12 5.5v5M9.5 8h5" /></svg>;
+    case "summarizeWritten":
+      return <svg {...svgProps}><path d="M6 3.5h8l4 4v13H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M14 3.5v4h4M8 11h8M8 14h8M8 17h5" /></svg>;
+    case "writeEmail":
+      return <svg {...svgProps}><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="m4.5 7 7.5 6 7.5-6M4 18l5.5-5M20 18l-5.5-5" /></svg>;
+    case "writeEssay":
+      return <svg {...svgProps}><path d="M5.5 3.5h8l4 4v13h-12a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M13.5 3.5v4h4M8 12h6M8 15h4" /><path d="m14 18.5 4.6-4.6 1.7 1.7-4.6 4.6-2.5.8.8-2.5Z" /></svg>;
+    case "multipleChoiceSingle":
+      return <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><path d="m8.5 12 2.3 2.3 4.8-5" /></svg>;
+    case "multipleChoiceMultiple":
+      return <svg {...svgProps}><rect x="4" y="4" width="6" height="6" rx="1" /><path d="m5.5 7 1.2 1.2L9 5.8M14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></svg>;
+    case "reorderParagraphs":
+      return <svg {...svgProps}><path d="M4 6h11M4 12h11M4 18h11M18 8V4l2.5 2.5M18 16v4l-2.5-2.5" /></svg>;
+    case "dragDrop":
+      return <svg {...svgProps}><rect x="4" y="4" width="7" height="7" rx="1" /><rect x="13" y="13" width="7" height="7" rx="1" /><path d="M13.5 6.5h6M16.5 3.5v6M10.5 17.5h-6M7.5 14.5v6" /></svg>;
+    case "dropdown":
+      return <svg {...svgProps}><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="m8 10 4 4 4-4" /></svg>;
+    case "summarizeSpoken":
+      return <svg {...svgProps}><rect x="4" y="4" width="10" height="16" rx="1.5" /><path d="M7 8h4M7 11h4M7 14h2" /><path d="M17 8.5v5M15.5 10a2.2 2.2 0 0 0 0 2M18.5 8a4 4 0 0 1 0 6" /></svg>;
+    case "fillTypeIn":
+      return <svg {...svgProps}><rect x="3.5" y="6" width="17" height="12" rx="2" /><path d="M7 12h6M15.5 9.5v5M14 12h3" /></svg>;
+    case "highlightSummary":
+      return <svg {...svgProps}><path d="M5.5 3.5h8l4 4v13h-12a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M13.5 3.5v4h4M7 11h8M7 15h8" /><path d="M6.5 17.5h7" strokeWidth="3" /></svg>;
+    case "missingWord":
+      return <svg {...svgProps}><path d="M4.5 5.5h15a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3v-3h-3.5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><path d="M8 11.5h.1M12 11.5h.1M16 11.5h.1" /></svg>;
+    case "highlightIncorrect":
+      return <svg {...svgProps}><path d="M5.5 3.5h8l4 4v13h-12a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M13.5 3.5v4h4M7 11h8M7 15h5" /><path d="m15 15 4 4M19 15l-4 4" /></svg>;
+    case "dictation":
+      return <svg {...svgProps}><path d="M4 9v6M7 6v12M10 3v18M14 6v12M17 9v6M20 11v2" /><path d="M5 20h14" /></svg>;
   }
 }
 
@@ -109,19 +175,4 @@ export function ProductMark({ className, ...props }: Omit<SVGProps<SVGSVGElement
       <path d="M34.4 27.7c4.9.5 8.1 2.8 10.1 6.4" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" opacity=".7" />
     </svg>
   );
-}
-
-export function iconForSection(section: string): IconName {
-  switch (section.toUpperCase()) {
-    case "SPEAKING":
-      return "mic";
-    case "WRITING":
-      return "writing";
-    case "READING":
-      return "reading";
-    case "LISTENING":
-      return "listening";
-    default:
-      return "bookOpen";
-  }
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
-import { AppIcon } from "@/features/icons/AppIcon";
+import { AppIcon } from "@/common/components";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { UI_TEXT } from "@/features/practice/constants";
+import { iconForTaskType } from "@/features/practice/icon-mapping";
 import { usePractice } from "@/features/practice/PracticeProvider";
 
 export function ProgressView() {
@@ -54,7 +55,7 @@ export function ProgressView() {
               </div>
               {taskRows.map((task) => (
                 <div className="skill-list-row" key={task.code}>
-                  <span className="skill-list-icon" aria-hidden="true"><AppIcon name="mic" size={17} /></span>
+                  <span className="skill-list-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={17} /></span>
                   <span className="skill-list-copy"><strong>{task.displayName}</strong><span>No response yet</span></span>
                   <span className="state-badge state-badge-locked">—</span>
                   <span className="skill-list-action" aria-hidden="true"><AppIcon name="chevronRight" size={18} /></span>

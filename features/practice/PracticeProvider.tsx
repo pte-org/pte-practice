@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { COMMON_TEXT } from "@/features/common/constants";
+import { COMMON_TEXT } from "@/common/constants";
 import { createPracticeApiClient, PracticeApiError } from "./api";
 import type { EntitlementState, PracticeCatalog, PracticeEntitlement } from "./contracts";
 import { PREVIEW_CATALOG } from "./preview-catalog";

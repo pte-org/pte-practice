@@ -1,8 +1,6 @@
+import { LoadingState } from "@/common/components";
+import { COMMON_TEXT } from "@/common/constants";
+
 export default function StudentLoading() {
-  return (
-    <div className="route-loading" role="status" aria-live="polite">
-      <span className="loading-dot" aria-hidden="true" />
-      Loading your practice workspace…
-    </div>
-  );
+  return <LoadingState message={COMMON_TEXT.loadingWorkspace} />;
 }

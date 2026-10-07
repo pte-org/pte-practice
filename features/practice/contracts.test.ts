@@ -3,6 +3,7 @@ import {
   canStartPractice,
   normalizeCatalogResponse,
   normalizeEntitlementResponse,
+  normalizePracticeSessionResponse,
 } from "./contracts";
 
 describe("practice entitlement contract", () => {
@@ -12,15 +13,21 @@ describe("practice entitlement contract", () => {
 
     expect(unlocked.practice.state).toBe("UNLOCKED");
     expect(unknown.practice.state).toBe("UNKNOWN");
-    expect(canStartPractice(unlocked.practice.state, { availability: "RUNNABLE" })).toBe(true);
-    expect(canStartPractice(unknown.practice.state, { availability: "RUNNABLE" })).toBe(false);
+    expect(canStartPractice(unlocked.practice.state, {
+      availability: "RUNNABLE", rendererKey: "MC_READING_SINGLE_V1",
+    })).toBe(true);
+    expect(canStartPractice(unknown.practice.state, {
+      availability: "RUNNABLE", rendererKey: "MC_READING_SINGLE_V1",
+    })).toBe(false);
   });
 
   it("keeps locked when entitlement data is missing or malformed", () => {
     const entitlement = normalizeEntitlementResponse(null);
 
     expect(entitlement.practice.state).toBe("UNKNOWN");
-    expect(canStartPractice(entitlement.practice.state, { availability: "RUNNABLE" })).toBe(false);
+    expect(canStartPractice(entitlement.practice.state, {
+      availability: "RUNNABLE", rendererKey: "MC_READING_SINGLE_V1",
+    })).toBe(false);
   });
 });
 
@@ -52,5 +59,24 @@ describe("practice catalog contract", () => {
 
   it("rejects a catalog with no usable sections", () => {
     expect(normalizeCatalogResponse({ productCode: "PTE_CORE_PRACTICE", sections: [] })).toBeNull();
+  });
+
+  it("normalizes the server-owned current task without accepting an arbitrary renderer", () => {
+    const session = normalizePracticeSessionResponse({
+      publicId: "session-1",
+      status: "IN_PROGRESS",
+      currentTask: {
+        publicId: "item-1",
+        orderIndex: 0,
+        taskCode: "MC_READING_SINGLE",
+        displayName: "Multiple choice",
+        section: "READING",
+        rendererKey: "not-allowlisted",
+        status: "PENDING",
+      },
+    });
+
+    expect(session?.status).toBe("IN_PROGRESS");
+    expect(session?.currentTask?.rendererKey).toBeNull();
   });
 });

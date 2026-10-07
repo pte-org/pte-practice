@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProductMark } from "@/features/icons/AppIcon";
+import { ProductMark } from "@/common/components";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { AUTH_TEXT } from "@/features/practice/constants";
 import { savePracticeSession } from "@/features/practice/session-storage";

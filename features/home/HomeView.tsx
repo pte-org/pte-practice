@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { AppIcon, iconForSection, ProductMark } from "@/features/icons/AppIcon";
-import { LockBadge } from "@/features/common/LockBadge";
+import { useRouter } from "next/navigation";
+import { AppIcon, LockBadge, ProductMark } from "@/common/components";
 import { SkillTaskList } from "@/features/catalog/SkillTaskList";
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { flattenCatalogTasks } from "@/features/practice/catalog-order";
 import { PRACTICE_ROUTES, UI_TEXT } from "@/features/practice/constants";
 import { canStartPractice, type PracticeCatalogTask } from "@/features/practice/contracts";
+import { iconForTaskType } from "@/features/practice/icon-mapping";
 import { usePractice } from "@/features/practice/PracticeProvider";
 
 export function HomeView() {
-  const { catalog, entitlement, isPracticeUnlocked, refreshEntitlement } = usePractice();
-  const [notice, setNotice] = useState<string | null>(null);
+  const router = useRouter();
+  const { catalog, entitlement, isPracticeUnlocked } = usePractice();
   const orderedTasks = flattenCatalogTasks(catalog.sections);
   const hasRunnableTask = isPracticeUnlocked && orderedTasks.some((task) => task.availability === "RUNNABLE");
   const recommendedTasks = [
@@ -29,8 +29,7 @@ export function HomeView() {
 
   function handleStartIntent(task: PracticeCatalogTask) {
     if (!isPracticeUnlocked || !canStartPractice("UNLOCKED", task)) return;
-    setNotice(`${task.displayName} is ready. ${UI_TEXT.sessionPlaceholder}`);
-    void refreshEntitlement();
+    router.push(`${PRACTICE_ROUTES.practiceSession}?task=${encodeURIComponent(task.code)}`);
   }
 
   return (
@@ -55,14 +54,14 @@ export function HomeView() {
               const statusLabel = !isPracticeUnlocked
                 ? UI_TEXT.lockedAction
                 : hasRunnableTask
-                  ? "Available"
+                  ? null
                   : UI_TEXT.unavailableAction;
 
               return (
                 <div className="skill-tile" key={skill.code}>
                   <AppIcon name={skill.icon} size={22} />
                   <strong>{skill.label}</strong>
-                  <span>{statusLabel}</span>
+                  {statusLabel ? <span>{statusLabel}</span> : null}
                 </div>
               );
             })}
@@ -82,23 +81,20 @@ export function HomeView() {
 
       <section className="reference-section" aria-labelledby="recommended-title">
         <h2 id="recommended-title">Recommended for you</h2>
-        {notice ? <p className="inline-notice" role="status">{notice}</p> : null}
         {recommendedTasks.length > 0 ? (
           <div className="recommendation-row">
             {recommendedTasks.map((task) => {
               const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
               const isUnavailable = task.availability !== "RUNNABLE";
-              const statusLabel = canStart
-                ? "Available"
-                : isUnavailable && isPracticeUnlocked
-                  ? UI_TEXT.unavailableAction
-                  : UI_TEXT.lockedAction;
+              const statusLabel = !canStart && isUnavailable && isPracticeUnlocked
+                ? UI_TEXT.unavailableAction
+                : UI_TEXT.lockedAction;
 
               return (
                 <article className="recommendation-card" key={task.code}>
                   <div className="recommendation-topline">
-                    <span className="recommendation-icon" aria-hidden="true"><AppIcon name={iconForSection(task.section)} size={20} /></span>
-                    <LockBadge locked={!canStart} label={statusLabel} />
+                    <span className="recommendation-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={20} /></span>
+                    {!canStart ? <LockBadge locked label={statusLabel} /> : null}
                   </div>
                   <h3>{catalog.title} {task.displayName}</h3>
                   <p>{task.scored ? "Review your results and personalized insights" : "Become familiar with the exam format"}</p>

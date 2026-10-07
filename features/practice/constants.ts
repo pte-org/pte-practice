@@ -1,5 +1,5 @@
-import { COMMON_API_ERROR_TEXT, COMMON_TEXT } from "../common/constants";
-import type { IconName } from "../icons/AppIcon";
+import { COMMON_API_ERROR_TEXT, COMMON_TEXT } from "../../common/constants";
+import type { IconName } from "../../common/components";
 import type { CatalogAvailability } from "./contracts";
 
 export const API_PATHS = {
@@ -8,6 +8,7 @@ export const API_PATHS = {
   refreshToken: "/api/v1/auth/refresh",
   entitlement: "/api/v1/student/practice/entitlement",
   catalog: "/api/v1/student/practice/catalog",
+  practiceSessions: "/api/v1/student/practice/sessions",
 } as const;
 
 export const PRACTICE_ROUTES = {
@@ -16,6 +17,7 @@ export const PRACTICE_ROUTES = {
   studyPack: "/study-pack",
   progress: "/progress",
   signIn: "/sign-in",
+  practiceSession: "/practice-tests/session",
 } as const;
 
 export const NAV_ITEMS: ReadonlyArray<{ href: string; label: string; icon: IconName }> = [
@@ -34,7 +36,22 @@ export const UI_TEXT = {
   accessUnknown: "Practice access is unavailable right now. Practice actions remain locked.",
   availableAction: "Start practice",
   catalogError: "The practice catalog is unavailable. Preview cards remain locked until it loads.",
-  sessionPlaceholder: "The practice session will open from this entry in the next runtime phase.",
+  sessionStarting: "Preparing your practice sessionâ€¦",
+  sessionLoading: "Loading your practice sessionâ€¦",
+  sessionOverview: "Review the session before you begin.",
+  sessionNext: "Next",
+  sessionSubmit: "Submit answer",
+  sessionSkip: "Skip",
+  sessionSaveExit: "Save and exit",
+  sessionExitSaved: "Your progress has been saved.",
+  sessionProgressSaved: "Progress saved",
+  sessionCompleted: "Practice session complete.",
+  sessionUnsupported: "This task is visible, but its interactive runtime is not available yet.",
+  sessionConflict: "This session changed in another tab. Reload to continue from the latest state.",
+  sessionExpired: "This practice session has expired.",
+  sessionError: "We could not load this practice session. Please try again.",
+  sessionConfidence: "How confident are you in this answer?",
+  sessionNoAnswer: "Choose or enter an answer before submitting.",
   progressEmptyTitle: "Your progress will appear here",
   progressEmptyDescription: "Complete a practice session to start building your history.",
 } as const;
@@ -42,6 +59,7 @@ export const UI_TEXT = {
 export const API_ERROR_TEXT = {
   ...COMMON_API_ERROR_TEXT,
   invalidCatalog: "The practice catalog response was invalid.",
+  invalidSession: "The practice session response was invalid.",
 } as const;
 
 export const AUTH_TEXT = {

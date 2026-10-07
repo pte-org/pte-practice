@@ -1,4 +1,4 @@
-import { AppIcon } from "@/features/icons/AppIcon";
+import { AppIcon } from "./AppIcon";
 
 export function LockBadge({ locked, label }: { locked: boolean; label: string }) {
   return (

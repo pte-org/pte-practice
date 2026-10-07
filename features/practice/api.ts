@@ -1,6 +1,12 @@
 import { API_ERROR_TEXT, API_PATHS } from "./constants";
-import type { PracticeCatalog, PracticeChallenge, PracticeEntitlement, PracticeSessionTokens } from "./contracts";
-import { normalizeCatalogResponse, normalizeEntitlementResponse } from "./contracts";
+import type {
+  PracticeCatalog,
+  PracticeChallenge,
+  PracticeEntitlement,
+  PracticeSession,
+  PracticeSessionTokens,
+} from "./contracts";
+import { normalizeCatalogResponse, normalizeEntitlementResponse, normalizePracticeSessionResponse } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 
 export class PracticeApiError extends Error {
@@ -42,7 +48,66 @@ export function createPracticeApiClient() {
       if (!catalog) throw new PracticeApiError(API_ERROR_TEXT.invalidCatalog, 502, "INVALID_CATALOG");
       return catalog;
     },
+    startSession: async (body: {
+      productCode: string;
+      organizationId: string;
+      taskTypeCodes: string[];
+      capabilities: { supportedCapabilities: string[]; appVersion: string };
+    }, idempotencyKey = createPracticeIdempotencyKey("start")): Promise<PracticeSession> =>
+      sessionMutation(API_PATHS.practiceSessions, "POST", body, idempotencyKey),
+    getSession: async (publicId: string): Promise<PracticeSession> => {
+      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${publicId}`);
+      return requireSession(response);
+    },
+    beginSession: async (publicId: string, clientVersion: number,
+      idempotencyKey = createPracticeIdempotencyKey("begin")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/begin`, "POST", { clientVersion }, idempotencyKey),
+    heartbeat: async (publicId: string, clientVersion: number,
+      idempotencyKey = createPracticeIdempotencyKey("heartbeat")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/heartbeat`, "POST", { clientVersion }, idempotencyKey),
+    answer: async (publicId: string, itemPublicId: string, body: {
+      clientVersion: number;
+      payload: string;
+      confidence: "LOW" | "MEDIUM" | "HIGH";
+    }, idempotencyKey = createPracticeIdempotencyKey("answer")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/answer`, "POST", body, idempotencyKey),
+    skip: async (publicId: string, itemPublicId: string, clientVersion: number,
+      idempotencyKey = createPracticeIdempotencyKey("skip")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/skip`, "POST", { clientVersion }, idempotencyKey),
+    saveAndExit: async (publicId: string, clientVersion: number, draft?: {
+      itemPublicId: string;
+      payload: string;
+      confidence: "LOW" | "MEDIUM" | "HIGH" | null;
+    },
+      idempotencyKey = createPracticeIdempotencyKey("exit")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/save-and-exit`, "POST", {
+        clientVersion,
+        ...(draft ?? {}),
+      }, idempotencyKey),
   };
+}
+
+async function sessionMutation<TBody>(path: string, method: "POST", body: TBody,
+  idempotencyKey: string): Promise<PracticeSession> {
+  const response = await request<unknown>(path, {
+    method,
+    body,
+    headers: { "Idempotency-Key": idempotencyKey },
+  });
+  return requireSession(response);
+}
+
+function requireSession(value: unknown): PracticeSession {
+  const session = normalizePracticeSessionResponse(value);
+  if (!session) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_SESSION");
+  return session;
+}
+
+export function createPracticeIdempotencyKey(prefix: string): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {

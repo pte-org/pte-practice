@@ -1,4 +1,5 @@
 export const COMMON_TEXT = {
+  loadingWorkspace: "Loading your practice workspace...",
   genericErrorTitle: "Something went wrong",
   genericErrorDescription: "We could not load this workspace. Please try again.",
   tryAgain: "Try again",

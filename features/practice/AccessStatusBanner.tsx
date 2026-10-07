@@ -1,6 +1,6 @@
 "use client";
 
-import { AppIcon } from "@/features/icons/AppIcon";
+import { AppIcon } from "@/common/components";
 import { accessStateForUi, usePractice } from "@/features/practice/PracticeProvider";
 import { UI_TEXT } from "@/features/practice/constants";
 

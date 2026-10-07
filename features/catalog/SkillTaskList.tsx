@@ -1,10 +1,10 @@
 "use client";
 
-import { LockBadge } from "@/features/common/LockBadge";
-import { AppIcon, iconForSection } from "@/features/icons/AppIcon";
+import { AppIcon, LockBadge } from "@/common/components";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { UI_TEXT } from "@/features/practice/constants";
 import { canStartPractice, type PracticeCatalogSection, type PracticeCatalogTask } from "@/features/practice/contracts";
+import { iconForSection, iconForTaskType } from "@/features/practice/icon-mapping";
 
 interface SkillTaskListProps {
   sections: PracticeCatalogSection[];
@@ -23,9 +23,7 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent }: S
         );
         const sectionStatus = !isPracticeUnlocked
           ? UI_TEXT.lockedAction
-          : sectionCanStart
-            ? "Ready"
-            : UI_TEXT.unavailableAction;
+          : UI_TEXT.unavailableAction;
 
         return (
           <section className="home-skill-section" key={section.code} aria-labelledby={`home-skill-${section.code}`}>
@@ -37,18 +35,16 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent }: S
                 <strong id={`home-skill-${section.code}`}>{section.displayName} items</strong>
                 <span>{section.taskTypes.length} task types</span>
               </span>
-              <LockBadge locked={!sectionCanStart} label={sectionStatus} />
+              {!sectionCanStart ? <LockBadge locked label={sectionStatus} /> : null}
             </div>
             <div className="home-skill-task-list">
               {section.taskTypes.map((task) => {
                 const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
                 const isUnavailable = task.availability === "UNAVAILABLE"
                   || (isPracticeUnlocked && !canStart);
-                const statusLabel = canStart
-                  ? "Ready to practice"
-                  : isUnavailable
-                    ? UI_TEXT.unavailableAction
-                    : "Unlock practice to begin";
+                const statusLabel = isUnavailable
+                  ? UI_TEXT.unavailableAction
+                  : "Unlock practice to begin";
 
                 return (
                   <button
@@ -60,13 +56,13 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent }: S
                     onClick={() => onStartIntent(task)}
                   >
                     <span className="skill-task-icon" aria-hidden="true">
-                      <AppIcon name={iconForSection(task.section)} size={17} />
+                      <AppIcon name={iconForTaskType(task.code)} size={17} />
                     </span>
                     <span className="skill-task-copy">
                       <strong>{task.displayName}</strong>
-                      <span>{statusLabel}</span>
+                      {!canStart ? <span>{statusLabel}</span> : null}
                     </span>
-                    <LockBadge locked={!canStart} label={canStart ? "Ready" : statusLabel} />
+                    {!canStart ? <LockBadge locked label={statusLabel} /> : null}
                     <span className="skill-list-action" aria-hidden="true">
                       <AppIcon name={canStart ? "chevronRight" : "lock"} size={17} />
                     </span>

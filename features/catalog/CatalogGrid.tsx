@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { CatalogCard } from "./CatalogCard";
-import { UI_TEXT } from "@/features/practice/constants";
+import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import type { PracticeCatalogTask, PracticeCatalogSection } from "@/features/practice/contracts";
 import { usePractice } from "@/features/practice/PracticeProvider";
 
@@ -13,20 +13,18 @@ interface CatalogGridProps {
 }
 
 export function CatalogGrid({ sections, compact = false }: CatalogGridProps) {
-  const { isPracticeUnlocked, refreshEntitlement } = usePractice();
-  const [notice, setNotice] = useState<string | null>(null);
+  const router = useRouter();
+  const { isPracticeUnlocked } = usePractice();
   const orderedSections = orderCatalogSections(sections);
   const visibleSections = compact ? orderedSections.slice(0, 3) : orderedSections;
 
   function handleStartIntent(task: PracticeCatalogTask) {
     if (!isPracticeUnlocked) return;
-    setNotice(`${task.displayName} is ready. ${UI_TEXT.sessionPlaceholder}`);
-    void refreshEntitlement();
+    router.push(`${PRACTICE_ROUTES.practiceSession}?task=${encodeURIComponent(task.code)}`);
   }
 
   return (
     <div className="catalog-list">
-      {notice ? <p className="inline-notice" role="status">{notice}</p> : null}
       {visibleSections.map((section) => (
         <section className="catalog-section" key={section.code}>
           <div className="section-heading-row">

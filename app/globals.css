@@ -371,6 +371,69 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
 .progress-empty-ring { display: grid; width: 145px; height: 145px; place-items: center; border: 10px solid var(--line-strong); border-right-color: var(--lavender); border-radius: 50%; color: var(--muted); font-size: 1.7rem; }
 .progress-skill-card p { margin-top: 15px; color: var(--muted); font-size: 0.76rem; }
 
+.practice-session, .session-overview, .session-state-card { max-width: 760px; margin: 0 auto; }
+.session-progress-row { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+.session-progress-row .icon-button { border: 0; font-size: 1.45rem; }
+.session-progress { height: 7px; flex: 1; overflow: hidden; border-radius: 999px; background: var(--line); }
+.session-progress span { display: block; height: 100%; border-radius: inherit; background: var(--lavender); transition: width 180ms ease; }
+.session-counter { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.session-task-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.session-task-header h1 { margin-top: 5px; font-size: clamp(1.55rem, 3vw, 2.15rem); }
+.session-task-header p { margin-top: 8px; color: var(--muted); }
+.session-timer { min-width: 78px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted-strong); font-variant-numeric: tabular-nums; text-align: center; }
+.session-task-card, .confidence-panel, .session-overview, .session-state-card { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.session-task-card { display: grid; gap: 20px; padding: 24px; }
+.session-task-prompt { color: var(--muted-strong); font-size: 0.96rem; }
+.task-choice-list { display: grid; gap: 10px; }
+.task-choice { display: flex; min-height: 54px; align-items: center; gap: 12px; padding: 12px 15px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-raised); color: var(--muted-strong); text-align: left; cursor: pointer; }
+.task-choice:hover { border-color: var(--line-strong); }
+.task-choice-selected { border-color: var(--lavender); background: var(--lavender-soft); color: var(--text); }
+.task-choice-marker { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--lavender); font-size: 0.8rem; }
+.task-choice-selected .task-choice-marker { border-color: var(--lavender); }
+.task-order-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.task-order-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-raised); }
+.task-order-index { display: grid; width: 26px; height: 26px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--surface-soft); color: var(--lavender); font-size: 0.78rem; }
+.task-order-text { min-width: 0; flex: 1; color: var(--muted-strong); }
+.task-order-actions { display: flex; gap: 5px; }
+.task-order-actions .icon-button { width: 30px; height: 30px; }
+.task-blank-panel, .task-text-panel { display: grid; gap: 16px; }
+.task-blank-text, .task-source-text { padding: 16px; border-radius: 10px; background: var(--surface-raised); color: var(--muted-strong); line-height: 1.7; }
+.task-blank-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.task-blank-field { display: grid; gap: 6px; color: var(--muted); font-size: 0.75rem; }
+.task-blank-field select, .task-answer-textarea { min-height: 48px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: #0e0c12; color: var(--text); }
+.task-drop-slot { min-height: 54px; border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--surface-raised); color: var(--muted); cursor: pointer; }
+.task-drop-slot-filled { border-style: solid; border-color: var(--lavender); color: var(--text); }
+.task-word-bank { display: flex; flex-wrap: wrap; gap: 8px; }
+.task-word { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-soft); color: var(--muted-strong); cursor: grab; }
+.task-word-active { border-color: var(--lavender); color: var(--text); }
+.task-highlight-text { padding: 18px; border-radius: 10px; background: var(--surface-raised); color: var(--muted-strong); line-height: 2.1; }
+.task-highlight-text button { margin: 0 3px; padding: 2px 4px; border: 0; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
+.task-highlight-text button:hover, .task-token-selected { background: var(--lavender-soft) !important; color: var(--lavender) !important; }
+.task-answer-textarea { min-height: 190px; resize: vertical; outline: none; }
+.task-answer-textarea:focus { border-color: var(--lavender); }
+.task-character-count { color: var(--muted); font-size: 0.72rem; text-align: right; }
+.task-unsupported { display: grid; gap: 8px; padding: 22px; border: 1px solid rgb(184 174 255 / 20%); border-radius: 11px; background: var(--surface-soft); color: var(--muted-strong); }
+.task-unsupported p { color: var(--muted); font-size: 0.82rem; }
+.confidence-panel { display: grid; gap: 12px; margin-top: 14px; padding: 16px 18px; }
+.confidence-panel > p { color: var(--muted-strong); font-size: 0.82rem; font-weight: 700; }
+.confidence-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.confidence-option { min-height: 42px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-raised); color: var(--muted); cursor: pointer; font-size: 0.75rem; }
+.confidence-option:hover, .confidence-selected { border-color: currentColor; }
+.confidence-low { color: #e98289; }
+.confidence-medium { color: #e7b349; }
+.confidence-high { color: var(--green); }
+.session-footer-actions { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 18px; }
+.session-primary-actions, .session-actions { display: flex; align-items: center; gap: 10px; }
+.session-overview, .session-state-card { display: grid; justify-items: center; gap: 16px; padding: 46px 32px; text-align: center; }
+.session-overview-mark { display: grid; width: 72px; height: 72px; place-items: center; border-radius: 22px; background: var(--lavender-soft); color: var(--lavender); }
+.session-overview h1, .session-state-card h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); }
+.session-overview > p, .session-state-card > p { max-width: 480px; color: var(--muted); }
+.session-overview-stats { display: flex; width: min(100%, 420px); justify-content: center; gap: 1px; margin: 8px 0; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: var(--line); }
+.session-overview-stats span { display: grid; flex: 1; gap: 4px; padding: 15px; background: var(--surface-raised); }
+.session-overview-stats strong { color: var(--text); }
+.session-overview-stats small { color: var(--muted); font-size: 0.7rem; }
+.session-state-card > svg { color: var(--lavender); }
+
 .shell-loading, .error-page, .auth-page { display: grid; min-height: 100vh; place-items: center; padding: 24px; background: var(--page); }
 .loading-panel, .auth-card { display: grid; justify-items: center; gap: 14px; text-align: center; }
 .loading-panel { color: var(--muted); }
@@ -431,6 +494,10 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
   .recommendation-row { grid-template-columns: 1fr; }
   .progress-section-card { grid-template-columns: 1fr; }
   .skill-task-row { padding-inline: 16px; }
+  .session-task-header { flex-direction: column; }
+  .session-timer { align-self: flex-start; }
+  .session-footer-actions { align-items: stretch; flex-direction: column; }
+  .session-primary-actions { justify-content: flex-end; }
 }
 
 @media (max-width: 480px) {
@@ -445,4 +512,8 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
   .experience-ring { width: 72px; height: 72px; border-width: 8px; }
   .experience-ring svg { width: 34px; height: 34px; }
   .metric-cell { min-height: 72px; }
+  .session-task-card { padding: 18px; }
+  .session-overview, .session-state-card { padding: 34px 20px; }
+  .confidence-options { grid-template-columns: 1fr; }
+  .task-blank-slots { grid-template-columns: 1fr; }
 }
