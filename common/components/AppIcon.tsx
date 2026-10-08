@@ -43,7 +43,9 @@ export type IconName =
   | "highlightSummary"
   | "missingWord"
   | "highlightIncorrect"
-  | "dictation";
+  | "dictation"
+  | "sun"
+  | "moon";
 
 interface AppIconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -155,6 +157,10 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
       return <svg {...svgProps}><path d="M5.5 3.5h8l4 4v13h-12a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M13.5 3.5v4h4M7 11h8M7 15h5" /><path d="m15 15 4 4M19 15l-4 4" /></svg>;
     case "dictation":
       return <svg {...svgProps}><path d="M4 9v6M7 6v12M10 3v18M14 6v12M17 9v6M20 11v2" /><path d="M5 20h14" /></svg>;
+    case "sun":
+      return <svg {...svgProps}><circle cx="12" cy="12" r="4" /><path d="M12 3v1M12 20v1M3 12h1M20 12h1M5.6 5.6l.7.7M17.7 17.7l.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7" /></svg>;
+    case "moon":
+      return <svg {...svgProps}><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" /></svg>;
   }
 }
 
