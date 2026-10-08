@@ -3,6 +3,7 @@ import {
   canStartPractice,
   normalizeCatalogResponse,
   normalizeEntitlementResponse,
+  normalizePracticeProgressResponse,
   normalizePracticeSessionResponse,
 } from "./contracts";
 
@@ -78,5 +79,31 @@ describe("practice catalog contract", () => {
 
     expect(session?.status).toBe("IN_PROGRESS");
     expect(session?.currentTask?.rendererKey).toBeNull();
+  });
+
+  it("keeps progress history read-only and honest when score data is absent", () => {
+    const progress = normalizePracticeProgressResponse({
+      totalSessions: 1,
+      completedSessions: 1,
+      entries: [{
+        sessionPublicId: "session-1",
+        productCode: "PTE_CORE_PRACTICE",
+        title: "PTE Core Practice",
+        status: "COMPLETED_PENDING_SCORE",
+        sessionStatus: "COMPLETED",
+        answeredItemCount: 2,
+        totalItemCount: 3,
+        lowConfidenceCount: 1,
+        mediumConfidenceCount: 1,
+        highConfidenceCount: 0,
+        score: null,
+        hasMore: false,
+      }],
+    });
+
+    expect(progress.entries[0]?.status).toBe("COMPLETED_PENDING_SCORE");
+    expect(progress.entries[0]?.score).toBeNull();
+    expect(progress.answeredItems).toBe(2);
+    expect(progress.hasMore).toBe(false);
   });
 });

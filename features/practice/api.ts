@@ -3,10 +3,17 @@ import type {
   PracticeCatalog,
   PracticeChallenge,
   PracticeEntitlement,
+  PracticeProgress,
   PracticeSession,
   PracticeSessionTokens,
 } from "./contracts";
-import { normalizeCatalogResponse, normalizeEntitlementResponse, normalizePracticeSessionResponse } from "./contracts";
+import type { PracticeAudioUploadGrant } from "./media/contracts";
+import {
+  normalizeCatalogResponse,
+  normalizeEntitlementResponse,
+  normalizePracticeProgressResponse,
+  normalizePracticeSessionResponse,
+} from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 
 export class PracticeApiError extends Error {
@@ -48,6 +55,10 @@ export function createPracticeApiClient() {
       if (!catalog) throw new PracticeApiError(API_ERROR_TEXT.invalidCatalog, 502, "INVALID_CATALOG");
       return catalog;
     },
+    getProgress: async (): Promise<PracticeProgress> => {
+      const response = await request<unknown>(API_PATHS.progress);
+      return normalizePracticeProgressResponse(response);
+    },
     startSession: async (body: {
       productCode: string;
       organizationId: string;
@@ -78,14 +89,41 @@ export function createPracticeApiClient() {
       itemPublicId: string;
       payload: string;
       confidence: "LOW" | "MEDIUM" | "HIGH" | null;
-    },
+      },
       idempotencyKey = createPracticeIdempotencyKey("exit")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/save-and-exit`, "POST", {
         clientVersion,
         ...(draft ?? {}),
       }, idempotencyKey),
+    requestResponseAudio: (body: {
+      contentType: "audio/wav";
+      assetKind: "STUDENT_RESPONSE_AUDIO";
+      sizeBytes: number;
+      practiceSessionId: string;
+      practiceItemId: string;
+      purpose: "PRACTICE_RESPONSE_AUDIO";
+    }): Promise<PracticeAudioUploadGrant> => request<PracticeAudioUploadGrant>(API_PATHS.mediaObjects, {
+      method: "POST",
+      body,
+    }),
+    completeResponseAudio: (mediaPublicId: string, body: {
+      publicId: string;
+      assetId: string;
+      secureUrl: string;
+      resourceType: string;
+      format?: string;
+      bytes: number;
+      durationSeconds: number;
+      version: number;
+      signature: string;
+    }): Promise<void> => request<void>(`${API_PATHS.mediaObjects}/${mediaPublicId}/complete`, {
+      method: "POST",
+      body,
+    }).then(() => undefined),
   };
 }
+
+export type PracticeApiClient = ReturnType<typeof createPracticeApiClient>;
 
 async function sessionMutation<TBody>(path: string, method: "POST", body: TBody,
   idempotencyKey: string): Promise<PracticeSession> {

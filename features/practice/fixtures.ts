@@ -15,6 +15,17 @@ export interface PracticeTaskFixture {
 }
 
 const fixtures: Record<string, PracticeTaskFixture> = {
+  PERSONAL_INTRODUCTION: {
+    taskCode: "PERSONAL_INTRODUCTION",
+    prompt: "Introduce yourself and talk about your interests or study plans.",
+    instruction: "Speak clearly. Your response is not scored.",
+  },
+  READ_ALOUD: {
+    taskCode: "READ_ALOUD",
+    prompt: "Read the text aloud when you are ready.",
+    instruction: "Check your microphone, then record your response.",
+    text: "Regular practice helps learners build confidence and communicate their ideas more clearly.",
+  },
   MC_READING_SINGLE: {
     taskCode: "MC_READING_SINGLE",
     prompt: "Read the text and choose the best answer.",

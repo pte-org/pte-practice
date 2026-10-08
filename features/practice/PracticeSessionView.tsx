@@ -13,12 +13,16 @@ import { practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE } from "./sessio
 import { TaskRenderer } from "./renderers/TaskRenderer";
 import type { PracticeSession, ResponseConfidence } from "./contracts";
 import { usePractice } from "./PracticeProvider";
+import { uploadPracticeRecording } from "./media/api";
+import { clearPracticeDraft, getPracticeDraft, savePracticeDraft } from "./session-storage";
+import { ConfidenceHint } from "./ConfidenceHint";
 
 const CLIENT_CAPABILITIES = [
   "OPTION_SELECTION",
   "DRAG_AND_DROP",
   "DROPDOWN_SELECTION",
   "TEXT_INPUT",
+  "AUDIO_RECORDING",
 ];
 
 export function PracticeSessionView() {
@@ -79,6 +83,7 @@ export function PracticeSessionView() {
     dispatch({ type: "loading" });
     void loadSession()
       .then((session) => {
+        hydrateDraft(session);
         if (!sessionId) router.replace(`${PRACTICE_ROUTES.practiceSession}?sessionId=${session.publicId}`);
         dispatch({ type: "received", session });
       })
@@ -150,6 +155,9 @@ export function PracticeSessionView() {
           confidence: answerConfidence,
         }, key)
         : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+    }, (next) => {
+      clearPracticeDraft(session.publicId, currentTask.publicId);
+      dispatch({ type: "mutation_succeeded", session: next });
     });
   }
 
@@ -162,6 +170,9 @@ export function PracticeSessionView() {
       return latest
         ? api.skip(latest.publicId, currentTask.publicId, latest.version, key)
         : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+    }, (next) => {
+      clearPracticeDraft(session.publicId, currentTask.publicId);
+      dispatch({ type: "mutation_succeeded", session: next });
     });
   }
 
@@ -204,6 +215,7 @@ export function PracticeSessionView() {
         retryMutation.current = null;
         setHasRetryAction(false);
         sessionRef.current = next;
+        hydrateDraft(next);
         onSuccess(next);
       } catch (reason) {
         retryMutation.current = retry;
@@ -217,12 +229,27 @@ export function PracticeSessionView() {
     await retry();
   }
 
+  function hydrateDraft(session: PracticeSession) {
+    const task = session.currentTask;
+    if (!task) {
+      setDraftTaskId(null);
+      setDraft({});
+      setConfidence(null);
+      return;
+    }
+    const localDraft = getPracticeDraft(session.publicId, task.publicId);
+    setDraftTaskId(localDraft ? task.publicId : null);
+    setDraft(localDraft?.payload ?? {});
+    setConfidence(task.confidence);
+  }
+
   async function reloadAfterHeartbeatFailure() {
     const session = sessionRef.current;
     if (!session) throw new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE");
     const latest = await api.getSession(session.publicId);
     sessionRef.current = latest;
     heartbeatSyncRequired.current = false;
+    hydrateDraft(latest);
     dispatch({ type: "received", session: latest });
   }
 
@@ -283,6 +310,9 @@ export function PracticeSessionView() {
   const unsupported = !isInteractiveRenderer(currentTask.rendererKey);
   const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
   const currentConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
+  const uploadRecording = async (blob: Blob, durationSeconds: number) => {
+    return uploadPracticeRecording(api, blob, session.publicId, currentTask.publicId, durationSeconds);
+  };
   return (
     <section className="practice-session" data-testid="practice-session">
       <div className="session-progress-row">
@@ -297,11 +327,18 @@ export function PracticeSessionView() {
       <div className="session-task-card">
         <p className="session-task-prompt">{fixture.prompt}</p>
         <TaskRenderer fixture={fixture} rendererKey={currentTask.rendererKey} value={currentDraft}
+          sessionPublicId={session.publicId} itemPublicId={currentTask.publicId}
+          onUploadRecording={uploadRecording}
           disabled={state.phase === "submitting" || unsupported}
-          onChange={(value) => { setDraftTaskId(currentTask.publicId); setDraft(value); }} />
+          onChange={(value) => {
+            setDraftTaskId(currentTask.publicId);
+            setDraft(value);
+            savePracticeDraft(session.publicId, currentTask.publicId, value);
+          }} />
       </div>
       {!unsupported ? (
         <div className="confidence-panel">
+          <ConfidenceHint />
           <p>{UI_TEXT.sessionConfidence}</p>
           <div className="confidence-options" role="radiogroup">
             {(["LOW", "MEDIUM", "HIGH"] as const).map((level) => (

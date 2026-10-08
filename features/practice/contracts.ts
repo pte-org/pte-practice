@@ -5,6 +5,11 @@ export type CatalogAvailability = "RUNNABLE" | "VISIBLE" | "UNAVAILABLE";
 export type PracticeSessionStatus = "OVERVIEW" | "IN_PROGRESS" | "COMPLETED" | "DISCARDED" | "EXPIRED";
 export type PracticeSessionItemStatus = "PENDING" | "ANSWERED" | "SKIPPED";
 export type ResponseConfidence = "LOW" | "MEDIUM" | "HIGH";
+export type PracticeProgressStatus =
+  | "IN_PROGRESS"
+  | "COMPLETED_PENDING_SCORE"
+  | "COMPLETED_SCORED"
+  | "SCORING_FAILED";
 
 export interface PracticeSessionTokens {
   accessToken: string;
@@ -97,6 +102,35 @@ export interface PracticeSession {
   currentTask: PracticeTaskResponse | null;
 }
 
+export interface PracticeProgressEntry {
+  sessionPublicId: string;
+  productCode: string;
+  title: string;
+  status: PracticeProgressStatus;
+  sessionStatus: PracticeSessionStatus;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastActivityAt: string | null;
+  answeredItemCount: number;
+  draftItemCount: number;
+  skippedItemCount: number;
+  totalItemCount: number;
+  lowConfidenceCount: number;
+  mediumConfidenceCount: number;
+  highConfidenceCount: number;
+  score: number | null;
+}
+
+export interface PracticeProgress {
+  entries: PracticeProgressEntry[];
+  totalSessions: number;
+  completedSessions: number;
+  answeredItems: number;
+  totalItems: number;
+  generatedAt: string | null;
+  hasMore: boolean;
+}
+
 export interface PracticeChallenge {
   challengeId: string;
   expiresAt: string;
@@ -170,6 +204,25 @@ export function normalizePracticeSessionResponse(value: unknown): PracticeSessio
       .map(normalizeCatalogSection)
       .filter((section): section is PracticeCatalogSection => section !== null),
     currentTask: normalizePracticeTask(record.currentTask),
+  };
+}
+
+export function normalizePracticeProgressResponse(value: unknown): PracticeProgress {
+  const record = asRecord(value);
+  const entries = asArray(record.entries)
+    .map(normalizeProgressEntry)
+    .filter((entry): entry is PracticeProgressEntry => entry !== null);
+  return {
+    entries,
+    totalSessions: asNumber(record.totalSessions, entries.length),
+    completedSessions: asNumber(record.completedSessions,
+      entries.filter((entry) => entry.status !== "IN_PROGRESS").length),
+    answeredItems: asNumber(record.answeredItems,
+      entries.reduce((total, entry) => total + entry.answeredItemCount, 0)),
+    totalItems: asNumber(record.totalItems,
+      entries.reduce((total, entry) => total + entry.totalItemCount, 0)),
+    generatedAt: asNullableString(record.generatedAt),
+    hasMore: Boolean(record.hasMore),
   };
 }
 
@@ -271,6 +324,34 @@ function normalizePracticeTask(value: unknown): PracticeTaskResponse | null {
     status,
     savedPayload: asNullableString(record.savedPayload),
     confidence,
+  };
+}
+
+function normalizeProgressEntry(value: unknown): PracticeProgressEntry | null {
+  const record = asRecord(value);
+  const sessionPublicId = asString(record.sessionPublicId, "");
+  const status = record.status === "IN_PROGRESS" || record.status === "COMPLETED_PENDING_SCORE"
+    || record.status === "COMPLETED_SCORED" || record.status === "SCORING_FAILED"
+    ? record.status : null;
+  const sessionStatus = normalizeSessionStatus(record.sessionStatus);
+  if (!sessionPublicId || !status || !sessionStatus) return null;
+  return {
+    sessionPublicId,
+    productCode: asString(record.productCode, "PTE_CORE_PRACTICE"),
+    title: asString(record.title, "PTE Practice"),
+    status,
+    sessionStatus,
+    startedAt: asNullableString(record.startedAt),
+    completedAt: asNullableString(record.completedAt),
+    lastActivityAt: asNullableString(record.lastActivityAt),
+    answeredItemCount: asNumber(record.answeredItemCount, 0),
+    draftItemCount: asNumber(record.draftItemCount, 0),
+    skippedItemCount: asNumber(record.skippedItemCount, 0),
+    totalItemCount: asNumber(record.totalItemCount, 0),
+    lowConfidenceCount: asNumber(record.lowConfidenceCount, 0),
+    mediumConfidenceCount: asNumber(record.mediumConfidenceCount, 0),
+    highConfidenceCount: asNumber(record.highConfidenceCount, 0),
+    score: asNullableNumber(record.score),
   };
 }
 

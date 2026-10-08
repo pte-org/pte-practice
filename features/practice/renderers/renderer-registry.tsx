@@ -4,12 +4,15 @@ import { BlankRenderer } from "./BlankRenderer";
 import { ChoiceRenderer } from "./ChoiceRenderer";
 import { HighlightRenderer } from "./HighlightRenderer";
 import { OrderRenderer } from "./OrderRenderer";
+import { RecordingRenderer } from "./RecordingRenderer";
 import type { TaskRendererProps } from "./RendererTypes";
 import { TextRenderer } from "./TextRenderer";
 
 type RegisteredRenderer = (props: TaskRendererProps) => ReactNode;
 
 const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRenderer>> = {
+  PERSONAL_INTRODUCTION_V1: (props) => <RecordingRenderer {...props} />,
+  READ_ALOUD_V1: (props) => <RecordingRenderer {...props} />,
   MC_READING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_READING_MULTIPLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_LISTENING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
