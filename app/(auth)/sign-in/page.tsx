@@ -4,13 +4,15 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProductMark } from "@/common/components";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
-import { AUTH_TEXT } from "@/features/practice/constants";
 import { savePracticeSession } from "@/features/practice/session-storage";
+import { useTranslation } from "@/common/i18n";
+import type { TranslationKey } from "@/common/i18n";
 
 type SignInStep = "email" | "verification";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [step, setStep] = useState<SignInStep>("email");
   const [email, setEmail] = useState("");
   const [challengeId, setChallengeId] = useState("");
@@ -27,7 +29,7 @@ export default function SignInPage() {
       setChallengeId(challenge.challengeId);
       setStep("verification");
     } catch (error) {
-      setErrorMessage(toSignInError(error));
+      setErrorMessage(toSignInError(error, t));
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +48,7 @@ export default function SignInPage() {
       savePracticeSession(tokens);
       router.replace("/");
     } catch (error) {
-      setErrorMessage(toSignInError(error));
+      setErrorMessage(toSignInError(error, t));
       setIsSubmitting(false);
     }
   }
@@ -56,12 +58,12 @@ export default function SignInPage() {
       <section className="auth-card" aria-labelledby="sign-in-title">
         <div className="brand-mark" aria-hidden="true"><ProductMark /></div>
         <p className="eyebrow">PTE Practice</p>
-        <h1 id="sign-in-title">{AUTH_TEXT.title}</h1>
-        <p className="auth-description">{AUTH_TEXT.description}</p>
+        <h1 id="sign-in-title">{t("auth.title")}</h1>
+        <p className="auth-description">{t("auth.description")}</p>
 
         {step === "email" ? (
           <form className="auth-form" onSubmit={requestCode}>
-            <label htmlFor="email">{AUTH_TEXT.emailLabel}</label>
+            <label htmlFor="email">{t("auth.emailLabel")}</label>
             <input
               id="email"
               name="email"
@@ -69,16 +71,16 @@ export default function SignInPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder={AUTH_TEXT.emailPlaceholder}
+              placeholder={t("auth.emailPlaceholder")}
               required
             />
             <button className="button button-primary button-wide" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? AUTH_TEXT.sending : AUTH_TEXT.continue}
+              {isSubmitting ? t("auth.sending") : t("auth.continue")}
             </button>
           </form>
         ) : (
           <form className="auth-form" onSubmit={verifyCode}>
-            <label htmlFor="verification-code">{AUTH_TEXT.codeLabel}</label>
+            <label htmlFor="verification-code">{t("auth.codeLabel")}</label>
             <input
               id="verification-code"
               name="verification-code"
@@ -88,11 +90,11 @@ export default function SignInPage() {
               maxLength={6}
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-              placeholder={AUTH_TEXT.codePlaceholder}
+              placeholder={t("auth.codePlaceholder")}
               required
             />
             <button className="button button-primary button-wide" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? AUTH_TEXT.verifying : AUTH_TEXT.verify}
+              {isSubmitting ? t("auth.verifying") : t("auth.verify")}
             </button>
             <button
               className="text-button"
@@ -103,7 +105,7 @@ export default function SignInPage() {
                 setErrorMessage(null);
               }}
             >
-              {AUTH_TEXT.useDifferentEmail}
+              {t("auth.useDifferentEmail")}
             </button>
           </form>
         )}
@@ -111,15 +113,15 @@ export default function SignInPage() {
         {errorMessage ? (
           <p className="form-error" role="alert">{errorMessage}</p>
         ) : null}
-        <p className="auth-footnote">{AUTH_TEXT.terms}</p>
+        <p className="auth-footnote">{t("auth.terms")}</p>
       </section>
     </main>
   );
 }
 
-function toSignInError(error: unknown): string {
+function toSignInError(error: unknown, t: (k: TranslationKey) => string): string {
   if (error instanceof PracticeApiError && error.status === 429) {
-    return AUTH_TEXT.rateLimited;
+    return t("auth.rateLimited");
   }
-  return AUTH_TEXT.genericError;
+  return t("auth.genericError");
 }

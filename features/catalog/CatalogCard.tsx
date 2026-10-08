@@ -3,8 +3,8 @@
 import { AppIcon, LockBadge } from "@/common/components";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
 import type { PracticeCatalogTask } from "@/features/practice/contracts";
-import { UI_TEXT } from "@/features/practice/constants";
 import { canStartPractice } from "@/features/practice/contracts";
+import { useTranslation } from "@/common/i18n";
 
 interface CatalogCardProps {
   task: PracticeCatalogTask;
@@ -13,11 +13,12 @@ interface CatalogCardProps {
 }
 
 export function CatalogCard({ task, isPracticeUnlocked, onStartIntent }: CatalogCardProps) {
+  const { t } = useTranslation();
   const canStart = canStartPractice(isPracticeUnlocked ? "UNLOCKED" : "LOCKED", task);
   const isUnavailable = task.availability === "UNAVAILABLE" || (isPracticeUnlocked && !canStart);
   const badgeLabel = isUnavailable
-    ? UI_TEXT.unavailableAction
-    : UI_TEXT.lockedAction;
+    ? t("common.unavailableAction")
+    : t("common.lockedAction");
 
   return (
     <article className={`catalog-card${canStart ? " catalog-card-ready" : " catalog-card-locked"}`}>
@@ -26,7 +27,7 @@ export function CatalogCard({ task, isPracticeUnlocked, onStartIntent }: Catalog
         {!canStart ? <LockBadge locked label={badgeLabel} /> : null}
       </div>
       <h3>{task.displayName}</h3>
-      <p>{task.scored ? "Scored practice item" : "Practice item"}</p>
+      <p>{task.scored ? t("catalog.scoredPracticeItem") : t("catalog.practiceItem")}</p>
       <button
         className={`button catalog-action${canStart ? " button-accent" : " button-muted"}`}
         type="button"
@@ -35,7 +36,7 @@ export function CatalogCard({ task, isPracticeUnlocked, onStartIntent }: Catalog
         onClick={() => onStartIntent(task)}
       >
         <AppIcon name={canStart ? "play" : "lock"} size={15} />
-        {canStart ? UI_TEXT.availableAction : badgeLabel}
+        {canStart ? t("ui.availableAction") : badgeLabel}
       </button>
     </article>
   );

@@ -5,10 +5,11 @@ import { AppIcon } from "@/common/components";
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import { UI_TEXT } from "@/features/practice/constants";
 import type { PracticeProgress, PracticeProgressEntry } from "@/features/practice/contracts";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { useTranslation } from "@/common/i18n";
+import type { TranslationKey } from "@/common/i18n";
 
 type ProgressLoadState = "loading" | "ready" | "error";
 
@@ -24,6 +25,7 @@ const EMPTY_PROGRESS: PracticeProgress = {
 
 export function ProgressView() {
   const { authStatus, catalog } = usePractice();
+  const { t } = useTranslation();
   const api = useMemo(() => createPracticeApiClient(), []);
   const [progress, setProgress] = useState<PracticeProgress>(EMPTY_PROGRESS);
   const [loadState, setLoadState] = useState<ProgressLoadState>("loading");
@@ -38,9 +40,9 @@ export function ProgressView() {
       setLoadState("ready");
     } catch (reason) {
       setLoadState("error");
-      setError(reason instanceof PracticeApiError && reason.message ? reason.message : UI_TEXT.progressError);
+      setError(reason instanceof PracticeApiError && reason.message ? reason.message : t("ui.progressError"));
     }
-  }, [api, authStatus]);
+  }, [api, authStatus, t]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadProgress(), 0);
@@ -51,10 +53,10 @@ export function ProgressView() {
   const taskRows = speaking?.taskTypes.slice(0, 5) ?? [];
   const latest = progress.entries[0] ?? null;
   const metrics = [
-    { label: UI_TEXT.progressMetricSessions, value: progress.totalSessions, icon: "responses" as const },
-    { label: UI_TEXT.progressMetricCompleted, value: progress.completedSessions, icon: "check" as const },
-    { label: UI_TEXT.progressMetricResponses, value: progress.answeredItems, icon: "writing" as const },
-    { label: UI_TEXT.progressMetricTasksReviewed, value: progress.totalItems, icon: "reading" as const },
+    { label: t("ui.progressMetricSessions"), value: progress.totalSessions, icon: "responses" as const },
+    { label: t("ui.progressMetricCompleted"), value: progress.completedSessions, icon: "check" as const },
+    { label: t("ui.progressMetricResponses"), value: progress.answeredItems, icon: "writing" as const },
+    { label: t("ui.progressMetricTasksReviewed"), value: progress.totalItems, icon: "reading" as const },
   ];
 
   return (
@@ -63,14 +65,14 @@ export function ProgressView() {
       <div className="progress-reference">
         <section className="reference-card progress-overview" aria-labelledby="progress-overview-title">
           <div className="progress-overview-header">
-            <h1 id="progress-overview-title">{UI_TEXT.progressHeading}</h1>
-            <p>{latest ? UI_TEXT.progressLoadedDescription : UI_TEXT.progressEmptyDescription}</p>
+            <h1 id="progress-overview-title">{t("ui.progressHeading")}</h1>
+            <p>{latest ? t("ui.progressLoadedDescription") : t("ui.progressEmptyDescription")}</p>
           </div>
-          {loadState === "loading" ? <p className="progress-load-state" role="status">{UI_TEXT.progressLoading}</p> : null}
+          {loadState === "loading" ? <p className="progress-load-state" role="status">{t("ui.progressLoading")}</p> : null}
           {loadState === "error" ? (
             <div className="progress-error" role="alert">
-              <span>{error ?? UI_TEXT.progressError}</span>
-              <button className="text-button" type="button" onClick={() => void loadProgress()}>{UI_TEXT.tryAgain}</button>
+              <span>{error ?? t("ui.progressError")}</span>
+              <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
             </div>
           ) : null}
           <div className="metric-grid">
@@ -78,30 +80,30 @@ export function ProgressView() {
               <div className="metric-cell" key={metric.label}>
                 <AppIcon name={metric.icon} size={21} />
                 <span>{metric.label}</span>
-                <strong className={progress.totalSessions ? "metric-value" : "metric-empty"}>{progress.totalSessions ? metric.value : UI_TEXT.progressNoValue}</strong>
+                <strong className={progress.totalSessions ? "metric-value" : "metric-empty"}>{progress.totalSessions ? metric.value : t("ui.progressNoValue")}</strong>
               </div>
             ))}
           </div>
-          <div className="insight-strip"><AppIcon name="sparkle" size={20} /><span>{latest ? progressStatusLabel(latest) : UI_TEXT.progressEmptyDescription}</span></div>
+          <div className="insight-strip"><AppIcon name="sparkle" size={20} /><span>{latest ? progressStatusLabel(latest, t) : t("ui.progressEmptyDescription")}</span></div>
         </section>
 
         <section className="reference-section" aria-labelledby="progress-speaking-title">
-          <h2 id="progress-speaking-title">{UI_TEXT.progressSpeaking}</h2>
+          <h2 id="progress-speaking-title">{t("ui.progressSpeaking")}</h2>
           <div className="progress-section-card">
             <article className="progress-skill-card">
-              <div className="progress-empty-ring" aria-hidden="true">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : UI_TEXT.progressNoValue}</div>
-              <div><h3>{UI_TEXT.progressSpeakingProficiency}</h3><p>{latest ? progressStatusLabel(latest) : UI_TEXT.progressCompleteTask}</p></div>
+              <div className="progress-empty-ring" aria-hidden="true">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</div>
+              <div><h3>{t("ui.progressSpeakingProficiency")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
             </article>
             <div className="skills-list">
               <div className="skill-list-row">
                 <span className="skill-list-icon" aria-hidden="true"><AppIcon name="mic" size={19} /></span>
-                <span className="skill-list-copy"><strong>{UI_TEXT.progressSpeakingItems}</strong><span>{taskRows.length ? `${taskRows.length} ${UI_TEXT.progressTaskTypes}` : UI_TEXT.progressNoTaskTypes}</span></span>
+                <span className="skill-list-copy"><strong>{t("ui.progressSpeakingItems")}</strong><span>{taskRows.length ? `${taskRows.length} ${t("ui.progressTaskTypes")}` : t("ui.progressNoTaskTypes")}</span></span>
               </div>
               {taskRows.map((task) => (
                 <div className="skill-list-row" key={task.code}>
                   <span className="skill-list-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={17} /></span>
-                  <span className="skill-list-copy"><strong>{task.displayName}</strong><span>{latest ? UI_TEXT.progressSessionHistoryAvailable : UI_TEXT.progressNoResponse}</span></span>
-                  <span className="state-badge state-badge-locked">{UI_TEXT.progressNoValue}</span>
+                  <span className="skill-list-copy"><strong>{task.displayName}</strong><span>{latest ? t("ui.progressSessionHistoryAvailable") : t("ui.progressNoResponse")}</span></span>
+                  <span className="state-badge state-badge-locked">{t("ui.progressNoValue")}</span>
                   <span className="skill-list-action" aria-hidden="true"><AppIcon name="chevronRight" size={18} /></span>
                 </div>
               ))}
@@ -109,23 +111,23 @@ export function ProgressView() {
           </div>
         </section>
 
-        {progress.entries.length ? <ProgressHistory entries={progress.entries} hasMore={progress.hasMore} /> : null}
-        <p className="quiet-note">{UI_TEXT.progressReadOnlyNote}</p>
+        {progress.entries.length ? <ProgressHistory entries={progress.entries} hasMore={progress.hasMore} t={t} /> : null}
+        <p className="quiet-note">{t("ui.progressReadOnlyNote")}</p>
       </div>
     </div>
   );
 }
 
-function ProgressHistory({ entries, hasMore }: { entries: PracticeProgressEntry[]; hasMore: boolean }) {
+function ProgressHistory({ entries, hasMore, t }: { entries: PracticeProgressEntry[]; hasMore: boolean; t: (k: TranslationKey) => string }) {
   return (
     <section className="progress-history" aria-labelledby="progress-history-title">
-      <div className="progress-history-heading"><h2 id="progress-history-title">{UI_TEXT.progressHistoryTitle}</h2><span>{hasMore ? UI_TEXT.progressLatestSessions : `${entries.length} ${entries.length === 1 ? UI_TEXT.progressSession : UI_TEXT.progressSessions}`}</span></div>
+      <div className="progress-history-heading"><h2 id="progress-history-title">{t("ui.progressHistoryTitle")}</h2><span>{hasMore ? t("ui.progressLatestSessions") : `${entries.length} ${entries.length === 1 ? t("ui.progressSession") : t("ui.progressSessions")}`}</span></div>
       <div className="progress-history-list">
         {entries.map((entry) => (
           <article className="progress-history-row" key={entry.sessionPublicId}>
-            <div><strong>{entry.title}</strong><span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)}</span></div>
-            <div className="progress-history-stat"><span>{entry.answeredItemCount}/{entry.totalItemCount} {UI_TEXT.progressResponses}</span><span>{entry.highConfidenceCount} {UI_TEXT.progressHighConfidence}</span></div>
-            <span className={`state-badge state-badge-${entry.status === "IN_PROGRESS" ? "locked" : "ready"}`}>{progressStatusLabel(entry)}</span>
+            <div><strong>{entry.title}</strong><span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt, t)}</span></div>
+            <div className="progress-history-stat"><span>{entry.answeredItemCount}/{entry.totalItemCount} {t("ui.progressResponses")}</span><span>{entry.highConfidenceCount} {t("ui.progressHighConfidence")}</span></div>
+            <span className={`state-badge state-badge-${entry.status === "IN_PROGRESS" ? "locked" : "ready"}`}>{progressStatusLabel(entry, t)}</span>
           </article>
         ))}
       </div>
@@ -133,15 +135,15 @@ function ProgressHistory({ entries, hasMore }: { entries: PracticeProgressEntry[
   );
 }
 
-function progressStatusLabel(entry: PracticeProgressEntry): string {
-  if (entry.status === "IN_PROGRESS") return UI_TEXT.progressInProgress;
-  if (entry.status === "COMPLETED_SCORED" && entry.score !== null) return `${UI_TEXT.progressScore}: ${entry.score}`;
-  if (entry.status === "SCORING_FAILED") return UI_TEXT.progressScoringUnavailable;
-  return UI_TEXT.progressNoScore;
+function progressStatusLabel(entry: PracticeProgressEntry, t: (k: TranslationKey) => string): string {
+  if (entry.status === "IN_PROGRESS") return t("ui.progressInProgress");
+  if (entry.status === "COMPLETED_SCORED" && entry.score !== null) return `${t("ui.progressScore")}: ${entry.score}`;
+  if (entry.status === "SCORING_FAILED") return t("ui.progressScoringUnavailable");
+  return t("ui.progressNoScore");
 }
 
-function formatDate(value: string | null): string {
-  if (!value) return UI_TEXT.progressNotStarted;
+function formatDate(value: string | null, t: (k: TranslationKey) => string): string {
+  if (!value) return t("ui.progressNotStarted");
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? UI_TEXT.progressRecentActivity : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? t("ui.progressRecentActivity") : date.toLocaleDateString();
 }

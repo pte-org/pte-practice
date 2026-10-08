@@ -3,9 +3,11 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { AppIcon } from "@/common/components";
-import { PRACTICE_ROUTES, UI_TEXT } from "./constants";
+import { PRACTICE_ROUTES } from "./constants";
 import { canStartPractice } from "./contracts";
 import { isClientRuntimeSupported } from "./renderer-allowlist";
+import { useTranslation } from "@/common/i18n";
+import type { TranslationKey } from "@/common/i18n";
 import type { PracticeApiError } from "./api";
 import { createPracticeApiClient, createPracticeIdempotencyKey, PracticeApiError as PracticeApiErrorClass } from "./api";
 import { fixtureForTask } from "./fixtures";
@@ -29,6 +31,7 @@ export function PracticeSessionView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { authStatus, entitlementStatus, catalogStatus, entitlement, catalog, isPracticeUnlocked } = usePractice();
+  const { t } = useTranslation();
   const api = useMemo(() => createPracticeApiClient(), []);
   const [state, dispatch] = useReducer(practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE);
   const [draft, setDraft] = useState<Record<string, unknown>>({});
@@ -59,11 +62,11 @@ export function PracticeSessionView() {
       return api.getSession(sessionId);
     }
     if (!taskCode || !isPracticeUnlocked || !entitlement?.organizationContext) {
-      throw new PracticeApiErrorClass(UI_TEXT.accessLocked, 403, "PRACTICE_NOT_ENTITLED");
+      throw new PracticeApiErrorClass(t("ui.accessLocked"), 403, "PRACTICE_NOT_ENTITLED");
     }
     const task = catalog.sections.flatMap((section) => section.taskTypes).find((item) => item.code === taskCode);
     if (!task || !canStartPractice("UNLOCKED", task)) {
-      throw new PracticeApiErrorClass(UI_TEXT.sessionUnsupported, 422, "PRACTICE_CONTENT_NOT_READY");
+      throw new PracticeApiErrorClass(t("ui.sessionUnsupported"), 422, "PRACTICE_CONTENT_NOT_READY");
     }
     startKey.current ??= createPracticeIdempotencyKey("start");
     return api.startSession({
@@ -87,8 +90,8 @@ export function PracticeSessionView() {
         if (!sessionId) router.replace(`${PRACTICE_ROUTES.practiceSession}?sessionId=${session.publicId}`);
         dispatch({ type: "received", session });
       })
-      .catch((reason: unknown) => dispatch({ type: "failed", message: sessionErrorMessage(reason) }));
-  }, [authStatus, catalogStatus, entitlementStatus, loadSession, requestKey, retryCount, router, sessionId, taskCode]);
+      .catch((reason: unknown) => dispatch({ type: "failed", message: sessionErrorMessage(reason, t) }));
+  }, [authStatus, catalogStatus, entitlementStatus, loadSession, requestKey, retryCount, router, sessionId, taskCode, t]);
 
   useEffect(() => {
     if (state.phase !== "in_progress" && state.phase !== "submitting") return;
@@ -111,7 +114,7 @@ export function PracticeSessionView() {
         })
         .catch((reason: unknown) => {
           heartbeatSyncRequired.current = true;
-          dispatch({ type: "failed", message: sessionErrorMessage(reason) });
+          dispatch({ type: "failed", message: sessionErrorMessage(reason, t) });
           return null;
         });
       heartbeatPromise.current = request.finally(() => {
@@ -128,7 +131,7 @@ export function PracticeSessionView() {
       const session = sessionRef.current;
       return session
         ? api.beginSession(session.publicId, session.version, key)
-        : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+        : Promise.reject(new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
     });
   }
 
@@ -139,11 +142,11 @@ export function PracticeSessionView() {
     const answerDraft = effectiveDraft(currentTask, draftTaskId, draft);
     const answerConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
     if (!hasAnswer(answerDraft)) {
-      dispatch({ type: "failed", message: UI_TEXT.sessionNoAnswer });
+      dispatch({ type: "failed", message: t("ui.sessionNoAnswer") });
       return;
     }
     if (!answerConfidence) {
-      dispatch({ type: "failed", message: UI_TEXT.sessionConfidence });
+      dispatch({ type: "failed", message: t("ui.sessionConfidence") });
       return;
     }
     await runMutation(`answer:${currentTask.publicId}`, (key) => {
@@ -154,7 +157,7 @@ export function PracticeSessionView() {
           payload: JSON.stringify(answerDraft),
           confidence: answerConfidence,
         }, key)
-        : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+        : Promise.reject(new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
     }, (next) => {
       clearPracticeDraft(session.publicId, currentTask.publicId);
       dispatch({ type: "mutation_succeeded", session: next });
@@ -169,7 +172,7 @@ export function PracticeSessionView() {
       const latest = sessionRef.current;
       return latest
         ? api.skip(latest.publicId, currentTask.publicId, latest.version, key)
-        : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+        : Promise.reject(new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
     }, (next) => {
       clearPracticeDraft(session.publicId, currentTask.publicId);
       dispatch({ type: "mutation_succeeded", session: next });
@@ -194,7 +197,7 @@ export function PracticeSessionView() {
         const latest = sessionRef.current;
         return latest
           ? api.saveAndExit(latest.publicId, latest.version, draftRequest, key)
-          : Promise.reject(new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE"));
+          : Promise.reject(new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
       },
       (next) => dispatch({ type: "exited", session: next }));
   }
@@ -220,7 +223,7 @@ export function PracticeSessionView() {
       } catch (reason) {
         retryMutation.current = retry;
         setHasRetryAction(true);
-        dispatch({ type: "failed", message: sessionErrorMessage(reason) });
+        dispatch({ type: "failed", message: sessionErrorMessage(reason, t) });
       } finally {
         mutationInFlight.current = false;
       }
@@ -245,7 +248,7 @@ export function PracticeSessionView() {
 
   async function reloadAfterHeartbeatFailure() {
     const session = sessionRef.current;
-    if (!session) throw new PracticeApiErrorClass(UI_TEXT.sessionError, 0, "SESSION_UNAVAILABLE");
+    if (!session) throw new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE");
     const latest = await api.getSession(session.publicId);
     sessionRef.current = latest;
     heartbeatSyncRequired.current = false;
@@ -263,15 +266,15 @@ export function PracticeSessionView() {
     setRetryCount((value) => value + 1);
   }
 
-  if (state.phase === "loading") return <SessionLoading />;
+  if (state.phase === "loading") return <SessionLoading t={t} />;
   if (state.phase === "error") {
     return (
       <section className="session-state-card" data-testid="practice-session-error">
         <AppIcon name="info" size={28} />
-        <h1>Something went wrong</h1>
-        <p>{state.error ?? UI_TEXT.sessionError}</p>
-        <div className="session-actions"><button className="button button-primary" type="button" onClick={retry}>{hasRetryAction ? "Retry action" : "Try again"}</button>
-          <button className="text-button" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>Back home</button></div>
+        <h1>{t("common.genericErrorTitle")}</h1>
+        <p>{state.error ?? t("ui.sessionError")}</p>
+        <div className="session-actions"><button className="button button-primary" type="button" onClick={retry}>{hasRetryAction ? t("ui.sessionRetryAction") : t("common.tryAgain")}</button>
+          <button className="text-button" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>{t("ui.backHome")}</button></div>
       </section>
     );
   }
@@ -279,33 +282,33 @@ export function PracticeSessionView() {
     return (
       <section className="session-state-card" data-testid="practice-session-exited">
         <AppIcon name="check" size={28} />
-        <h1>{state.session?.status === "EXPIRED" ? UI_TEXT.sessionExpired
-          : state.session?.status === "DISCARDED" ? "No progress saved"
-            : UI_TEXT.sessionProgressSaved}</h1>
-        <p>{state.session?.status === "EXPIRED" ? UI_TEXT.sessionExpired
-          : state.session?.status === "DISCARDED" ? "You can start a new practice session whenever you are ready."
-            : "Your draft is available when you resume this session."}</p>
-        <button className="button button-primary" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>Back home</button>
+        <h1>{state.session?.status === "EXPIRED" ? t("ui.sessionExpired")
+          : state.session?.status === "DISCARDED" ? t("ui.sessionNoProgressSaved")
+            : t("ui.sessionProgressSaved")}</h1>
+        <p>{state.session?.status === "EXPIRED" ? t("ui.sessionExpired")
+          : state.session?.status === "DISCARDED" ? t("ui.sessionCanStartNew")
+            : t("ui.sessionDraftAvailable")}</p>
+        <button className="button button-primary" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>{t("ui.backHome")}</button>
       </section>
     );
   }
 
   const session = state.session;
   if (!session) return null;
-  if (state.phase === "overview") return <SessionOverview session={session} busy={false} onBegin={begin} onExit={saveAndExit} />;
+  if (state.phase === "overview") return <SessionOverview session={session} busy={false} onBegin={begin} onExit={saveAndExit} t={t} />;
   if (state.phase === "completed") {
     return (
       <section className="session-state-card" data-testid="practice-session-complete">
         <AppIcon name="check" size={28} />
-        <h1>{UI_TEXT.sessionCompleted}</h1>
-        <p>You answered {session.answeredItemCount} of {session.totalItemCount} tasks.</p>
-        <button className="button button-primary" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>Back home</button>
+        <h1>{t("ui.sessionCompleted")}</h1>
+        <p>{t("ui.sessionAnsweredTasks").replace("{answered}", session.answeredItemCount.toString()).replace("{total}", session.totalItemCount.toString())}</p>
+        <button className="button button-primary" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>{t("ui.backHome")}</button>
       </section>
     );
   }
 
   const currentTask = session.currentTask;
-  if (!currentTask) return <SessionLoading />;
+  if (!currentTask) return <SessionLoading t={t} />;
   const fixture = fixtureForTask(currentTask.taskCode);
   const unsupported = !isInteractiveRenderer(currentTask.rendererKey);
   const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
@@ -321,8 +324,8 @@ export function PracticeSessionView() {
         <span className="session-counter">{currentTaskPosition(session)}/{session.totalItemCount}</span>
       </div>
       <div className="session-task-header">
-        <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture.instruction ?? "Answer the task below."}</p></div>
-        <div className="session-timer" aria-label="Time remaining">{formatRemaining(session.deadlineAt, clockNow)}</div>
+        <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture.instruction ?? t("ui.sessionAnswerTaskBelow")}</p></div>
+        <div className="session-timer" aria-label={t("ui.sessionTimeRemaining")}>{formatRemaining(session.deadlineAt, clockNow)}</div>
       </div>
       <div className="session-task-card">
         <p className="session-task-prompt">{fixture.prompt}</p>
@@ -339,49 +342,50 @@ export function PracticeSessionView() {
       {!unsupported ? (
         <div className="confidence-panel">
           <ConfidenceHint />
-          <p>{UI_TEXT.sessionConfidence}</p>
+          <p>{t("ui.sessionConfidence")}</p>
           <div className="confidence-options" role="radiogroup">
             {(["LOW", "MEDIUM", "HIGH"] as const).map((level) => (
               <button key={level} type="button" role="radio" aria-checked={currentConfidence === level}
                 className={`confidence-option confidence-${level.toLowerCase()}${currentConfidence === level ? " confidence-selected" : ""}`}
-                disabled={state.phase === "submitting"} onClick={() => { setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{level.charAt(0)}{level.slice(1).toLowerCase()} confidence</button>
+                disabled={state.phase === "submitting"} onClick={() => { setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{t(`ui.sessionConfidence${level.charAt(0) + level.slice(1).toLowerCase()}` as TranslationKey)}</button>
             ))}
           </div>
         </div>
       ) : null}
       {state.error ? <p className="inline-notice" role="alert">{state.error}</p> : null}
       <div className="session-footer-actions">
-        <button className="text-button" type="button" disabled={state.phase === "submitting"} onClick={saveAndExit}>{UI_TEXT.sessionSaveExit}</button>
+        <button className="text-button" type="button" disabled={state.phase === "submitting"} onClick={saveAndExit}>{t("ui.sessionSaveExit")}</button>
         <div className="session-primary-actions">
-          <button className="button button-muted" type="button" disabled={state.phase === "submitting"} onClick={skip}>{UI_TEXT.sessionSkip}</button>
-          <button className="button button-primary" type="button" disabled={state.phase === "submitting" || unsupported} onClick={submit}>{UI_TEXT.sessionSubmit}</button>
+          <button className="button button-muted" type="button" disabled={state.phase === "submitting"} onClick={skip}>{t("ui.sessionSkip")}</button>
+          <button className="button button-primary" type="button" disabled={state.phase === "submitting" || unsupported} onClick={submit}>{t("ui.sessionSubmit")}</button>
         </div>
       </div>
     </section>
   );
 }
 
-function SessionOverview({ session, busy, onBegin, onExit }: {
+function SessionOverview({ session, busy, onBegin, onExit, t }: {
   session: PracticeSession;
   busy: boolean;
   onBegin: () => Promise<void>;
   onExit: () => Promise<void>;
+  t: (k: TranslationKey) => string;
 }) {
   return (
     <section className="session-overview" data-testid="practice-session-overview">
       <div className="session-overview-mark"><AppIcon name="practice" size={32} /></div>
       <span className="eyebrow">{session.productCode}</span>
       <h1>{session.title}</h1>
-      <p>{UI_TEXT.sessionOverview}</p>
-      <div className="session-overview-stats"><span><strong>{session.totalItemCount || "Selected"}</strong><small>tasks in this session</small></span><span><strong>{Math.round(session.timeLimitSeconds / 60)} min</strong><small>time limit</small></span></div>
-      <div className="session-actions"><button className="button button-primary" type="button" disabled={busy} onClick={() => void onBegin()}>{UI_TEXT.sessionNext}</button>
-        <button className="text-button" type="button" disabled={busy} onClick={() => void onExit()}>{UI_TEXT.sessionSaveExit}</button></div>
+      <p>{t("ui.sessionOverview")}</p>
+      <div className="session-overview-stats"><span><strong>{session.totalItemCount || "Selected"}</strong><small>{t("ui.sessionTasksInSession")}</small></span><span><strong>{Math.round(session.timeLimitSeconds / 60)} min</strong><small>{t("ui.sessionTimeLimit")}</small></span></div>
+      <div className="session-actions"><button className="button button-primary" type="button" disabled={busy} onClick={() => void onBegin()}>{t("ui.sessionNext")}</button>
+        <button className="text-button" type="button" disabled={busy} onClick={() => void onExit()}>{t("ui.sessionSaveExit")}</button></div>
     </section>
   );
 }
 
-function SessionLoading() {
-  return <section className="session-state-card" role="status"><span className="loading-dot" /><p>{UI_TEXT.sessionLoading}</p></section>;
+function SessionLoading({ t }: { t?: (k: TranslationKey) => string }) {
+  return <section className="session-state-card" role="status"><span className="loading-dot" /><p>{t ? t("ui.sessionLoading") : "Loading your practice session..."}</p></section>;
 }
 
 function parsePayload(payload: string | null): Record<string, unknown> {
@@ -432,9 +436,9 @@ function formatRemaining(deadlineAt: string | null, now = Date.now()): string {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-function sessionErrorMessage(reason: unknown): string {
+function sessionErrorMessage(reason: unknown, t: (k: TranslationKey) => string): string {
   const error = reason as PracticeApiError | undefined;
-  if (error?.status === 409 || error?.code === "PRACTICE_STALE_SESSION_VERSION") return UI_TEXT.sessionConflict;
-  if (error?.status === 410 || error?.code === "PRACTICE_SESSION_EXPIRED") return UI_TEXT.sessionExpired;
-  return error?.message || UI_TEXT.sessionError;
+  if (error?.status === 409 || error?.code === "PRACTICE_STALE_SESSION_VERSION") return t("ui.sessionConflict");
+  if (error?.status === 410 || error?.code === "PRACTICE_SESSION_EXPIRED") return t("ui.sessionExpired");
+  return error?.message || t("ui.sessionError");
 }

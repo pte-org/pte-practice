@@ -10,10 +10,13 @@ import { PRACTICE_ROUTES, UI_TEXT } from "@/features/practice/constants";
 import { canStartPractice, type PracticeCatalogTask } from "@/features/practice/contracts";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { useTranslation } from "@/common/i18n";
+import type { TranslationKey } from "@/common/i18n";
 
 export function HomeView() {
   const router = useRouter();
   const { catalog, entitlement, isPracticeUnlocked } = usePractice();
+  const { t } = useTranslation();
   const orderedTasks = flattenCatalogTasks(catalog.sections);
   const hasRunnableTask = isPracticeUnlocked && orderedTasks.some((task) => task.availability === "RUNNABLE");
   const recommendedTasks = [
@@ -21,10 +24,10 @@ export function HomeView() {
     ...orderedTasks.filter((task) => task.availability === "VISIBLE"),
   ].slice(0, 2);
   const skillTiles = [
-    { code: "SPEAKING", label: "Speaking", icon: "mic" as const },
-    { code: "WRITING", label: "Writing", icon: "writing" as const },
-    { code: "READING", label: "Reading", icon: "reading" as const },
-    { code: "LISTENING", label: "Listening", icon: "listening" as const },
+    { code: "SPEAKING", label: t("skills.speaking"), icon: "mic" as const },
+    { code: "WRITING", label: t("skills.writing"), icon: "writing" as const },
+    { code: "READING", label: t("skills.reading"), icon: "reading" as const },
+    { code: "LISTENING", label: t("skills.listening"), icon: "listening" as const },
   ];
 
   function handleStartIntent(task: PracticeCatalogTask) {
@@ -42,7 +45,7 @@ export function HomeView() {
             <div className="experience-ring" aria-hidden="true"><ProductMark /></div>
             <div>
               <h1 id="experience-title">{catalog.title}</h1>
-              <p><AppIcon name="calendar" size={16} /> Exam date: <strong>Not scheduled</strong></p>
+              <p><AppIcon name="calendar" size={16} /> {t("home.examDate")} <strong>{t("home.notScheduled")}</strong></p>
             </div>
           </div>
           <div className="skill-matrix" aria-label="Practice skill status">
@@ -52,10 +55,10 @@ export function HomeView() {
                 (task) => isPracticeUnlocked && canStartPractice("UNLOCKED", task),
               ) ?? false;
               const statusLabel = !isPracticeUnlocked
-                ? UI_TEXT.lockedAction
+                ? t("common.lockedAction")
                 : hasRunnableTask
                   ? null
-                  : UI_TEXT.unavailableAction;
+                  : t("common.unavailableAction");
 
               return (
                 <div className="skill-tile" key={skill.code}>
@@ -71,24 +74,24 @@ export function HomeView() {
           <AppIcon name="sparkle" size={20} />
           <span>
             {!isPracticeUnlocked
-              ? "Explore your practice areas. Practice actions unlock when access is confirmed."
+              ? t("home.explorePracticeAreas")
               : hasRunnableTask
-                ? "Your practice workspace is ready. Choose a skill to begin."
-                : "Your practice access is active. Practice content is not ready yet."}
+                ? t("home.workspaceReady")
+                : t("home.accessActiveContentNotReady")}
           </span>
         </div>
       </section>
 
       <section className="reference-section" aria-labelledby="recommended-title">
-        <h2 id="recommended-title">Recommended for you</h2>
+        <h2 id="recommended-title">{t("home.recommendedForYou")}</h2>
         {recommendedTasks.length > 0 ? (
           <div className="recommendation-row">
             {recommendedTasks.map((task) => {
               const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
               const isUnavailable = task.availability !== "RUNNABLE";
               const statusLabel = !canStart && isUnavailable && isPracticeUnlocked
-                ? UI_TEXT.unavailableAction
-                : UI_TEXT.lockedAction;
+                ? t("common.unavailableAction")
+                : t("common.lockedAction");
 
               return (
                 <article className="recommendation-card" key={task.code}>
@@ -97,22 +100,22 @@ export function HomeView() {
                     {!canStart ? <LockBadge locked label={statusLabel} /> : null}
                   </div>
                   <h3>{catalog.title} {task.displayName}</h3>
-                  <p>{task.scored ? "Review your results and personalized insights" : "Become familiar with the exam format"}</p>
+                  <p>{task.scored ? t("home.reviewResultsInsights") : t("home.familiarizeExamFormat")}</p>
                   <button className={`button${canStart ? " button-accent" : " button-muted"}`} type="button" disabled={!canStart} onClick={() => handleStartIntent(task)}>
                     <AppIcon name={canStart ? "play" : "lock"} size={15} />
-                    {canStart ? UI_TEXT.availableAction : statusLabel}
+                    {canStart ? t("ui.availableAction") : statusLabel}
                   </button>
                 </article>
               );
             })}
           </div>
         ) : (
-          <p className="catalog-note">No practice task is available yet.</p>
+          <p className="catalog-note">{t("home.noPracticeTaskAvailable")}</p>
         )}
       </section>
 
       <section className="reference-section" aria-labelledby="skills-title">
-        <div className="section-heading-row"><h2 id="skills-title">Skills</h2><Link className="text-link" href={PRACTICE_ROUTES.practiceTests}>View all</Link></div>
+        <div className="section-heading-row"><h2 id="skills-title">{t("home.skills")}</h2><Link className="text-link" href={PRACTICE_ROUTES.practiceTests}>{t("home.viewAll")}</Link></div>
         <SkillTaskList
           sections={catalog.sections}
           isPracticeUnlocked={isPracticeUnlocked}
@@ -121,7 +124,7 @@ export function HomeView() {
       </section>
 
       {entitlement?.organizationContext ? (
-        <p className="quiet-note">Workspace: {entitlement.organizationContext.displayName}</p>
+        <p className="quiet-note">{t("home.workspace")} {entitlement.organizationContext.displayName}</p>
       ) : null}
     </div>
   );
