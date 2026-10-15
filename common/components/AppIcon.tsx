@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import Image from "next/image";
 
 export type IconName =
   | "home"
@@ -164,21 +165,14 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
   }
 }
 
-export function ProductMark({ className, ...props }: Omit<SVGProps<SVGSVGElement>, "children">) {
+export function ProductMark({ className }: { className?: string; [key: string]: any }) {
   return (
-    <svg
-      {...props}
+    <Image
+      src="/logo-ppte.png"
+      alt="PPTE Logo"
+      width={120}
+      height={40}
       className={className}
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden={props["aria-label"] ? undefined : true}
-    >
-      <path
-        d="M11 8.5h12.3c7.7 0 12.7 3.9 12.7 10.1 0 6.3-5 10.2-12.7 10.2h-5.1v10.7H11V8.5Zm7.2 6v8.3h4.8c3.5 0 5.7-1.4 5.7-4.2 0-2.7-2.2-4.1-5.7-4.1h-4.8Z"
-        fill="currentColor"
-      />
-      <path d="M31.6 30.9c3.8.4 6.1 2.1 7.6 4.8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M34.4 27.7c4.9.5 8.1 2.8 10.1 6.4" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" opacity=".7" />
-    </svg>
+    />
   );
 }
