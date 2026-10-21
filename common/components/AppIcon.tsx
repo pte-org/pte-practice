@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import type { ReactElement, SVGProps } from "react";
 import Image from "next/image";
 
 export type IconName =
@@ -165,7 +165,11 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
   }
 }
 
-export function ProductMark({ className }: { className?: string; [key: string]: any }) {
+interface ProductMarkProps {
+  className?: string;
+}
+
+export const ProductMark = ({ className }: ProductMarkProps): ReactElement => {
   return (
     <Image
       src="/logo-ppte.png"
@@ -175,4 +179,4 @@ export function ProductMark({ className }: { className?: string; [key: string]: 
       className={className}
     />
   );
-}
+};
