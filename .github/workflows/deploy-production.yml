@@ -1,0 +1,172 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: pte-platform-production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+  NEXT_PUBLIC_API_BASE_URL: https://pte-practice.duckdns.org
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  lint:
+    name: Lint practice
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run unit tests
+        run: npm run test:unit
+
+  build:
+    name: Build practice
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production and check TypeScript
+        run: npm run build
+
+  deploy:
+    name: Deploy to Oracle VPS
+    needs: [lint, test, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?DEPLOY_HOST secret is required}"
+          : "${DEPLOY_USER:?DEPLOY_USER secret is required}"
+          : "${DEPLOY_SSH_PRIVATE_KEY:?DEPLOY_SSH_PRIVATE_KEY secret is required}"
+          : "${DEPLOY_KNOWN_HOSTS:?DEPLOY_KNOWN_HOSTS secret is required}"
+          install -m 700 -d "$HOME/.ssh"
+          install -m 600 /dev/null "$RUNNER_TEMP/pte-deploy-key"
+          install -m 644 /dev/null "$HOME/.ssh/known_hosts"
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > "$RUNNER_TEMP/pte-deploy-key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          test -s "$RUNNER_TEMP/pte-deploy-key"
+          test -s "$HOME/.ssh/known_hosts"
+
+      - name: Deploy shared stack on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh \
+            -i "$RUNNER_TEMP/pte-deploy-key" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o ConnectTimeout=30 \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=8 \
+            -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'REMOTE'
+          set -Eeuo pipefail
+
+          API_DIR=/home/ubuntu/pte-org/pte-api
+          test -d "$API_DIR/.git"
+          exec 9>/tmp/pte-platform-production-deploy.lock
+          if ! flock -w 1800 9; then
+            echo "Deployment stopped: another deployment still holds the VPS lock."
+            exit 1
+          fi
+          test "$(git -C "$API_DIR" branch --show-current)" = "main"
+          if [ -n "$(git -C "$API_DIR" status --porcelain)" ]; then
+            echo "Deployment stopped: API repository has uncommitted changes."
+            git -C "$API_DIR" status --short
+            exit 1
+          fi
+          git -C "$API_DIR" fetch --prune origin main
+          git -C "$API_DIR" merge --ff-only FETCH_HEAD
+          cd "$API_DIR"
+          PTE_DEPLOY_LOCK_HELD=1 bash deploy/production.sh
+          REMOTE
+
+  verify:
+    name: Verify public endpoints
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check practice and existing portals
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in \
+            https://pte-practice.duckdns.org/ \
+            https://pte-practice.duckdns.org/sign-in \
+            https://pte-practice.duckdns.org/practice-tests \
+            https://pte-tenant.duckdns.org/ \
+            https://pte-admin.duckdns.org/ \
+            https://pte-tenant.duckdns.org/actuator/health; do
+            code=$(curl --fail --silent --show-error --location \
+              --retry 3 --retry-delay 5 --retry-all-errors \
+              --connect-timeout 10 --max-time 30 \
+              --output /dev/null --write-out '%{http_code}' "$url")
+            if [ "$code" != 200 ]; then
+              echo "Verification failed: $url ($code)"
+              exit 1
+            fi
+            echo "OK $url ($code)"
+          done
+          # The catalog is authenticated: 401 confirms same-origin API routing.
+          api_url=https://pte-practice.duckdns.org/api/v1/student/practice/catalog
+          code=$(curl --silent --show-error \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            --output /dev/null --write-out '%{http_code}' "$api_url")
+          if [ "$code" != 401 ]; then
+            echo "Unexpected unauthenticated API status: $code"
+            exit 1
+          fi
+          echo "OK practice API rejects unauthenticated access (401)"

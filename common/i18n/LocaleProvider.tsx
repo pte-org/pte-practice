@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import type { Locale, LocaleDict } from "./types";
 import { en } from "./en";
 import { vi } from "./vi";
+import { DEFAULT_LOCALE, LOCALE_CHANGE_EVENT, LOCALE_PROVIDER_REQUIRED, LOCALE_STORAGE_KEY } from "./constants";
 
 type DotPrefix<T extends string> = T extends "" ? "" : `.${T}`;
 
@@ -23,44 +24,56 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 const dictionaries: Record<Locale, LocaleDict> = { en, vi };
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+interface LocaleProviderProps {
+  children: ReactNode;
+}
+
+const getServerLocale = (): Locale => DEFAULT_LOCALE;
+
+const getStoredLocale = (): Locale => {
+  try {
+    const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
+    return saved === "vi" || saved === "en" ? saved : DEFAULT_LOCALE;
+  } catch {
+    return DEFAULT_LOCALE;
+  }
+};
+
+const subscribeLocale = (onChange: () => void): (() => void) => {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+  };
+};
+
+const resolveTranslation = (dictionary: LocaleDict, keys: string[]): string | null => {
+  let current: unknown = dictionary;
+  for (const key of keys) {
+    if (typeof current !== "object" || current === null || !(key in current)) return null;
+    current = Reflect.get(current, key);
+  }
+  return typeof current === "string" ? current : null;
+};
+
+export const LocaleProvider = ({ children }: LocaleProviderProps): ReactElement => {
+  const locale = useSyncExternalStore(subscribeLocale, getStoredLocale, getServerLocale);
 
   useEffect(() => {
-    const saved = localStorage.getItem("pte-practice-locale") as Locale;
-    if (saved === "vi" || saved === "en") {
-      setLocaleState(saved);
-      document.documentElement.lang = saved;
-    }
-  }, []);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale);
-    document.documentElement.lang = newLocale;
-    localStorage.setItem("pte-practice-locale", newLocale);
+    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
   };
 
   const t = (key: TranslationKey): string => {
     const keys = key.split(".");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = dictionaries[locale];
-    
-    for (const k of keys) {
-      if (current === undefined || current === null) break;
-      current = current[k];
-    }
-    
-    if (typeof current === "string") return current;
-    
-    // Fallback to English
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let fallbackCurrent: any = dictionaries.en;
-    for (const k of keys) {
-      if (fallbackCurrent === undefined || fallbackCurrent === null) break;
-      fallbackCurrent = fallbackCurrent[k];
-    }
-    
-    return typeof fallbackCurrent === "string" ? fallbackCurrent : key;
+    return resolveTranslation(dictionaries[locale], keys)
+      ?? resolveTranslation(dictionaries.en, keys)
+      ?? key;
   };
 
   return (
@@ -68,12 +81,12 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       {children}
     </LocaleContext.Provider>
   );
-}
+};
 
-export function useLocale() {
+export function useLocale(): LocaleContextValue {
   const context = useContext(LocaleContext);
   if (!context) {
-    throw new Error("useLocale must be used within a LocaleProvider");
+    throw new Error(LOCALE_PROVIDER_REQUIRED);
   }
   return context;
 }
