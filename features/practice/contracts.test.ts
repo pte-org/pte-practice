@@ -74,11 +74,18 @@ describe("practice catalog contract", () => {
         section: "READING",
         rendererKey: "not-allowlisted",
         status: "PENDING",
+        content: {
+          promptText: "A practice prompt.",
+          minWordCount: null,
+          maxWordCount: null,
+          options: [],
+        },
       },
     });
 
     expect(session?.status).toBe("IN_PROGRESS");
     expect(session?.currentTask?.rendererKey).toBeNull();
+    expect(session?.currentTask?.content?.promptText).toBe("A practice prompt.");
   });
 
   it("keeps progress history read-only and honest when score data is absent", () => {

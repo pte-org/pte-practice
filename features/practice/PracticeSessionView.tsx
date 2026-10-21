@@ -10,7 +10,7 @@ import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import type { PracticeApiError } from "./api";
 import { createPracticeApiClient, createPracticeIdempotencyKey, PracticeApiError as PracticeApiErrorClass } from "./api";
-import { fixtureForTask } from "./fixtures";
+import { fixtureFromPracticeTask } from "./task-content";
 import { practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE } from "./session-state";
 import { TaskRenderer } from "./renderers/TaskRenderer";
 import type { PracticeSession, ResponseConfidence } from "./contracts";
@@ -309,8 +309,8 @@ export function PracticeSessionView() {
 
   const currentTask = session.currentTask;
   if (!currentTask) return <SessionLoading t={t} />;
-  const fixture = fixtureForTask(currentTask.taskCode);
-  const unsupported = !isInteractiveRenderer(currentTask.rendererKey);
+  const fixture = fixtureFromPracticeTask(currentTask);
+  const unsupported = !isInteractiveRenderer(currentTask.rendererKey) || !fixture;
   const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
   const currentConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
   const uploadRecording = async (blob: Blob, durationSeconds: number) => {
@@ -324,12 +324,12 @@ export function PracticeSessionView() {
         <span className="session-counter">{currentTaskPosition(session)}/{session.totalItemCount}</span>
       </div>
       <div className="session-task-header">
-        <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture.instruction ?? t("ui.sessionAnswerTaskBelow")}</p></div>
+        <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture?.instruction ?? t("ui.sessionAnswerTaskBelow")}</p></div>
         <div className="session-timer" aria-label={t("ui.sessionTimeRemaining")}>{formatRemaining(session.deadlineAt, clockNow)}</div>
       </div>
       <div className="session-task-card">
-        <p className="session-task-prompt">{fixture.prompt}</p>
-        <TaskRenderer fixture={fixture} rendererKey={currentTask.rendererKey} value={currentDraft}
+        <p className="session-task-prompt">{fixture?.prompt ?? t("ui.sessionUnsupported")}</p>
+        {fixture ? <TaskRenderer fixture={fixture} rendererKey={currentTask.rendererKey} value={currentDraft}
           sessionPublicId={session.publicId} itemPublicId={currentTask.publicId}
           onUploadRecording={uploadRecording}
           disabled={state.phase === "submitting" || unsupported}
@@ -337,7 +337,7 @@ export function PracticeSessionView() {
             setDraftTaskId(currentTask.publicId);
             setDraft(value);
             savePracticeDraft(session.publicId, currentTask.publicId, value);
-          }} />
+          }} /> : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>}
       </div>
       {!unsupported ? (
         <div className="confidence-panel">

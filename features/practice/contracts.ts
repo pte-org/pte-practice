@@ -57,6 +57,19 @@ export interface PracticeCatalogSection {
   taskTypes: PracticeCatalogTask[];
 }
 
+export interface PracticeTaskContentOption {
+  text: string;
+  orderIndex: number;
+  blankIndex: number | null;
+}
+
+export interface PracticeTaskContent {
+  promptText: string | null;
+  minWordCount: number | null;
+  maxWordCount: number | null;
+  options: PracticeTaskContentOption[];
+}
+
 export interface PracticeCatalog {
   productCode: string;
   title: string;
@@ -77,6 +90,7 @@ export interface PracticeTaskResponse {
   status: PracticeSessionItemStatus;
   savedPayload: string | null;
   confidence: ResponseConfidence | null;
+  content: PracticeTaskContent | null;
 }
 
 export interface PracticeSession {
@@ -324,6 +338,32 @@ function normalizePracticeTask(value: unknown): PracticeTaskResponse | null {
     status,
     savedPayload: asNullableString(record.savedPayload),
     confidence,
+    content: normalizePracticeTaskContent(record.content),
+  };
+}
+
+function normalizePracticeTaskContent(value: unknown): PracticeTaskContent | null {
+  if (value === null || value === undefined) return null;
+  const record = asRecord(value);
+  const promptText = asNullableString(record.promptText);
+  const options = asArray(record.options)
+    .map((option) => {
+      const item = asRecord(option);
+      const text = asNullableString(item.text);
+      if (!text) return null;
+      return {
+        text,
+        orderIndex: asNumber(item.orderIndex, 0),
+        blankIndex: asNullableNumber(item.blankIndex),
+      };
+    })
+    .filter((option): option is PracticeTaskContentOption => option !== null);
+  if (!promptText && options.length === 0) return null;
+  return {
+    promptText,
+    minWordCount: asNullableNumber(record.minWordCount),
+    maxWordCount: asNullableNumber(record.maxWordCount),
+    options,
   };
 }
 
