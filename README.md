@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3014](http://localhost:3014) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
@@ -29,8 +29,41 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Production CI/CD
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The production origin is `https://pte-practice.duckdns.org`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`.github/workflows/deploy-production.yml` starts on pushes to `main` or manual
+workflow dispatch. It runs five separate jobs:
+
+1. **Lint practice:** `npm ci` and `npm run lint`.
+2. **Unit tests:** `npm ci` and `npm run test:unit`.
+3. **Build practice:** production build, including TypeScript validation, with
+   `NEXT_PUBLIC_API_BASE_URL=https://pte-practice.duckdns.org`.
+4. **Deploy to Oracle VPS:** runs only after all three checks pass, synchronizes
+   the three main branches and deploys the shared Docker Compose stack.
+5. **Verify public endpoints:** checks HTTPS practice pages, tenant/admin,
+   backend health and the expected unauthenticated practice API response.
+
+Lint, tests and build run in parallel. Deploys are serialized across repositories
+by `/tmp/pte-platform-production-deploy.lock` on the VPS; an ongoing deployment
+is never canceled by a newer push.
+
+Configure these four secrets in the repository's `production` GitHub environment:
+
+- `DEPLOY_HOST`
+- `DEPLOY_USER`
+- `DEPLOY_SSH_PRIVATE_KEY`
+- `DEPLOY_KNOWN_HOSTS`
+
+The VPS must contain clean `main` checkouts at `/home/ubuntu/pte-org/pte-api`,
+`/home/ubuntu/pte-org/pte-web`, and `/home/ubuntu/pte-org/pte-practice`.
+The ignored API `.env` must have mode `600`. Practice itself needs no secrets
+in its frontend bundle. `/api/v1/` is forwarded through the practice domain to
+the backend.
+
+For the first rollout, publish the API deployment support
+(`deploy/production.sh`, `deploy/ensure-certificates.sh`, practice Dockerfile,
+Compose service and Nginx routes) to API `main` before running the new practice
+workflow. The practice workflow deliberately fails if that shared deployment
+support is missing; it does not modify tracked server files or bypass checks.
