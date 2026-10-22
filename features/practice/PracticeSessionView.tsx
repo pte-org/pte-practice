@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { AppIcon } from "@/common/components";
-import { PRACTICE_ROUTES } from "./constants";
+import { PRACTICE_ROUTES, UI_TEXT } from "./constants";
 import { canStartPractice } from "./contracts";
 import { isClientRuntimeSupported } from "./renderer-allowlist";
 import { useTranslation } from "@/common/i18n";
@@ -302,7 +302,8 @@ export function PracticeSessionView() {
         <AppIcon name="check" size={28} />
         <h1>{t("ui.sessionCompleted")}</h1>
         <p>{t("ui.sessionAnsweredTasks").replace("{answered}", session.answeredItemCount.toString()).replace("{total}", session.totalItemCount.toString())}</p>
-        <button className="button button-primary" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>{t("ui.backHome")}</button>
+        <div className="session-actions"><button className="button button-primary" type="button" onClick={() => router.push(`${PRACTICE_ROUTES.practiceReview}?sessionId=${session.publicId}`)}>{UI_TEXT.reviewTitle}</button>
+          <button className="text-button" type="button" onClick={() => router.push(PRACTICE_ROUTES.home)}>{t("ui.backHome")}</button></div>
       </section>
     );
   }
