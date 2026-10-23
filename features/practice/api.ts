@@ -3,6 +3,8 @@ import type {
   PracticeCatalog,
   PracticeChallenge,
   PracticeEntitlement,
+  PracticeExplanation,
+  PracticeReview,
   PracticeProgress,
   PracticeSession,
   PracticeSessionTokens,
@@ -95,6 +97,44 @@ export function createPracticeApiClient() {
         clientVersion,
         ...(draft ?? {}),
       }, idempotencyKey),
+    getExplanation: async (sessionPublicId: string, itemPublicId: string, language: "vi" | "en" = "vi") => {
+      const response = await request<unknown>(
+        `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/explanation?language=${language}`,
+      );
+      return normalizeExplanationResponse(response);
+    },
+    requestExplanation: async (sessionPublicId: string, itemPublicId: string, language: "vi" | "en" = "vi") => {
+      const response = await request<unknown>(
+        `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/explanation`,
+        { method: "POST", body: { language }, headers: { "Idempotency-Key": createPracticeIdempotencyKey("explanation") } },
+      );
+      return normalizeExplanationResponse(response);
+    },
+    getReview: async (sessionPublicId: string): Promise<PracticeReview> => {
+      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`);
+      const record = typeof response === "object" && response !== null ? response as Record<string, unknown> : {};
+      const items = Array.isArray(record.items) ? record.items.flatMap((value) => {
+        if (typeof value !== "object" || value === null) return [];
+        const item = value as Record<string, unknown>;
+        if (typeof item.publicId !== "string" || typeof item.taskCode !== "string") return [];
+        const status: "ANSWERED" | "SKIPPED" | "PENDING" = item.status === "ANSWERED" || item.status === "SKIPPED" ? item.status : "PENDING";
+        return [{ publicId: item.publicId, orderIndex: typeof item.orderIndex === "number" ? item.orderIndex : 0,
+          taskCode: item.taskCode, displayName: typeof item.displayName === "string" ? item.displayName : item.taskCode,
+          section: typeof item.section === "string" ? item.section : "UNKNOWN", status,
+          promptText: typeof item.promptText === "string" ? item.promptText : null,
+          savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
+          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
+          objectiveScore: typeof item.objectiveScore === "number" ? item.objectiveScore : null,
+          objectiveEvaluatedAt: typeof item.objectiveEvaluatedAt === "string" ? item.objectiveEvaluatedAt : null,
+          aiScore: typeof item.aiScore === "number" ? item.aiScore : null,
+          aiScoreStatus: typeof item.aiScoreStatus === "string" ? item.aiScoreStatus : null,
+          aiSubScores: normalizeSubScores(item.aiSubScores),
+          aiProvider: typeof item.aiProvider === "string" ? item.aiProvider : null,
+          aiModel: typeof item.aiModel === "string" ? item.aiModel : null,
+          aiScoredAt: typeof item.aiScoredAt === "string" ? item.aiScoredAt : null }];
+      }) : [];
+      return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items };
+    },
     requestResponseAudio: (body: {
       contentType: "audio/wav";
       assetKind: "STUDENT_RESPONSE_AUDIO";
@@ -123,6 +163,13 @@ export function createPracticeApiClient() {
   };
 }
 
+function normalizeSubScores(value: unknown): Record<string, number> {
+  if (typeof value !== "object" || value === null) return {};
+  return Object.fromEntries(Object.entries(value)
+    .filter(([, score]) => typeof score === "number" && Number.isFinite(score))
+    .map(([key, score]) => [key, score as number]));
+}
+
 export type PracticeApiClient = ReturnType<typeof createPracticeApiClient>;
 
 async function sessionMutation<TBody>(path: string, method: "POST", body: TBody,
@@ -139,6 +186,54 @@ function requireSession(value: unknown): PracticeSession {
   const session = normalizePracticeSessionResponse(value);
   if (!session) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_SESSION");
   return session;
+}
+
+function normalizeExplanationResponse(value: unknown): PracticeExplanation {
+  const record = typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+  const statuses = ["WAITING_EVIDENCE", "QUEUED", "RUNNING", "RETRY_WAIT", "AVAILABLE", "UNAVAILABLE", "FAILED", "CANCELLED"] as const;
+  const status = statuses.includes(record.status as typeof statuses[number])
+    ? record.status as typeof statuses[number] : "UNAVAILABLE";
+  const language = record.language === "en" ? "en" : "vi";
+  const feedback = Array.isArray(record.rubricFeedback) ? record.rubricFeedback : [];
+  return {
+    publicId: typeof record.publicId === "string" ? record.publicId : null,
+    itemPublicId: typeof record.itemPublicId === "string" ? record.itemPublicId : "",
+    language,
+    status,
+    summary: typeof record.summary === "string" ? record.summary : null,
+    strengths: Array.isArray(record.strengths) ? record.strengths.filter((item): item is string => typeof item === "string") : [],
+    improvements: Array.isArray(record.improvements) ? record.improvements.filter((item): item is string => typeof item === "string") : [],
+    limitations: Array.isArray(record.limitations) ? record.limitations.filter((item): item is string => typeof item === "string") : [],
+    rubricFeedback: feedback.flatMap((item) => {
+      if (typeof item !== "object" || item === null) return [];
+      const entry = item as Record<string, unknown>;
+      if (typeof entry.criterionId !== "string" || typeof entry.feedback !== "string") return [];
+      const evidence = Array.isArray(entry.evidence)
+        ? entry.evidence.filter((value): value is string => typeof value === "string")
+        : typeof entry.evidence === "string" ? [entry.evidence] : [];
+      return [{ criterionId: entry.criterionId, level: typeof entry.level === "string" ? entry.level : "NOT_ASSESSABLE",
+        evidenceCoverage: typeof entry.evidenceCoverage === "string" ? entry.evidenceCoverage : "NOT_ASSESSABLE",
+        feedback: entry.feedback, evidence }];
+    }),
+    rubricVersion: typeof record.rubricVersion === "string" ? record.rubricVersion : "unknown",
+    requestedModel: typeof record.requestedModel === "string" ? record.requestedModel : null,
+    actualModelVersion: typeof record.actualModelVersion === "string" ? record.actualModelVersion : null,
+    submissionHash: typeof record.submissionHash === "string" ? record.submissionHash : null,
+    generatedAt: typeof record.generatedAt === "string" ? record.generatedAt : null,
+    failureCode: typeof record.failureCode === "string" ? record.failureCode : null,
+    canRetry: Boolean(record.canRetry),
+    attemptCount: typeof record.attemptCount === "number" ? record.attemptCount : 0,
+    nextAttemptAt: typeof record.nextAttemptAt === "string" ? record.nextAttemptAt : null,
+    objectiveScore: typeof record.objectiveScore === "number" ? record.objectiveScore : null,
+    objectiveEvaluatorVersion: typeof record.objectiveEvaluatorVersion === "string" ? record.objectiveEvaluatorVersion : null,
+    objectiveResultHash: typeof record.objectiveResultHash === "string" ? record.objectiveResultHash : null,
+    objectiveEvidenceIdentityHash: typeof record.objectiveEvidenceIdentityHash === "string" ? record.objectiveEvidenceIdentityHash : null,
+    formWordCount: typeof record.formWordCount === "number" ? record.formWordCount : null,
+    formStatus: typeof record.formStatus === "string" ? record.formStatus : null,
+    formEvaluatorVersion: typeof record.formEvaluatorVersion === "string" ? record.formEvaluatorVersion : null,
+    formResultHash: typeof record.formResultHash === "string" ? record.formResultHash : null,
+    formEvidenceIdentityHash: typeof record.formEvidenceIdentityHash === "string" ? record.formEvidenceIdentityHash : null,
+  };
 }
 
 export function createPracticeIdempotencyKey(prefix: string): string {

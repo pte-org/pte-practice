@@ -500,6 +500,22 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
 .session-overview-stats strong { color: var(--text); }
 .session-overview-stats small { color: var(--muted); font-size: 0.7rem; }
 .session-state-card > svg { color: var(--accent); }
+.practice-review { max-width: 860px; margin-inline: auto; }
+.review-list { display: grid; gap: 14px; }
+.review-card { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.review-card-heading, .review-actions { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.review-card-heading h2 { margin-top: 4px; }
+.review-prompt { color: var(--muted-strong); white-space: pre-wrap; }
+.review-answer { margin: 0; overflow: auto; padding: 13px; border-radius: 9px; background: var(--surface-raised); color: var(--muted-strong); font: 0.78rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
+.review-actions label { display: grid; gap: 5px; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+.review-actions select { min-height: 38px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--input-bg); color: var(--text); }
+.review-explanation { display: grid; gap: 13px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted-strong); }
+.review-explanation h3 { color: var(--text); }
+.review-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.review-columns ul { margin: 7px 0 0; padding-left: 19px; color: var(--muted); }
+.rubric-row { display: grid; gap: 3px; margin-top: 9px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--surface-raised); }
+.rubric-row span { color: var(--text); font-size: 0.78rem; font-weight: 750; }
+.rubric-row p, .rubric-row small { color: var(--muted); font-size: 0.76rem; }
 
 .shell-loading, .error-page, .auth-page { display: grid; min-height: 100vh; place-items: center; padding: 24px; background: var(--page); }
 .loading-panel, .auth-card { display: grid; justify-items: center; gap: 14px; text-align: center; }
@@ -567,6 +583,9 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
   .session-timer { align-self: flex-start; }
   .session-footer-actions { align-items: stretch; flex-direction: column; }
   .session-primary-actions { justify-content: flex-end; }
+  .review-card-heading, .review-actions { align-items: stretch; flex-direction: column; }
+  .review-actions .button { width: 100%; }
+  .review-columns { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {

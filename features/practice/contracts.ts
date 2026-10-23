@@ -58,6 +58,7 @@ export interface PracticeCatalogSection {
 }
 
 export interface PracticeTaskContentOption {
+  publicId?: string | null;
   text: string;
   orderIndex: number;
   blankIndex: number | null;
@@ -67,7 +68,82 @@ export interface PracticeTaskContent {
   promptText: string | null;
   minWordCount: number | null;
   maxWordCount: number | null;
+  audioPromptRef?: string | null;
+  imagePromptRef?: string | null;
   options: PracticeTaskContentOption[];
+}
+
+export type PracticeExplanationStatus =
+  | "WAITING_EVIDENCE"
+  | "QUEUED"
+  | "RUNNING"
+  | "RETRY_WAIT"
+  | "AVAILABLE"
+  | "UNAVAILABLE"
+  | "FAILED"
+  | "CANCELLED";
+
+export interface PracticeRubricFeedback {
+  criterionId: string;
+  level: string;
+  evidenceCoverage: "FULL" | "LIMITED" | "NOT_ASSESSABLE" | string;
+  feedback: string;
+  evidence: string[];
+}
+
+export interface PracticeExplanation {
+  publicId: string | null;
+  itemPublicId: string;
+  language: "vi" | "en";
+  status: PracticeExplanationStatus;
+  summary: string | null;
+  strengths: string[];
+  improvements: string[];
+  limitations: string[];
+  rubricFeedback: PracticeRubricFeedback[];
+  rubricVersion: string;
+  requestedModel: string | null;
+  actualModelVersion: string | null;
+  submissionHash: string | null;
+  generatedAt: string | null;
+  failureCode?: string | null;
+  canRetry?: boolean;
+  attemptCount?: number;
+  nextAttemptAt?: string | null;
+  objectiveScore?: number | null;
+  objectiveEvaluatorVersion?: string | null;
+  objectiveResultHash?: string | null;
+  objectiveEvidenceIdentityHash?: string | null;
+  formWordCount?: number | null;
+  formStatus?: string | null;
+  formEvaluatorVersion?: string | null;
+  formResultHash?: string | null;
+  formEvidenceIdentityHash?: string | null;
+}
+
+export interface PracticeReviewItem {
+  publicId: string;
+  orderIndex: number;
+  taskCode: string;
+  displayName: string;
+  section: string;
+  status: PracticeSessionItemStatus;
+  promptText: string | null;
+  savedPayload: string | null;
+  rendererKey: string | null;
+  objectiveScore: number | null;
+  objectiveEvaluatedAt: string | null;
+  aiScore: number | null;
+  aiScoreStatus: string | null;
+  aiSubScores: Record<string, number>;
+  aiProvider: string | null;
+  aiModel: string | null;
+  aiScoredAt: string | null;
+}
+
+export interface PracticeReview {
+  sessionPublicId: string;
+  items: PracticeReviewItem[];
 }
 
 export interface PracticeCatalog {
@@ -346,23 +422,27 @@ function normalizePracticeTaskContent(value: unknown): PracticeTaskContent | nul
   if (value === null || value === undefined) return null;
   const record = asRecord(value);
   const promptText = asNullableString(record.promptText);
-  const options = asArray(record.options)
-    .map((option) => {
+  const options: PracticeTaskContentOption[] = asArray(record.options)
+    .flatMap((option) => {
       const item = asRecord(option);
       const text = asNullableString(item.text);
-      if (!text) return null;
-      return {
+      if (!text) return [];
+      return [{
         text,
+        publicId: asNullableString(item.publicId),
         orderIndex: asNumber(item.orderIndex, 0),
         blankIndex: asNullableNumber(item.blankIndex),
-      };
-    })
-    .filter((option): option is PracticeTaskContentOption => option !== null);
-  if (!promptText && options.length === 0) return null;
+      }];
+    });
+  const audioPromptRef = asNullableString(record.audioPromptRef);
+  const imagePromptRef = asNullableString(record.imagePromptRef);
+  if (!promptText && options.length === 0 && !audioPromptRef && !imagePromptRef) return null;
   return {
     promptText,
     minWordCount: asNullableNumber(record.minWordCount),
     maxWordCount: asNullableNumber(record.maxWordCount),
+    audioPromptRef,
+    imagePromptRef,
     options,
   };
 }
