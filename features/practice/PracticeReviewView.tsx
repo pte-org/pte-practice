@@ -94,6 +94,13 @@ function ReviewItem({ item, sessionId }: { item: PracticeReviewItem; sessionId: 
         <span className="state-badge state-badge-ready">{item.status}</span></div>
       {item.promptText ? <p className="review-prompt">{item.promptText}</p> : null}
       <pre className="review-answer">{answer}</pre>
+      {item.objectiveScore !== null ? <p className="inline-notice">{UI_TEXT.objectiveScore}: {item.objectiveScore}/100</p> : null}
+      {item.aiScore !== null ? <div className="inline-notice"><p>{UI_TEXT.aiScore}: {item.aiScore}/100</p>
+        {item.aiScoreStatus ? <small>{UI_TEXT.aiScoreStatus}: {item.aiScoreStatus === "UNVALIDATED"
+          ? UI_TEXT.aiScoreUnvalidated : item.aiScoreStatus}</small> : null}
+        {item.aiProvider ? <small>{UI_TEXT.aiProvider}: {item.aiProvider}{item.aiModel ? ` · ${item.aiModel}` : ""}</small> : null}
+        {Object.keys(item.aiSubScores).length > 0 ? <small>{Object.entries(item.aiSubScores).map(([key, score]) => `${key}: ${score}`).join(" · ")}</small> : null}
+      </div> : null}
       {item.status === "ANSWERED" ? <>
         <div className="review-actions"><label>{UI_TEXT.explanationLanguage}
           <select value={language} onChange={(event) => setLanguage(event.target.value as "vi" | "en")}>
@@ -111,8 +118,9 @@ function ExplanationBody({ explanation }: { explanation: PracticeExplanation }) 
   return <div className="review-explanation"><h3>{UI_TEXT.explanationTitle}</h3><p>{explanation.summary}</p>
     <div className="review-columns"><div><strong>{UI_TEXT.explanationStrengths}</strong><ul>{explanation.strengths.map((item) => <li key={item}>{item}</li>)}</ul></div>
       <div><strong>{UI_TEXT.explanationImprovements}</strong><ul>{explanation.improvements.map((item) => <li key={item}>{item}</li>)}</ul></div></div>
+    {explanation.limitations.length > 0 ? <div><strong>{UI_TEXT.explanationLimitations}</strong><ul>{explanation.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
     <div><strong>{UI_TEXT.explanationRubric}</strong>{explanation.rubricFeedback.map((item) => <div className="rubric-row" key={item.criterionId}>
-      <span>{item.criterionId} · {item.level}</span><p>{item.feedback}</p><small>{item.evidence}</small></div>)}</div>
+      <span>{item.criterionId} · {item.level} · {item.evidenceCoverage}</span><p>{item.feedback}</p><small>{item.evidence.join(", ")}</small></div>)}</div>
   </div>;
 }
 

@@ -123,7 +123,15 @@ export function createPracticeApiClient() {
           section: typeof item.section === "string" ? item.section : "UNKNOWN", status,
           promptText: typeof item.promptText === "string" ? item.promptText : null,
           savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
-          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null }];
+          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
+          objectiveScore: typeof item.objectiveScore === "number" ? item.objectiveScore : null,
+          objectiveEvaluatedAt: typeof item.objectiveEvaluatedAt === "string" ? item.objectiveEvaluatedAt : null,
+          aiScore: typeof item.aiScore === "number" ? item.aiScore : null,
+          aiScoreStatus: typeof item.aiScoreStatus === "string" ? item.aiScoreStatus : null,
+          aiSubScores: normalizeSubScores(item.aiSubScores),
+          aiProvider: typeof item.aiProvider === "string" ? item.aiProvider : null,
+          aiModel: typeof item.aiModel === "string" ? item.aiModel : null,
+          aiScoredAt: typeof item.aiScoredAt === "string" ? item.aiScoredAt : null }];
       }) : [];
       return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items };
     },
@@ -153,6 +161,13 @@ export function createPracticeApiClient() {
       body,
     }).then(() => undefined),
   };
+}
+
+function normalizeSubScores(value: unknown): Record<string, number> {
+  if (typeof value !== "object" || value === null) return {};
+  return Object.fromEntries(Object.entries(value)
+    .filter(([, score]) => typeof score === "number" && Number.isFinite(score))
+    .map(([key, score]) => [key, score as number]));
 }
 
 export type PracticeApiClient = ReturnType<typeof createPracticeApiClient>;
@@ -188,12 +203,17 @@ function normalizeExplanationResponse(value: unknown): PracticeExplanation {
     summary: typeof record.summary === "string" ? record.summary : null,
     strengths: Array.isArray(record.strengths) ? record.strengths.filter((item): item is string => typeof item === "string") : [],
     improvements: Array.isArray(record.improvements) ? record.improvements.filter((item): item is string => typeof item === "string") : [],
+    limitations: Array.isArray(record.limitations) ? record.limitations.filter((item): item is string => typeof item === "string") : [],
     rubricFeedback: feedback.flatMap((item) => {
       if (typeof item !== "object" || item === null) return [];
       const entry = item as Record<string, unknown>;
       if (typeof entry.criterionId !== "string" || typeof entry.feedback !== "string") return [];
+      const evidence = Array.isArray(entry.evidence)
+        ? entry.evidence.filter((value): value is string => typeof value === "string")
+        : typeof entry.evidence === "string" ? [entry.evidence] : [];
       return [{ criterionId: entry.criterionId, level: typeof entry.level === "string" ? entry.level : "NOT_ASSESSABLE",
-        feedback: entry.feedback, evidence: typeof entry.evidence === "string" ? entry.evidence : "" }];
+        evidenceCoverage: typeof entry.evidenceCoverage === "string" ? entry.evidenceCoverage : "NOT_ASSESSABLE",
+        feedback: entry.feedback, evidence }];
     }),
     rubricVersion: typeof record.rubricVersion === "string" ? record.rubricVersion : "unknown",
     requestedModel: typeof record.requestedModel === "string" ? record.requestedModel : null,
@@ -204,6 +224,15 @@ function normalizeExplanationResponse(value: unknown): PracticeExplanation {
     canRetry: Boolean(record.canRetry),
     attemptCount: typeof record.attemptCount === "number" ? record.attemptCount : 0,
     nextAttemptAt: typeof record.nextAttemptAt === "string" ? record.nextAttemptAt : null,
+    objectiveScore: typeof record.objectiveScore === "number" ? record.objectiveScore : null,
+    objectiveEvaluatorVersion: typeof record.objectiveEvaluatorVersion === "string" ? record.objectiveEvaluatorVersion : null,
+    objectiveResultHash: typeof record.objectiveResultHash === "string" ? record.objectiveResultHash : null,
+    objectiveEvidenceIdentityHash: typeof record.objectiveEvidenceIdentityHash === "string" ? record.objectiveEvidenceIdentityHash : null,
+    formWordCount: typeof record.formWordCount === "number" ? record.formWordCount : null,
+    formStatus: typeof record.formStatus === "string" ? record.formStatus : null,
+    formEvaluatorVersion: typeof record.formEvaluatorVersion === "string" ? record.formEvaluatorVersion : null,
+    formResultHash: typeof record.formResultHash === "string" ? record.formResultHash : null,
+    formEvidenceIdentityHash: typeof record.formEvidenceIdentityHash === "string" ? record.formEvidenceIdentityHash : null,
   };
 }
 

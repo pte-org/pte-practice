@@ -86,8 +86,9 @@ export type PracticeExplanationStatus =
 export interface PracticeRubricFeedback {
   criterionId: string;
   level: string;
+  evidenceCoverage: "FULL" | "LIMITED" | "NOT_ASSESSABLE" | string;
   feedback: string;
-  evidence: string;
+  evidence: string[];
 }
 
 export interface PracticeExplanation {
@@ -98,6 +99,7 @@ export interface PracticeExplanation {
   summary: string | null;
   strengths: string[];
   improvements: string[];
+  limitations: string[];
   rubricFeedback: PracticeRubricFeedback[];
   rubricVersion: string;
   requestedModel: string | null;
@@ -108,6 +110,15 @@ export interface PracticeExplanation {
   canRetry?: boolean;
   attemptCount?: number;
   nextAttemptAt?: string | null;
+  objectiveScore?: number | null;
+  objectiveEvaluatorVersion?: string | null;
+  objectiveResultHash?: string | null;
+  objectiveEvidenceIdentityHash?: string | null;
+  formWordCount?: number | null;
+  formStatus?: string | null;
+  formEvaluatorVersion?: string | null;
+  formResultHash?: string | null;
+  formEvidenceIdentityHash?: string | null;
 }
 
 export interface PracticeReviewItem {
@@ -120,6 +131,14 @@ export interface PracticeReviewItem {
   promptText: string | null;
   savedPayload: string | null;
   rendererKey: string | null;
+  objectiveScore: number | null;
+  objectiveEvaluatedAt: string | null;
+  aiScore: number | null;
+  aiScoreStatus: string | null;
+  aiSubScores: Record<string, number>;
+  aiProvider: string | null;
+  aiModel: string | null;
+  aiScoredAt: string | null;
 }
 
 export interface PracticeReview {
