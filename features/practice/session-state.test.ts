@@ -23,6 +23,7 @@ const session = (status: PracticeSession["status"]): PracticeSession => ({
   totalItemCount: 1,
   sections: [],
   currentTask: null,
+  itemResult: null,
 });
 
 describe("practiceSessionReducer", () => {

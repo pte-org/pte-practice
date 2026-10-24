@@ -23,7 +23,6 @@ export type IconName =
   | "check"
   | "signOut"
   | "info"
-  | "personalIntroduction"
   | "readAloud"
   | "repeatSentence"
   | "describeImage"
@@ -32,7 +31,6 @@ export type IconName =
   | "respondSituation"
   | "groupDiscussion"
   | "summarizeWritten"
-  | "writeEmail"
   | "writeEssay"
   | "multipleChoiceSingle"
   | "multipleChoiceMultiple"
@@ -114,8 +112,6 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
       return <svg {...svgProps}><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10M14 8l4 4-4 4M18 12H9" /></svg>;
     case "info":
       return <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><path d="M12 10.5v5M12 7.5h.1" /></svg>;
-    case "personalIntroduction":
-      return <svg {...svgProps}><circle cx="12" cy="8" r="3" /><path d="M6.5 20a5.5 5.5 0 0 1 11 0M4.5 5.5h2M17.5 5.5h2M5.5 9.5h1.5M17 9.5h1.5" /></svg>;
     case "readAloud":
       return <svg {...svgProps}><circle cx="8.2" cy="8.4" r="2.5" /><path d="M3.8 17a4.4 4.4 0 0 1 8.8 0M16 9.5a3 3 0 0 1 0 5M18.5 7a6.5 6.5 0 0 1 0 10" /></svg>;
     case "repeatSentence":
@@ -132,8 +128,6 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
       return <svg {...svgProps}><circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="8" r="2.5" /><path d="M3.5 18a4.5 4.5 0 0 1 9 0M11.5 18a4.5 4.5 0 0 1 9 0M12 5.5v5M9.5 8h5" /></svg>;
     case "summarizeWritten":
       return <svg {...svgProps}><path d="M6 3.5h8l4 4v13H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M14 3.5v4h4M8 11h8M8 14h8M8 17h5" /></svg>;
-    case "writeEmail":
-      return <svg {...svgProps}><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="m4.5 7 7.5 6 7.5-6M4 18l5.5-5M20 18l-5.5-5" /></svg>;
     case "writeEssay":
       return <svg {...svgProps}><path d="M5.5 3.5h8l4 4v13h-12a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" /><path d="M13.5 3.5v4h4M8 12h6M8 15h4" /><path d="m14 18.5 4.6-4.6 1.7 1.7-4.6 4.6-2.5.8.8-2.5Z" /></svg>;
     case "multipleChoiceSingle":

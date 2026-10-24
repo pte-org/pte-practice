@@ -3,7 +3,6 @@ import { PREVIEW_TASKS } from "./constants";
 import { iconForSection, iconForTaskType } from "./icon-mapping";
 
 const EXPECTED_TASK_ICONS: Record<string, string> = {
-  PERSONAL_INTRODUCTION: "personalIntroduction",
   READ_ALOUD: "readAloud",
   REPEAT_SENTENCE: "repeatSentence",
   DESCRIBE_IMAGE: "describeImage",
@@ -12,7 +11,6 @@ const EXPECTED_TASK_ICONS: Record<string, string> = {
   RESPOND_TO_A_SITUATION: "respondSituation",
   SUMMARIZE_GROUP_DISCUSSION: "groupDiscussion",
   SUMMARIZE_WRITTEN_TEXT: "summarizeWritten",
-  WRITE_EMAIL: "writeEmail",
   WRITE_ESSAY: "writeEssay",
   MC_READING_SINGLE: "multipleChoiceSingle",
   MC_READING_MULTIPLE: "multipleChoiceMultiple",

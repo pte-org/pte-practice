@@ -13,19 +13,30 @@ import { createPracticeApiClient, createPracticeIdempotencyKey, PracticeApiError
 import { fixtureFromPracticeTask } from "./task-content";
 import { practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE } from "./session-state";
 import { TaskRenderer } from "./renderers/TaskRenderer";
-import type { PracticeSession, ResponseConfidence } from "./contracts";
+import type { PracticeItemResult, PracticeSession, ResponseConfidence } from "./contracts";
 import { usePractice } from "./PracticeProvider";
 import { uploadPracticeRecording } from "./media/api";
 import { clearPracticeDraft, getPracticeDraft, savePracticeDraft } from "./session-storage";
 import { ConfidenceHint } from "./ConfidenceHint";
+import { ScoreView } from "./ScoreView";
 
 const CLIENT_CAPABILITIES = [
   "OPTION_SELECTION",
+  "HIGHLIGHT_SELECTION",
   "DRAG_AND_DROP",
   "DROPDOWN_SELECTION",
   "TEXT_INPUT",
+  "AUDIO_PLAYBACK",
   "AUDIO_RECORDING",
+  "IMAGE_DISPLAY",
 ];
+
+/** The score of the item the learner just answered; shown until they continue. */
+interface AnsweredResult {
+  itemPublicId: string;
+  displayName: string;
+  result: PracticeItemResult;
+}
 
 export function PracticeSessionView() {
   const router = useRouter();
@@ -37,11 +48,17 @@ export function PracticeSessionView() {
   const [draft, setDraft] = useState<Record<string, unknown>>({});
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<ResponseConfidence | null>(null);
+  const [answered, setAnswered] = useState<AnsweredResult | null>(null);
+  const [missing, setMissing] = useState<"answer" | "confidence" | null>(null);
+  const answerCardRef = useRef<HTMLDivElement>(null);
+  const confidencePanelRef = useRef<HTMLDivElement>(null);
   const [hasRetryAction, setHasRetryAction] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const sessionTask = state.session?.currentTask;
+  const fixture = useMemo(() => sessionTask ? fixtureFromPracticeTask(sessionTask) : null, [sessionTask]);
   const [clockNow, setClockNow] = useState(() => Date.now());
   const initialized = useRef<string | null>(null);
-  const startKey = useRef<string | null>(null);
+  const startKey = useRef<{ request: string; key: string } | null>(null);
   const mutationKeys = useRef(new Map<string, string>());
   const retryMutation = useRef<(() => Promise<void>) | null>(null);
   const sessionRef = useRef<PracticeSession | null>(null);
@@ -57,6 +74,11 @@ export function PracticeSessionView() {
     sessionRef.current = state.session;
   }, [state.session]);
 
+  useEffect(() => {
+    const target = missing === "answer" ? answerCardRef.current : missing === "confidence" ? confidencePanelRef.current : null;
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [missing]);
+
   const loadSession = useCallback(async () => {
     if (sessionId) {
       return api.getSession(sessionId);
@@ -68,14 +90,17 @@ export function PracticeSessionView() {
     if (!task || !canStartPractice("UNLOCKED", task)) {
       throw new PracticeApiErrorClass(t("ui.sessionUnsupported"), 422, "PRACTICE_CONTENT_NOT_READY");
     }
-    startKey.current ??= createPracticeIdempotencyKey("start");
+    // One key per task: a retry of the same task replays safely, a different task must not reuse the key (409).
+    if (startKey.current?.request !== requestKey) {
+      startKey.current = { request: requestKey, key: createPracticeIdempotencyKey("start") };
+    }
     return api.startSession({
       productCode: catalog.productCode,
       organizationId: entitlement.organizationContext.publicId,
       taskTypeCodes: [task.code],
-      capabilities: { supportedCapabilities: CLIENT_CAPABILITIES, appVersion: "practice-web-1" },
-    }, startKey.current);
-  }, [api, catalog, entitlement, isPracticeUnlocked, sessionId, taskCode]);
+      capabilities: { supportedCapabilities: CLIENT_CAPABILITIES, appVersion: "practice-web-2" },
+    }, startKey.current.key);
+  }, [api, catalog, entitlement, isPracticeUnlocked, requestKey, sessionId, taskCode]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") return;
@@ -83,6 +108,9 @@ export function PracticeSessionView() {
     if (!sessionId && !taskCode) return;
     if (initialized.current === requestKey) return;
     initialized.current = requestKey;
+    // This view stays mounted across tasks; the previous task's score must not leak into the next session.
+    setAnswered(null);
+    setMissing(null);
     dispatch({ type: "loading" });
     void loadSession()
       .then((session) => {
@@ -141,14 +169,16 @@ export function PracticeSessionView() {
     if (!session || !currentTask) return;
     const answerDraft = effectiveDraft(currentTask, draftTaskId, draft);
     const answerConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
+    // Missing input is a warning on the form, not a failed session: the student keeps their draft and fixes it in place.
     if (!hasAnswer(answerDraft)) {
-      dispatch({ type: "failed", message: t("ui.sessionNoAnswer") });
+      setMissing("answer");
       return;
     }
     if (!answerConfidence) {
-      dispatch({ type: "failed", message: t("ui.sessionConfidence") });
+      setMissing("confidence");
       return;
     }
+    setMissing(null);
     await runMutation(`answer:${currentTask.publicId}`, (key) => {
       const latest = sessionRef.current;
       return latest
@@ -160,6 +190,9 @@ export function PracticeSessionView() {
         : Promise.reject(new PracticeApiErrorClass(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
     }, (next) => {
       clearPracticeDraft(session.publicId, currentTask.publicId);
+      if (next.itemResult) {
+        setAnswered({ itemPublicId: currentTask.publicId, displayName: currentTask.displayName, result: next.itemResult });
+      }
       dispatch({ type: "mutation_succeeded", session: next });
     });
   }
@@ -295,6 +328,19 @@ export function PracticeSessionView() {
 
   const session = state.session;
   if (!session) return null;
+  if (answered) {
+    return (
+      <section className="session-state-card score-card" data-testid="practice-session-result">
+        <span className="eyebrow">{answered.displayName}</span>
+        <h1>{t("score.title")}</h1>
+        <ScoreView key={answered.itemPublicId} api={api} sessionId={session.publicId}
+          itemId={answered.itemPublicId} initial={answered.result} />
+        <div className="session-actions">
+          <button className="button button-primary" type="button" onClick={() => setAnswered(null)}>{t("score.continue")}</button>
+        </div>
+      </section>
+    );
+  }
   if (state.phase === "overview") return <SessionOverview session={session} busy={false} onBegin={begin} onExit={saveAndExit} t={t} />;
   if (state.phase === "completed") {
     return (
@@ -310,7 +356,9 @@ export function PracticeSessionView() {
 
   const currentTask = session.currentTask;
   if (!currentTask) return <SessionLoading t={t} />;
-  const fixture = fixtureFromPracticeTask(currentTask);
+  // Read-aloud, written-text, blank and highlight renderers draw the passage themselves; showing it here too doubles it.
+  const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens);
+  const promptText = fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
   const unsupported = !isInteractiveRenderer(currentTask.rendererKey) || !fixture;
   const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
   const currentConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
@@ -328,29 +376,32 @@ export function PracticeSessionView() {
         <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture?.instruction ?? t("ui.sessionAnswerTaskBelow")}</p></div>
         <div className="session-timer" aria-label={t("ui.sessionTimeRemaining")}>{formatRemaining(session.deadlineAt, clockNow)}</div>
       </div>
-      <div className="session-task-card">
-        <p className="session-task-prompt">{fixture?.prompt ?? t("ui.sessionUnsupported")}</p>
+      <div ref={answerCardRef} className={`session-task-card${missing === "answer" ? " field-missing" : ""}`}>
+        {promptText ? <p className="session-task-prompt">{promptText}</p> : null}
         {fixture ? <TaskRenderer fixture={fixture} rendererKey={currentTask.rendererKey} value={currentDraft}
           sessionPublicId={session.publicId} itemPublicId={currentTask.publicId}
           onUploadRecording={uploadRecording}
           disabled={state.phase === "submitting" || unsupported}
           onChange={(value) => {
+            setMissing(null);
             setDraftTaskId(currentTask.publicId);
             setDraft(value);
             savePracticeDraft(session.publicId, currentTask.publicId, value);
           }} /> : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>}
+        {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
       </div>
       {!unsupported ? (
-        <div className="confidence-panel">
+        <div ref={confidencePanelRef} className={`confidence-panel${missing === "confidence" ? " field-missing" : ""}`}>
           <ConfidenceHint />
           <p>{t("ui.sessionConfidence")}</p>
           <div className="confidence-options" role="radiogroup">
             {(["LOW", "MEDIUM", "HIGH"] as const).map((level) => (
               <button key={level} type="button" role="radio" aria-checked={currentConfidence === level}
                 className={`confidence-option confidence-${level.toLowerCase()}${currentConfidence === level ? " confidence-selected" : ""}`}
-                disabled={state.phase === "submitting"} onClick={() => { setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{t(`ui.sessionConfidence${level.charAt(0) + level.slice(1).toLowerCase()}` as TranslationKey)}</button>
+                disabled={state.phase === "submitting"} onClick={() => { setMissing(null); setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{t(`ui.sessionConfidence${level.charAt(0) + level.slice(1).toLowerCase()}` as TranslationKey)}</button>
             ))}
           </div>
+          {missing === "confidence" ? <FieldWarning message={t("ui.sessionConfidenceRequired")} /> : null}
         </div>
       ) : null}
       {state.error ? <p className="inline-notice" role="alert">{state.error}</p> : null}
@@ -385,6 +436,10 @@ function SessionOverview({ session, busy, onBegin, onExit, t }: {
   );
 }
 
+function FieldWarning({ message }: { message: string }) {
+  return <p className="field-warning" role="alert"><AppIcon name="info" size={16} />{message}</p>;
+}
+
 function SessionLoading({ t }: { t?: (k: TranslationKey) => string }) {
   return <section className="session-state-card" role="status"><span className="loading-dot" /><p>{t ? t("ui.sessionLoading") : "Loading your practice session..."}</p></section>;
 }
@@ -410,7 +465,8 @@ function effectiveConfidence(task: { publicId: string; confidence: ResponseConfi
 }
 
 function hasAnswer(value: Record<string, unknown>): boolean {
-  return Object.values(value).some((entry) => Array.isArray(entry) ? entry.length > 0
+  return Object.values(value).some((entry) => Array.isArray(entry)
+    ? entry.some((item) => typeof item !== "string" || item.trim().length > 0)
     : typeof entry === "object" && entry !== null ? Object.keys(entry).length > 0
       : typeof entry === "string" && entry.trim().length > 0);
 }

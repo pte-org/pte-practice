@@ -7,12 +7,18 @@ import { OrderRenderer } from "./OrderRenderer";
 import { RecordingRenderer } from "./RecordingRenderer";
 import type { TaskRendererProps } from "./RendererTypes";
 import { TextRenderer } from "./TextRenderer";
+import { TypeInRenderer } from "./TypeInRenderer";
 
 type RegisteredRenderer = (props: TaskRendererProps) => ReactNode;
 
 const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRenderer>> = {
-  PERSONAL_INTRODUCTION_V1: (props) => <RecordingRenderer {...props} />,
   READ_ALOUD_V1: (props) => <RecordingRenderer {...props} />,
+  REPEAT_SENTENCE_V1: (props) => <RecordingRenderer {...props} />,
+  DESCRIBE_IMAGE_V1: (props) => <RecordingRenderer {...props} />,
+  RE_TELL_LECTURE_V1: (props) => <RecordingRenderer {...props} />,
+  ANSWER_SHORT_QUESTION_V1: (props) => <RecordingRenderer {...props} />,
+  RESPOND_TO_A_SITUATION_V1: (props) => <RecordingRenderer {...props} />,
+  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <RecordingRenderer {...props} />,
   MC_READING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_READING_MULTIPLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_LISTENING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
@@ -21,10 +27,13 @@ const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRender
   RE_ORDER_PARAGRAPHS_V1: (props) => <OrderRenderer {...props} />,
   FILL_IN_THE_BLANKS_DRAG_AND_DROP_V1: (props) => <BlankRenderer {...props} />,
   FILL_IN_THE_BLANKS_DROPDOWN_V1: (props) => <BlankRenderer {...props} />,
+  FILL_IN_THE_BLANKS_TYPE_IN_V1: (props) => <TypeInRenderer {...props} />,
   HIGHLIGHT_CORRECT_SUMMARY_V1: (props) => <HighlightRenderer {...props} />,
   HIGHLIGHT_INCORRECT_WORDS_V1: (props) => <HighlightRenderer {...props} />,
   SUMMARIZE_WRITTEN_TEXT_V1: (props) => <TextRenderer {...props} />,
   WRITE_ESSAY_V1: (props) => <TextRenderer {...props} />,
+  SUMMARIZE_SPOKEN_TEXT_V1: (props) => <TextRenderer {...props} />,
+  WRITE_FROM_DICTATION_V1: (props) => <TextRenderer {...props} />,
 };
 
 export function renderTask(key: AllowlistedRendererKey | null, props: TaskRendererProps): ReactNode | null {
