@@ -6,8 +6,9 @@ describe("practice catalog presentation order", () => {
   it("keeps the complete fallback catalog visible", () => {
     const tasks = flattenCatalogTasks(PREVIEW_CATALOG.sections);
 
-    expect(tasks).toHaveLength(24);
-    expect(tasks.find((task) => task.code === "WRITE_EMAIL")?.availability).toBe("UNAVAILABLE");
+    expect(tasks).toHaveLength(22);
+    expect(tasks.map((task) => task.code)).not.toContain("WRITE_EMAIL");
+    expect(tasks.map((task) => task.code)).not.toContain("PERSONAL_INTRODUCTION");
   });
 
   it("uses the PTE section and task order", () => {
@@ -19,8 +20,7 @@ describe("practice catalog presentation order", () => {
       "READING",
       "LISTENING",
     ]);
-    expect(sections[0]?.taskTypes.slice(0, 4).map((task) => task.code)).toEqual([
-      "PERSONAL_INTRODUCTION",
+    expect(sections[0]?.taskTypes.slice(0, 3).map((task) => task.code)).toEqual([
       "READ_ALOUD",
       "REPEAT_SENTENCE",
       "DESCRIBE_IMAGE",

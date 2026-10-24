@@ -11,15 +11,20 @@ export interface PracticeTaskFixture {
   paragraphs?: { id: string; text: string }[];
   tokens?: { id: string; text: string }[];
   text?: string;
+  /** Shared word bank (drag and drop). */
   blankOptions?: string[];
+  /** Per-gap choices keyed by gap index (dropdown). */
+  blankOptionsByIndex?: Record<string, string[]>;
+  audioUrl?: string | null;
+  imageUrl?: string | null;
+  /** The question references prompt media; a missing URL then means the media failed to load. */
+  audioExpected?: boolean;
+  imageExpected?: boolean;
+  minWords?: number | null;
+  maxWords?: number | null;
 }
 
 const fixtures: Record<string, PracticeTaskFixture> = {
-  PERSONAL_INTRODUCTION: {
-    taskCode: "PERSONAL_INTRODUCTION",
-    prompt: "Introduce yourself and talk about your interests or study plans.",
-    instruction: "Speak clearly. Your response is not scored.",
-  },
   READ_ALOUD: {
     taskCode: "READ_ALOUD",
     prompt: "Read the text aloud when you are ready.",
@@ -31,10 +36,10 @@ const fixtures: Record<string, PracticeTaskFixture> = {
     prompt: "Read the text and choose the best answer.",
     instruction: "Select one response.",
     options: [
-      { id: "a", label: "It explains a recent change." },
-      { id: "b", label: "It compares two travel options." },
-      { id: "c", label: "It describes a scientific process." },
-      { id: "d", label: "It gives instructions for a new service." },
+      { id: "0", label: "It explains a recent change." },
+      { id: "1", label: "It compares two travel options." },
+      { id: "2", label: "It describes a scientific process." },
+      { id: "3", label: "It gives instructions for a new service." },
     ],
   },
   MC_READING_MULTIPLE: {
@@ -42,64 +47,64 @@ const fixtures: Record<string, PracticeTaskFixture> = {
     prompt: "Which statements are supported by the passage?",
     instruction: "Select all correct responses.",
     options: [
-      { id: "a", label: "The project began as a local experiment." },
-      { id: "b", label: "The team measured results over time." },
-      { id: "c", label: "The project was cancelled immediately." },
-      { id: "d", label: "The findings changed the final plan." },
+      { id: "0", label: "The project began as a local experiment." },
+      { id: "1", label: "The team measured results over time." },
+      { id: "2", label: "The project was cancelled immediately." },
+      { id: "3", label: "The findings changed the final plan." },
     ],
   },
   RE_ORDER_PARAGRAPHS: {
     taskCode: "RE_ORDER_PARAGRAPHS",
     prompt: "Re-order the paragraphs to create a logical passage.",
     paragraphs: [
-      { id: "p1", text: "As a result, the library extended its opening hours." },
-      { id: "p2", text: "The community survey showed that many readers worked late." },
-      { id: "p3", text: "The library then reviewed its schedule and staffing." },
-      { id: "p4", text: "The change made evening visits much more convenient." },
+      { id: "0", text: "As a result, the library extended its opening hours." },
+      { id: "1", text: "The community survey showed that many readers worked late." },
+      { id: "2", text: "The library then reviewed its schedule and staffing." },
+      { id: "3", text: "The change made evening visits much more convenient." },
     ],
   },
   FILL_IN_THE_BLANKS_DRAG_AND_DROP: {
     taskCode: "FILL_IN_THE_BLANKS_DRAG_AND_DROP",
     prompt: "Complete the text by placing each word in the correct blank.",
-    text: "Good planning can ___ uncertainty and make a project more ___.",
+    text: "Good planning can {{0}} uncertainty and make a project more {{1}}.",
     blankOptions: ["reduce", "efficient", "increase", "difficult"],
   },
   FILL_IN_THE_BLANKS_DROPDOWN: {
     taskCode: "FILL_IN_THE_BLANKS_DROPDOWN",
     prompt: "Choose the best word for each blank.",
-    text: "Public transport is ___ when services are frequent and ___ to use.",
-    blankOptions: ["reliable", "easy", "rare", "complex"],
+    text: "Public transport is {{0}} when services are frequent and {{1}} to use.",
+    blankOptionsByIndex: { "0": ["reliable", "rare"], "1": ["easy", "complex"] },
   },
   HIGHLIGHT_CORRECT_SUMMARY: {
     taskCode: "HIGHLIGHT_CORRECT_SUMMARY",
     prompt: "Select the sentence that best summarizes the recording.",
     options: [
-      { id: "a", label: "The speaker explains how small habits can improve concentration." },
-      { id: "b", label: "The speaker announces a new examination timetable." },
-      { id: "c", label: "The speaker compares three kinds of transport." },
+      { id: "0", label: "The speaker explains how small habits can improve concentration." },
+      { id: "1", label: "The speaker announces a new examination timetable." },
+      { id: "2", label: "The speaker compares three kinds of transport." },
     ],
   },
   SELECT_MISSING_WORD: {
     taskCode: "SELECT_MISSING_WORD",
     prompt: "Listen and select the word that completes the sentence.",
     options: [
-      { id: "a", label: "benefit" },
-      { id: "b", label: "pattern" },
-      { id: "c", label: "distance" },
+      { id: "0", label: "benefit" },
+      { id: "1", label: "pattern" },
+      { id: "2", label: "distance" },
     ],
   },
   HIGHLIGHT_INCORRECT_WORDS: {
     taskCode: "HIGHLIGHT_INCORRECT_WORDS",
     prompt: "Select the words that do not match the recording.",
     tokens: [
-      { id: "t1", text: "The" },
-      { id: "t2", text: "researchers" },
-      { id: "t3", text: "carefully" },
-      { id: "t4", text: "recorded" },
-      { id: "t5", text: "their" },
-      { id: "t6", text: "results" },
-      { id: "t7", text: "each" },
-      { id: "t8", text: "week." },
+      { id: "0", text: "The" },
+      { id: "1", text: "researchers" },
+      { id: "2", text: "carefully" },
+      { id: "3", text: "recorded" },
+      { id: "4", text: "their" },
+      { id: "5", text: "results" },
+      { id: "6", text: "each" },
+      { id: "7", text: "week." },
     ],
   },
   SUMMARIZE_WRITTEN_TEXT: {
@@ -114,7 +119,7 @@ const fixtures: Record<string, PracticeTaskFixture> = {
   FILL_IN_THE_BLANKS_TYPE_IN: {
     taskCode: "FILL_IN_THE_BLANKS_TYPE_IN",
     prompt: "Listen to the recording and type the missing words.",
-    text: "The speaker explains why regular practice improves long-term memory.",
+    text: "The speaker explains why {{0}} practice improves {{1}} memory.",
   },
   WRITE_FROM_DICTATION: {
     taskCode: "WRITE_FROM_DICTATION",
