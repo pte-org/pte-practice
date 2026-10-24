@@ -185,11 +185,6 @@ export interface PracticeProgress {
   hasMore: boolean;
 }
 
-export interface PracticeChallenge {
-  challengeId: string;
-  expiresAt: string;
-}
-
 export function normalizeEntitlementResponse(value: unknown): PracticeEntitlement {
   const record = asRecord(value);
   const student = asRecord(record.student);

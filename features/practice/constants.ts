@@ -3,8 +3,8 @@ import type { IconName } from "../../common/components";
 import type { CatalogAvailability } from "./contracts";
 
 export const API_PATHS = {
-  requestChallenge: "/api/v1/auth/practice/request",
-  verifyChallenge: "/api/v1/auth/practice/verify",
+  login: "/api/v1/auth/login",
+  changePassword: "/api/v1/auth/change-password",
   refreshToken: "/api/v1/auth/refresh",
   entitlement: "/api/v1/student/practice/entitlement",
   catalog: "/api/v1/student/practice/catalog",

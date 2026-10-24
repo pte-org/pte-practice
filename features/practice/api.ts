@@ -1,7 +1,6 @@
 import { API_ERROR_TEXT, API_PATHS } from "./constants";
 import type {
   PracticeCatalog,
-  PracticeChallenge,
   PracticeEntitlement,
   PracticeItemResult,
   PracticeReview,
@@ -38,17 +37,15 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
 
 export function createPracticeApiClient() {
   return {
-    requestChallenge: (email: string) => request<PracticeChallenge>(API_PATHS.requestChallenge, {
-      method: "POST",
-      body: { email },
-      allowRefresh: false,
-    }),
-    verifyChallenge: (body: { challengeId: string; email: string; code: string }) =>
-      request<PracticeSessionTokens>(API_PATHS.verifyChallenge, {
+    // The roster account an organization issued; no session exists yet, so a 401 is a bad password, not a stale token.
+    login: (body: { username: string; password: string }) =>
+      request<PracticeSessionTokens>(API_PATHS.login, {
         method: "POST",
         body,
         allowRefresh: false,
       }),
+    changePassword: (body: { currentPassword: string; newPassword: string }): Promise<void> =>
+      request<void>(API_PATHS.changePassword, { method: "POST", body }).then(() => undefined),
     getEntitlement: async (): Promise<PracticeEntitlement> => {
       const response = await request<unknown>(API_PATHS.entitlement);
       return normalizeEntitlementResponse(response);
