@@ -505,6 +505,8 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
 .review-card-heading h2 { margin-top: 4px; }
 .review-prompt { color: var(--muted-strong); white-space: pre-wrap; }
 .review-answer { margin: 0; overflow: auto; padding: 13px; border-radius: 9px; background: var(--surface-raised); color: var(--muted-strong); font: 0.78rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
+.review-answer-text, .review-answer-list, .review-answer-empty { font: inherit; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; }
+.review-answer-list { list-style: none; display: grid; gap: 6px; }
 .score-panel { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-raised); text-align: left; }
 .score-panel > p, .score-panel > small { justify-self: center; text-align: center; color: var(--muted); }
 .score-panel-compact { justify-items: stretch; padding: 14px; }

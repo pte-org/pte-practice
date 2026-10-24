@@ -111,6 +111,9 @@ export interface LocaleDict {
     continue: string;
     mediaUnavailable: string;
     yourAnswer: string;
+    answerNotSubmitted: string;
+    answerRecorded: string;
+    answerSeconds: string;
     notScoredYet: string;
     audioPrompt: string;
     imagePrompt: string;

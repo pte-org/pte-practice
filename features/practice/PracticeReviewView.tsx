@@ -3,9 +3,11 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { LoadingState } from "@/common/components";
+import { useTranslation } from "@/common/i18n";
 import { PRACTICE_ROUTES, UI_TEXT } from "./constants";
 import { createPracticeApiClient, PracticeApiError, type PracticeApiClient } from "./api";
 import type { PracticeReview, PracticeReviewItem } from "./contracts";
+import { describeSavedAnswer } from "./review-answer";
 import { ScoreView } from "./ScoreView";
 
 export function PracticeReviewView() {
@@ -49,16 +51,38 @@ function ReviewItem({ item, sessionId, api }: { item: PracticeReviewItem; sessio
       <div className="review-card-heading"><div><span className="eyebrow">{item.section}</span><h2>{item.displayName}</h2></div>
         <span className="state-badge state-badge-ready">{item.status}</span></div>
       {item.promptText ? <p className="review-prompt">{item.promptText}</p> : null}
-      <pre className="review-answer">{parseAnswer(item.savedPayload)}</pre>
+      <SavedAnswerView item={item} />
       {item.status === "ANSWERED"
         ? <ScoreView api={api} sessionId={sessionId} itemId={item.publicId} initial={null} compact /> : null}
     </article>
   );
 }
 
-function parseAnswer(payload: string | null): string {
-  if (!payload) return UI_TEXT.reviewSubmittedNoAnswer;
-  try { return JSON.stringify(JSON.parse(payload), null, 2); } catch { return payload; }
+function SavedAnswerView({ item }: { item: PracticeReviewItem }) {
+  const { t } = useTranslation();
+  const answer = describeSavedAnswer(item.savedPayload, item.promptText, item.options);
+  switch (answer.kind) {
+    case "empty":
+      return <p className="review-answer review-answer-empty">{t("score.answerNotSubmitted")}</p>;
+    case "audio":
+      return (
+        <p className="review-answer review-answer-text">
+          {t("score.answerRecorded")}{answer.seconds != null ? ` · ${answer.seconds} ${t("score.answerSeconds")}` : ""}
+        </p>
+      );
+    case "text":
+      return <p className="review-answer review-answer-text">{answer.text}</p>;
+    case "entries":
+      return (
+        <ol className="review-answer review-answer-list">
+          {answer.entries.map((entry, index) => (
+            <li key={index}>{entry.label ? <strong>{entry.label}. </strong> : null}{entry.value || "—"}</li>
+          ))}
+        </ol>
+      );
+    default:
+      return <pre className="review-answer">{answer.text}</pre>;
+  }
 }
 
 function ReviewState({ message }: { message: string }) {

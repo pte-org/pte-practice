@@ -61,7 +61,6 @@ export const UI_TEXT = {
   reviewRequiredSession: "A practice session is required.",
   reviewLoadError: "We could not load this review.",
   reviewLoading: "Loading your practice review...",
-  reviewSubmittedNoAnswer: "No answer submitted.",
   sessionConfidence: "How confident are you in this answer?",
   confidenceHintTitle: "Rate your confidence",
   confidenceHintDescription: "Your confidence rating is saved with this response to help you understand your learning patterns. It does not change your score.",

@@ -8,6 +8,7 @@ import type {
   PracticeProgress,
   PracticeSession,
   PracticeSessionTokens,
+  PracticeTaskContentOption,
 } from "./contracts";
 import type { PracticeAudioUploadGrant } from "./media/contracts";
 import {
@@ -119,7 +120,8 @@ export function createPracticeApiClient() {
           section: typeof item.section === "string" ? item.section : "UNKNOWN", status,
           promptText: typeof item.promptText === "string" ? item.promptText : null,
           savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
-          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null }];
+          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
+          options: reviewOptions(item.options) }];
       }) : [];
       return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items };
     },
@@ -167,6 +169,14 @@ function requireItemResult(value: unknown): PracticeItemResult {
   const result = normalizePracticeItemResult(value);
   if (!result) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_ITEM_RESULT");
   return result;
+}
+
+function reviewOptions(value: unknown): PracticeTaskContentOption[] {
+  return Array.isArray(value) ? value.flatMap((entry) => {
+    const option = asRecord(entry);
+    if (typeof option.text !== "string" || typeof option.orderIndex !== "number") return [];
+    return [{ text: option.text, orderIndex: option.orderIndex, blankIndex: typeof option.blankIndex === "number" ? option.blankIndex : null }];
+  }) : [];
 }
 
 function requireSession(value: unknown): PracticeSession {

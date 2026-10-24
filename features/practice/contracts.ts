@@ -101,6 +101,7 @@ export interface PracticeReviewItem {
   promptText: string | null;
   savedPayload: string | null;
   rendererKey: string | null;
+  options: PracticeTaskContentOption[];
 }
 
 export interface PracticeReview {
