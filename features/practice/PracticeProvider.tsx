@@ -14,7 +14,7 @@ import { COMMON_TEXT } from "@/common/constants";
 import { createPracticeApiClient, PracticeApiError } from "./api";
 import type { EntitlementState, PracticeCatalog, PracticeEntitlement } from "./contracts";
 import { PREVIEW_CATALOG } from "./preview-catalog";
-import { clearPracticeSession, getPracticeSession } from "./session-storage";
+import { clearPracticeDrafts, clearPracticeSession, getPracticeSession } from "./session-storage";
 
 type AuthStatus = "loading" | "authenticated" | "signed-out";
 type DataStatus = "idle" | "loading" | "ready" | "error";
@@ -43,13 +43,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<PracticeApiError | null>(null);
   const lastEntitlementRefresh = useRef(0);
 
-  const signOut = useCallback(() => {
+  // An expired or rejected token ends the session but keeps unsent drafts for the same student's next sign-in.
+  const endSession = useCallback(() => {
     clearPracticeSession();
     setAuthStatus("signed-out");
     setEntitlement(null);
     setEntitlementStatus("idle");
     setCatalogStatus("idle");
   }, []);
+
+  const signOut = useCallback(() => {
+    clearPracticeDrafts();
+    endSession();
+  }, [endSession]);
 
   const refreshEntitlement = useCallback(async () => {
     if (authStatus !== "authenticated") return;
@@ -66,9 +72,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       setEntitlementStatus("error");
       setEntitlement(null);
       setError(apiError);
-      if (apiError.status === 401) signOut();
+      if (apiError.status === 401) endSession();
     }
-  }, [authStatus, signOut]);
+  }, [authStatus, endSession]);
 
   const refresh = useCallback(async () => {
     if (authStatus !== "authenticated") return;
@@ -89,7 +95,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       setEntitlement(null);
       setEntitlementStatus("error");
       setError(apiError);
-      if (apiError.status === 401) signOut();
+      if (apiError.status === 401) endSession();
     }
 
     if (catalogResult.status === "fulfilled") {
@@ -102,7 +108,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         setError(toPracticeApiError(catalogResult.reason));
       }
     }
-  }, [authStatus, signOut]);
+  }, [authStatus, endSession]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

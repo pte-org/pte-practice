@@ -9,10 +9,11 @@ export interface PracticeLocalDraft {
   savedAt: number;
 }
 
+// Tokens live in localStorage so a new tab stays signed in; signing out clears them with every saved draft.
 export function getPracticeSession(): PracticeSessionTokens | null {
-  if (typeof window === "undefined" || !window.sessionStorage) return null;
+  if (typeof window === "undefined" || !window.localStorage) return null;
   try {
-    const raw = window.sessionStorage.getItem(SESSION_KEY);
+    const raw = window.localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PracticeSessionTokens>;
     if (typeof parsed.accessToken !== "string" || typeof parsed.refreshToken !== "string") return null;
@@ -30,14 +31,25 @@ export function getPracticeSession(): PracticeSessionTokens | null {
 }
 
 export function savePracticeSession(tokens: PracticeSessionTokens): void {
-  if (typeof window === "undefined" || !window.sessionStorage) return;
+  if (typeof window === "undefined" || !window.localStorage) return;
   const expiresAt = tokens.expiresAt ?? Date.now() + tokens.expiresInSeconds * 1000;
-  window.sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...tokens, expiresAt }));
+  window.localStorage.setItem(SESSION_KEY, JSON.stringify({ ...tokens, expiresAt }));
 }
 
 export function clearPracticeSession(): void {
-  if (typeof window === "undefined" || !window.sessionStorage) return;
-  window.sessionStorage.removeItem(SESSION_KEY);
+  if (typeof window === "undefined" || !window.localStorage) return;
+  window.localStorage.removeItem(SESSION_KEY);
+}
+
+/** Explicit sign-out only: a shared computer must not keep the previous student's unsent answers. */
+export function clearPracticeDrafts(): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  const draftKeys: string[] = [];
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (key?.startsWith(DRAFT_KEY_PREFIX)) draftKeys.push(key);
+  }
+  draftKeys.forEach((key) => window.localStorage.removeItem(key));
 }
 
 export function getPracticeDraft(sessionPublicId: string, itemPublicId: string): PracticeLocalDraft | null {
