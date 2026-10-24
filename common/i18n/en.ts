@@ -48,6 +48,7 @@ export const en: LocaleDict = {
     confidenceHintDescription: "Your confidence rating is saved with this response to help you understand your learning patterns. It does not change your score.",
     confidenceHintDismiss: "Got it",
     sessionNoAnswer: "Choose or enter an answer before submitting.",
+    sessionConfidenceRequired: "Rate your confidence before submitting.",
     progressEmptyTitle: "Your progress will appear here",
     progressEmptyDescription: "Complete a practice session to start building your history.",
     progressLoading: "Loading your progress…",

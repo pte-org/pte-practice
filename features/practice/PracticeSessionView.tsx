@@ -49,6 +49,9 @@ export function PracticeSessionView() {
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<ResponseConfidence | null>(null);
   const [answered, setAnswered] = useState<AnsweredResult | null>(null);
+  const [missing, setMissing] = useState<"answer" | "confidence" | null>(null);
+  const answerCardRef = useRef<HTMLDivElement>(null);
+  const confidencePanelRef = useRef<HTMLDivElement>(null);
   const [hasRetryAction, setHasRetryAction] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const sessionTask = state.session?.currentTask;
@@ -70,6 +73,11 @@ export function PracticeSessionView() {
   useEffect(() => {
     sessionRef.current = state.session;
   }, [state.session]);
+
+  useEffect(() => {
+    const target = missing === "answer" ? answerCardRef.current : missing === "confidence" ? confidencePanelRef.current : null;
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [missing]);
 
   const loadSession = useCallback(async () => {
     if (sessionId) {
@@ -102,6 +110,7 @@ export function PracticeSessionView() {
     initialized.current = requestKey;
     // This view stays mounted across tasks; the previous task's score must not leak into the next session.
     setAnswered(null);
+    setMissing(null);
     dispatch({ type: "loading" });
     void loadSession()
       .then((session) => {
@@ -160,14 +169,16 @@ export function PracticeSessionView() {
     if (!session || !currentTask) return;
     const answerDraft = effectiveDraft(currentTask, draftTaskId, draft);
     const answerConfidence = effectiveConfidence(currentTask, draftTaskId, confidence);
+    // Missing input is a warning on the form, not a failed session: the student keeps their draft and fixes it in place.
     if (!hasAnswer(answerDraft)) {
-      dispatch({ type: "failed", message: t("ui.sessionNoAnswer") });
+      setMissing("answer");
       return;
     }
     if (!answerConfidence) {
-      dispatch({ type: "failed", message: t("ui.sessionConfidence") });
+      setMissing("confidence");
       return;
     }
+    setMissing(null);
     await runMutation(`answer:${currentTask.publicId}`, (key) => {
       const latest = sessionRef.current;
       return latest
@@ -365,29 +376,32 @@ export function PracticeSessionView() {
         <div><span className="eyebrow">{currentTask.section}</span><h1>{currentTask.displayName}</h1><p>{fixture?.instruction ?? t("ui.sessionAnswerTaskBelow")}</p></div>
         <div className="session-timer" aria-label={t("ui.sessionTimeRemaining")}>{formatRemaining(session.deadlineAt, clockNow)}</div>
       </div>
-      <div className="session-task-card">
+      <div ref={answerCardRef} className={`session-task-card${missing === "answer" ? " field-missing" : ""}`}>
         {promptText ? <p className="session-task-prompt">{promptText}</p> : null}
         {fixture ? <TaskRenderer fixture={fixture} rendererKey={currentTask.rendererKey} value={currentDraft}
           sessionPublicId={session.publicId} itemPublicId={currentTask.publicId}
           onUploadRecording={uploadRecording}
           disabled={state.phase === "submitting" || unsupported}
           onChange={(value) => {
+            setMissing(null);
             setDraftTaskId(currentTask.publicId);
             setDraft(value);
             savePracticeDraft(session.publicId, currentTask.publicId, value);
           }} /> : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>}
+        {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
       </div>
       {!unsupported ? (
-        <div className="confidence-panel">
+        <div ref={confidencePanelRef} className={`confidence-panel${missing === "confidence" ? " field-missing" : ""}`}>
           <ConfidenceHint />
           <p>{t("ui.sessionConfidence")}</p>
           <div className="confidence-options" role="radiogroup">
             {(["LOW", "MEDIUM", "HIGH"] as const).map((level) => (
               <button key={level} type="button" role="radio" aria-checked={currentConfidence === level}
                 className={`confidence-option confidence-${level.toLowerCase()}${currentConfidence === level ? " confidence-selected" : ""}`}
-                disabled={state.phase === "submitting"} onClick={() => { setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{t(`ui.sessionConfidence${level.charAt(0) + level.slice(1).toLowerCase()}` as TranslationKey)}</button>
+                disabled={state.phase === "submitting"} onClick={() => { setMissing(null); setDraftTaskId(currentTask.publicId); setConfidence(level); }}>{t(`ui.sessionConfidence${level.charAt(0) + level.slice(1).toLowerCase()}` as TranslationKey)}</button>
             ))}
           </div>
+          {missing === "confidence" ? <FieldWarning message={t("ui.sessionConfidenceRequired")} /> : null}
         </div>
       ) : null}
       {state.error ? <p className="inline-notice" role="alert">{state.error}</p> : null}
@@ -420,6 +434,10 @@ function SessionOverview({ session, busy, onBegin, onExit, t }: {
         <button className="text-button" type="button" disabled={busy} onClick={() => void onExit()}>{t("ui.sessionSaveExit")}</button></div>
     </section>
   );
+}
+
+function FieldWarning({ message }: { message: string }) {
+  return <p className="field-warning" role="alert"><AppIcon name="info" size={16} />{message}</p>;
 }
 
 function SessionLoading({ t }: { t?: (k: TranslationKey) => string }) {

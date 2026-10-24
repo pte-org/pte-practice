@@ -478,6 +478,9 @@ h3 { font-size: 0.98rem; line-height: 1.25; }
 .task-unsupported p { color: var(--muted); font-size: 0.82rem; }
 .confidence-panel { display: grid; gap: 12px; margin-top: 14px; padding: 16px 18px; }
 .confidence-panel > p { color: var(--muted-strong); font-size: 0.82rem; font-weight: 700; }
+.session-task-card.field-missing, .confidence-panel.field-missing { border-color: var(--red); box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 18%, transparent); }
+.confidence-panel > .field-warning { color: var(--red); font-size: 0.9rem; }
+.field-warning { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--red-soft); color: var(--red); font-size: 0.9rem; font-weight: 700; }
 .confidence-hint { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--accent) 0.32, transparent); border-radius: 10px; background: color-mix(in srgb, var(--accent) 0.08, transparent); }
 .confidence-hint strong { font-size: 0.78rem; }
 .confidence-hint p { margin-top: 3px; color: var(--muted); font-size: 0.72rem; line-height: 1.45; }

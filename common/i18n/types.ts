@@ -48,6 +48,7 @@ export interface LocaleDict {
     confidenceHintDescription: string;
     confidenceHintDismiss: string;
     sessionNoAnswer: string;
+    sessionConfidenceRequired: string;
     progressEmptyTitle: string;
     progressEmptyDescription: string;
     progressLoading: string;

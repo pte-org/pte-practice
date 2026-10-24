@@ -48,6 +48,7 @@ export const vi: LocaleDict = {
     confidenceHintDescription: "Mức độ tự tin của bạn được lưu lại cùng với câu trả lời để giúp bạn hiểu được mô hình học tập của mình. Nó không ảnh hưởng đến điểm số của bạn.",
     confidenceHintDismiss: "Đã hiểu",
     sessionNoAnswer: "Hãy chọn hoặc nhập câu trả lời trước khi nộp bài.",
+    sessionConfidenceRequired: "Hãy chọn mức độ tự tin trước khi nộp bài.",
     progressEmptyTitle: "Tiến trình của bạn sẽ hiển thị tại đây",
     progressEmptyDescription: "Hoàn thành một phiên luyện tập để bắt đầu xây dựng lịch sử của bạn.",
     progressLoading: "Đang tải tiến trình...",
