@@ -94,6 +94,37 @@ export interface LocaleDict {
     sessionConfidenceMedium: string;
     sessionConfidenceHigh: string;
   };
+  score: {
+    title: string;
+    outOf: string;
+    scoring: string;
+    scoringHint: string;
+    timeout: string;
+    checkAgain: string;
+    failed: string;
+    retry: string;
+    retrying: string;
+    retryLimit: string;
+    subScores: string;
+    feedback: string;
+    transcript: string;
+    continue: string;
+    mediaUnavailable: string;
+    yourAnswer: string;
+    notScoredYet: string;
+    audioPrompt: string;
+    imagePrompt: string;
+    wordCount: string;
+    typeInPlaceholder: string;
+    blankLabel: string;
+    chooseWord: string;
+    dropWord: string;
+    wordBank: string;
+    transcriptWords: string;
+    moveUp: string;
+    moveDown: string;
+    answerPlaceholder: string;
+  };
   apiError: {
     invalidCatalog: string;
     invalidSession: string;
