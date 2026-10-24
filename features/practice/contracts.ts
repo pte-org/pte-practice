@@ -70,55 +70,25 @@ export interface PracticeTaskContent {
   maxWordCount: number | null;
   audioPromptRef?: string | null;
   imagePromptRef?: string | null;
+  audioUrl?: string | null;
+  imageUrl?: string | null;
   options: PracticeTaskContentOption[];
 }
 
-export type PracticeExplanationStatus =
-  | "WAITING_EVIDENCE"
-  | "QUEUED"
-  | "RUNNING"
-  | "RETRY_WAIT"
-  | "AVAILABLE"
-  | "UNAVAILABLE"
-  | "FAILED"
-  | "CANCELLED";
+export type PracticeScoringState = "NONE" | "SCORING" | "SCORED" | "FAILED";
 
-export interface PracticeRubricFeedback {
-  criterionId: string;
-  level: string;
-  evidenceCoverage: "FULL" | "LIMITED" | "NOT_ASSESSABLE" | string;
-  feedback: string;
-  evidence: string[];
-}
-
-export interface PracticeExplanation {
-  publicId: string | null;
+export interface PracticeItemResult {
   itemPublicId: string;
-  language: "vi" | "en";
-  status: PracticeExplanationStatus;
-  summary: string | null;
-  strengths: string[];
-  improvements: string[];
-  limitations: string[];
-  rubricFeedback: PracticeRubricFeedback[];
-  rubricVersion: string;
-  requestedModel: string | null;
-  actualModelVersion: string | null;
-  submissionHash: string | null;
-  generatedAt: string | null;
-  failureCode?: string | null;
-  canRetry?: boolean;
-  attemptCount?: number;
-  nextAttemptAt?: string | null;
-  objectiveScore?: number | null;
-  objectiveEvaluatorVersion?: string | null;
-  objectiveResultHash?: string | null;
-  objectiveEvidenceIdentityHash?: string | null;
-  formWordCount?: number | null;
-  formStatus?: string | null;
-  formEvaluatorVersion?: string | null;
-  formResultHash?: string | null;
-  formEvidenceIdentityHash?: string | null;
+  taskCode: string;
+  state: PracticeScoringState;
+  score: number | null;
+  scoreStatus: string | null;
+  subScores: Record<string, number>;
+  feedback: string | null;
+  transcript: string | null;
+  failureCode: string | null;
+  retryable: boolean;
+  scoredAt: string | null;
 }
 
 export interface PracticeReviewItem {
@@ -131,14 +101,6 @@ export interface PracticeReviewItem {
   promptText: string | null;
   savedPayload: string | null;
   rendererKey: string | null;
-  objectiveScore: number | null;
-  objectiveEvaluatedAt: string | null;
-  aiScore: number | null;
-  aiScoreStatus: string | null;
-  aiSubScores: Record<string, number>;
-  aiProvider: string | null;
-  aiModel: string | null;
-  aiScoredAt: string | null;
 }
 
 export interface PracticeReview {
@@ -190,6 +152,7 @@ export interface PracticeSession {
   totalItemCount: number;
   sections: PracticeCatalogSection[];
   currentTask: PracticeTaskResponse | null;
+  itemResult: PracticeItemResult | null;
 }
 
 export interface PracticeProgressEntry {
@@ -294,7 +257,34 @@ export function normalizePracticeSessionResponse(value: unknown): PracticeSessio
       .map(normalizeCatalogSection)
       .filter((section): section is PracticeCatalogSection => section !== null),
     currentTask: normalizePracticeTask(record.currentTask),
+    itemResult: normalizePracticeItemResult(record.itemResult),
   };
+}
+
+export function normalizePracticeItemResult(value: unknown): PracticeItemResult | null {
+  const record = asRecord(value);
+  const itemPublicId = asString(record.itemPublicId, "");
+  const state = record.state === "NONE" || record.state === "SCORING" || record.state === "SCORED"
+    || record.state === "FAILED" ? record.state : null;
+  if (!itemPublicId || !state) return null;
+  return {
+    itemPublicId,
+    taskCode: asString(record.taskCode, ""),
+    state,
+    score: asNullableNumber(record.score),
+    scoreStatus: asNullableString(record.scoreStatus),
+    subScores: normalizeSubScores(record.subScores),
+    feedback: asNullableString(record.feedback),
+    transcript: asNullableString(record.transcript),
+    failureCode: asNullableString(record.failureCode),
+    retryable: Boolean(record.retryable),
+    scoredAt: asNullableString(record.scoredAt),
+  };
+}
+
+export function normalizeSubScores(value: unknown): Record<string, number> {
+  return Object.fromEntries(Object.entries(asRecord(value))
+    .filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1])));
 }
 
 export function normalizePracticeProgressResponse(value: unknown): PracticeProgress {
@@ -436,13 +426,17 @@ function normalizePracticeTaskContent(value: unknown): PracticeTaskContent | nul
     });
   const audioPromptRef = asNullableString(record.audioPromptRef);
   const imagePromptRef = asNullableString(record.imagePromptRef);
-  if (!promptText && options.length === 0 && !audioPromptRef && !imagePromptRef) return null;
+  const audioUrl = asNullableString(record.audioUrl);
+  const imageUrl = asNullableString(record.imageUrl);
+  if (!promptText && options.length === 0 && !audioPromptRef && !imagePromptRef && !audioUrl && !imageUrl) return null;
   return {
     promptText,
     minWordCount: asNullableNumber(record.minWordCount),
     maxWordCount: asNullableNumber(record.maxWordCount),
     audioPromptRef,
     imagePromptRef,
+    audioUrl,
+    imageUrl,
     options,
   };
 }
