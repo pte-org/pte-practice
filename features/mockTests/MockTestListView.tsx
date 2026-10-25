@@ -6,7 +6,9 @@ import { AppIcon, LoadingState, Modal, ProgressRing } from "@/common/components"
 import { useTranslation } from "@/common/i18n";
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { createPracticeApiClient } from "@/features/practice/api";
+import { mockTarget } from "@/features/practice/mode/mode-target";
 import { practiceMockTestUrl } from "@/features/practice/mode/practice-url";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import type { MockTest } from "./mock-test-contracts";
 import { formatEstimatedDuration, mockTestAction } from "./mock-test-row";
@@ -20,6 +22,7 @@ export function MockTestListView() {
   const api = useMemo(() => createPracticeApiClient(), []);
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [confirmRestart, setConfirmRestart] = useState<MockTest | null>(null);
+  const { openForMock, dialog } = usePracticeStart();
 
   useEffect(() => {
     if (authStatus !== "authenticated") return;
@@ -63,7 +66,9 @@ export function MockTestListView() {
                   ? <button className="text-button" type="button" disabled={!isPracticeUnlocked}
                       onClick={() => setConfirmRestart(test)}>{t("mockTests.startOver")}</button> : null}
                 <button className="button button-primary button-pill" type="button" disabled={!isPracticeUnlocked}
-                  onClick={() => router.push(practiceMockTestUrl(test.publicId))}>
+                  onClick={() => (action === "CONTINUE"
+                    ? router.push(practiceMockTestUrl(test.publicId))
+                    : openForMock(mockTarget(test.publicId, test.title)))}>
                   <AppIcon name={action === "RETAKE" ? "retake" : "play"} size={16} />
                   {" "}{t(action === "CONTINUE" ? "mockTests.continue" : action === "RETAKE" ? "mockTests.retake" : "mockTests.start")}
                 </button>
@@ -78,13 +83,14 @@ export function MockTestListView() {
           <>
             <button className="text-button" type="button" onClick={() => setConfirmRestart(null)}>{t("mode.close")}</button>
             <button className="button button-primary button-pill" type="button" onClick={() => {
-              if (confirmRestart) router.push(practiceMockTestUrl(confirmRestart.publicId, true));
+              if (confirmRestart) openForMock(mockTarget(confirmRestart.publicId, confirmRestart.title, true));
               setConfirmRestart(null);
             }}>{t("mockTests.startOver")}</button>
           </>
         )}>
         <p>{t("mockTests.startOverWarning")}</p>
       </Modal>
+      {dialog}
     </div>
   );
 }

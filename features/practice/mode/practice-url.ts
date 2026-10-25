@@ -21,9 +21,13 @@ export function practiceSkillSessionUrl(skillCode: string, preference: ModePrefe
   return `${PRACTICE_ROUTES.practiceSession}?${params.toString()}`;
 }
 
-/** Where a full mock test is opened; {@code restart} abandons an unfinished attempt and begins again. */
-export function practiceMockTestUrl(mockTestId: string, restart = false): string {
+/**
+ * Where a full mock test is opened. {@code restart} abandons an unfinished attempt and begins again; {@code mode} is
+ * chosen only when a new attempt starts (continuing keeps the attempt's own mode).
+ */
+export function practiceMockTestUrl(mockTestId: string, restart = false, mode?: ModePreference["timingMode"]): string {
   const params = new URLSearchParams({ mockTest: mockTestId });
   if (restart) params.set("restart", "1");
+  if (mode) params.set("mode", mode);
   return `${PRACTICE_ROUTES.practiceSession}?${params.toString()}`;
 }

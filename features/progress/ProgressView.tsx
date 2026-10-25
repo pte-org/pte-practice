@@ -131,7 +131,7 @@ function ProgressHistory({ entries, hasMore, t }: { entries: PracticeProgressEnt
         {entries.map((entry) => (
           <article className="progress-history-row" key={entry.sessionPublicId}>
             <div><strong>{entry.title}</strong><span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt, t)}</span></div>
-            <div className="progress-history-stat"><span>{entry.answeredItemCount}/{entry.totalItemCount} {t("ui.progressResponses")}</span><span>{entry.highConfidenceCount} {t("ui.progressHighConfidence")}</span></div>
+            <div className="progress-history-stat"><span>{entry.answeredItemCount}/{entry.totalItemCount} {t("ui.progressResponses")}</span></div>
             <span className={`state-badge state-badge-${entry.status === "IN_PROGRESS" ? "locked" : "ready"}`}>{progressStatusLabel(entry, t)}</span>
           </article>
         ))}

@@ -4,16 +4,23 @@ import { useRouter } from "next/navigation";
 import { type ReactElement, useCallback, useState } from "react";
 import { canStartPractice, type PracticeCatalogSection, type PracticeCatalogTask } from "../contracts";
 import { usePractice } from "../PracticeProvider";
-import { writeModePreference } from "./mode-preference";
+import { writeModePreference, type ModePreference } from "./mode-preference";
 import { preferenceKey, runnableTasks, skillTarget, taskTarget, type ModeTarget } from "./mode-target";
 import { PracticeModeDialog } from "./PracticeModeDialog";
-import { practiceSessionUrl, practiceSkillSessionUrl } from "./practice-url";
+import { practiceMockTestUrl, practiceSessionUrl, practiceSkillSessionUrl } from "./practice-url";
 
 interface PracticeStart {
   openFor: (task: PracticeCatalogTask) => void;
   /** Opens the dialog for every task type of a skill; {@code title} is the skill's display name. */
   openForSkill: (section: PracticeCatalogSection, title: string) => void;
+  /** Opens the timed / untimed choice for a mock test (see `mockTarget`). */
+  openForMock: (target: ModeTarget) => void;
   dialog: ReactElement;
+}
+
+/** Task and skill practice is always untimed; only a mock test can be timed. */
+function untimed(preference: ModePreference): ModePreference {
+  return { ...preference, timingMode: "UNTIMED" };
 }
 
 /**
@@ -40,11 +47,13 @@ export function usePracticeStart(): PracticeStart {
       onStart={(chosen, preference) => {
         writeModePreference(preferenceKey(chosen), preference);
         setTarget(null);
-        router.push(chosen.kind === "skill"
-          ? practiceSkillSessionUrl(chosen.code, preference)
-          : practiceSessionUrl(chosen.code, preference));
+        router.push(chosen.kind === "mock"
+          ? practiceMockTestUrl(chosen.code, chosen.restart ?? false, preference.timingMode)
+          : chosen.kind === "skill"
+            ? practiceSkillSessionUrl(chosen.code, untimed(preference))
+            : practiceSessionUrl(chosen.code, untimed(preference)));
       }} />
   );
 
-  return { openFor, openForSkill, dialog };
+  return { openFor, openForSkill, openForMock: setTarget, dialog };
 }

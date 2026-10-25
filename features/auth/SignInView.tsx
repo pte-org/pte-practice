@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AppIcon, ProductMark } from "@/common/components";
 import type { IconName } from "@/common/components";
@@ -27,7 +26,6 @@ interface PendingPasswordChange {
 }
 
 export function SignInView() {
-  const router = useRouter();
   const { t, locale, setLocale } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [pending, setPending] = useState<PendingPasswordChange | null>(null);
@@ -39,12 +37,20 @@ export function SignInView() {
       setPending({ tokens, currentPassword: password });
       return;
     }
-    router.replace(PRACTICE_ROUTES.home);
+    enterApp();
   }
 
   function handlePasswordChanged() {
     if (pending) savePracticeSession({ ...pending.tokens, mustChangePassword: false });
-    router.replace(PRACTICE_ROUTES.home);
+    enterApp();
+  }
+
+  /**
+   * A full page load into the app rather than a client navigation: the student shell then starts from the stored
+   * session, and a stalled client transition can no longer leave the form stuck on "Signing in...".
+   */
+  function enterApp() {
+    window.location.replace(PRACTICE_ROUTES.home);
   }
 
   function handleCancelChange() {

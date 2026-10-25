@@ -25,7 +25,10 @@ export function PracticeModeDialog({ target, onClose, onStart }: PracticeModeDia
 function ModeChoice({ target, onClose, onStart }: Omit<PracticeModeDialogProps, "target"> & { target: ModeTarget }) {
   const { t } = useTranslation();
   const initial = readModePreference(preferenceKey(target));
-  const [timingMode, setTimingMode] = useState<PracticeTimingMode>(target.timedAvailable ? initial.timingMode : "UNTIMED");
+  // Only a mock test is chosen timed or untimed; task and skill practice is always untimed, and a mock has a fixed length.
+  const isMock = target.kind === "mock";
+  const [timingMode, setTimingMode] = useState<PracticeTimingMode>(
+    isMock && target.timedAvailable ? initial.timingMode : "UNTIMED");
   const [questionCount, setQuestionCount] = useState<QuestionCountOption>(initial.questionCount);
 
   return (
@@ -38,14 +41,16 @@ function ModeChoice({ target, onClose, onStart }: Omit<PracticeModeDialogProps, 
             onClick={() => onStart(target, { timingMode, questionCount })}>{t("mode.start")}</button>
         </>
       )}>
-      <div className="mode-options" role="radiogroup" aria-label={t("mode.modeLabel")}>
-        <ModeOption selected={timingMode === "TIMED"} disabled={!target.timedAvailable} icon="timer"
-          title={t("mode.timedTitle")} description={target.timedAvailable ? t("mode.timedDescription") : t("mode.timedUnavailable")}
-          onSelect={() => setTimingMode("TIMED")} />
-        <ModeOption selected={timingMode === "UNTIMED"} icon="play" title={t("mode.untimedTitle")}
-          description={t("mode.untimedDescription")} onSelect={() => setTimingMode("UNTIMED")} />
-      </div>
-      <div className="mode-count" role="radiogroup" aria-label={t("mode.questionCountLabel")}>
+      {isMock ? (
+        <div className="mode-options" role="radiogroup" aria-label={t("mode.modeLabel")}>
+          <ModeOption selected={timingMode === "TIMED"} disabled={!target.timedAvailable} icon="timer"
+            title={t("mode.timedTitle")} description={target.timedAvailable ? t("mode.timedDescription") : t("mode.timedUnavailable")}
+            onSelect={() => setTimingMode("TIMED")} />
+          <ModeOption selected={timingMode === "UNTIMED"} icon="play" title={t("mode.untimedTitle")}
+            description={t("mode.untimedDescription")} onSelect={() => setTimingMode("UNTIMED")} />
+        </div>
+      ) : null}
+      {isMock ? null : <div className="mode-count" role="radiogroup" aria-label={t("mode.questionCountLabel")}>
         <span className="mode-count-label">{t("mode.questionCountLabel")}</span>
         {QUESTION_COUNT_OPTIONS.map((option) => (
           <button key={option} type="button" role="radio" aria-checked={questionCount === option}
@@ -54,7 +59,7 @@ function ModeChoice({ target, onClose, onStart }: Omit<PracticeModeDialogProps, 
             {option === ALL_QUESTIONS_COUNT ? t("mode.questionCountAll") : option}
           </button>
         ))}
-      </div>
+      </div>}
     </Modal>
   );
 }

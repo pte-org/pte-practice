@@ -1,12 +1,21 @@
 import type { PracticeCatalogSection, PracticeCatalogTask } from "../catalog-contracts";
 import { canStartPractice } from "../catalog-contracts";
 
-/** What the mode dialog is choosing a mode for: one task type, or every task type of a skill. */
+/**
+ * What the mode dialog is starting: one task type or every task type of a skill (untimed, the student picks how many
+ * questions), or a full mock test (fixed length, the student picks timed or untimed). For a mock, `code` is its id.
+ */
 export interface ModeTarget {
-  kind: "task" | "skill";
+  kind: "task" | "skill" | "mock";
   code: string;
   title: string;
   timedAvailable: boolean;
+  /** Mock test only: abandon the unfinished attempt and start again. */
+  restart?: boolean;
+}
+
+export function mockTarget(publicId: string, title: string, restart = false): ModeTarget {
+  return { kind: "mock", code: publicId, title, timedAvailable: true, restart };
 }
 
 export function taskTarget(task: PracticeCatalogTask): ModeTarget {
@@ -31,5 +40,5 @@ export function skillTarget(section: PracticeCatalogSection, title: string): Mod
 
 /** Key under which the student's last choice is remembered; skills never collide with task type codes. */
 export function preferenceKey(target: Pick<ModeTarget, "kind" | "code">): string {
-  return target.kind === "skill" ? `skill:${target.code}` : target.code;
+  return target.kind === "task" ? target.code : `${target.kind}:${target.code}`;
 }
