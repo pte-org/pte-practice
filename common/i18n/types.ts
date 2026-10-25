@@ -31,12 +31,12 @@ export interface LocaleDict {
     catalogError: string;
     sessionStarting: string;
     sessionLoading: string;
-    sessionOverview: string;
     sessionNext: string;
     sessionSubmit: string;
     sessionSkip: string;
     sessionSaveExit: string;
     sessionExitSaved: string;
+    sessionProgress: string;
     sessionProgressSaved: string;
     sessionCompleted: string;
     sessionUnsupported: string;
@@ -64,6 +64,7 @@ export interface LocaleDict {
     progressMetricTasksReviewed: string;
     progressSpeaking: string;
     progressSpeakingProficiency: string;
+    progressLatestSession: string;
     progressSpeakingItems: string;
     progressNoTaskTypes: string;
     progressTaskTypes: string;
@@ -87,9 +88,6 @@ export interface LocaleDict {
     backHome: string;
     sessionAnsweredTasks: string;
     sessionAnswerTaskBelow: string;
-    sessionTimeRemaining: string;
-    sessionTasksInSession: string;
-    sessionTimeLimit: string;
     sessionRetryAction: string;
     sessionConfidenceLow: string;
     sessionConfidenceMedium: string;
@@ -178,6 +176,55 @@ export interface LocaleDict {
     featureProgressTitle: string;
     featureProgressDescription: string;
   };
+  mode: {
+    modeLabel: string;
+    timedTitle: string;
+    timedDescription: string;
+    untimedTitle: string;
+    untimedDescription: string;
+    timedUnavailable: string;
+    questionCountLabel: string;
+    questionCountAll: string;
+    start: string;
+    starting: string;
+    close: string;
+  };
+  mockTests: {
+    loading: string;
+    loadError: string;
+    empty: string;
+    questions: string;
+    start: string;
+    continue: string;
+    retake: string;
+    startOver: string;
+    startOverWarning: string;
+    estimatedScore: string;
+    estimateTitle: string;
+    estimateNote: string;
+    estimatePending: string;
+    estimateSkipped: string;
+    estimateExcluded: string;
+  };
+  timed: {
+    stepperLabel: string;
+    stepPreListen: string;
+    stepPrompt: string;
+    stepPrep: string;
+    stepRecording: string;
+    stepAnswering: string;
+    stepDone: string;
+    clockLabel: string;
+    clockWarning: string;
+    startQuestion: string;
+    startQuestionHint: string;
+    stopEarly: string;
+    retryQuestion: string;
+    timeUp: string;
+    promptPlaying: string;
+    promptRefreshFailed: string;
+    micFailed: string;
+  };
   nav: {
     home: string;
     practiceTests: string;
@@ -207,6 +254,7 @@ export interface LocaleDict {
     reviewResultsInsights: string;
     familiarizeExamFormat: string;
     noPracticeTaskAvailable: string;
+    skillReadyLabel: string;
   };
   catalog: {
     practiceLibrary: string;
@@ -221,17 +269,12 @@ export interface LocaleDict {
     unlockPracticeToBegin: string;
   };
   studyPackView: {
-    guidedLearning: string;
-    studyPack: string;
-    keepRelated: string;
-    openPack: string;
-  };
-  studyPacks: {
-    speakingFoundationTitle: string;
-    speakingFoundationDesc: string;
-    writingToolkitTitle: string;
-    writingToolkitDesc: string;
-    readingListeningTitle: string;
-    readingListeningDesc: string;
+    summaryTitle: string;
+    summaryHint: string;
+    skillsHeading: string;
+    answeredOf: string;
+    questionsAnswered: string;
+    noQuestions: string;
+    practice: string;
   };
 }

@@ -5,6 +5,7 @@ import {
   normalizeEntitlementResponse,
   normalizePracticeProgressResponse,
   normalizePracticeSessionResponse,
+  normalizeRecordingPlayback,
 } from "./contracts";
 
 describe("practice entitlement contract", () => {
@@ -112,5 +113,66 @@ describe("practice catalog contract", () => {
     expect(progress.entries[0]?.score).toBeNull();
     expect(progress.answeredItems).toBe(2);
     expect(progress.hasMore).toBe(false);
+  });
+});
+
+describe("timed practice contract", () => {
+  const baseSession = { publicId: "s-1", status: "IN_PROGRESS" };
+
+  it("reads a session without a timing mode as untimed (sessions from before the choice existed)", () => {
+    const session = normalizePracticeSessionResponse(baseSession);
+
+    expect(session?.timingMode).toBe("UNTIMED");
+    expect(session?.questionCount).toBeNull();
+  });
+
+  it("keeps TIMED and the question count", () => {
+    const session = normalizePracticeSessionResponse({ ...baseSession, timingMode: "TIMED", questionCount: 10 });
+
+    expect(session?.timingMode).toBe("TIMED");
+    expect(session?.questionCount).toBe(10);
+  });
+
+  it("keeps the pinned per-item timing under the preRecordSeconds name", () => {
+    const session = normalizePracticeSessionResponse({
+      ...baseSession,
+      currentTask: {
+        publicId: "i-1", taskCode: "REPEAT_SENTENCE", status: "PENDING",
+        timing: { preListenSeconds: 3, preRecordSeconds: 3, responseSeconds: 15 },
+      },
+    });
+
+    expect(session?.currentTask?.timing).toEqual({ preListenSeconds: 3, preRecordSeconds: 3, responseSeconds: 15 });
+  });
+
+  it("leaves timing empty when the server sends none or an unusable value", () => {
+    const none = normalizePracticeSessionResponse({ ...baseSession, currentTask: { publicId: "i-1", taskCode: "READ_ALOUD", status: "PENDING" } });
+    const zero = normalizePracticeSessionResponse({
+      ...baseSession,
+      currentTask: { publicId: "i-1", taskCode: "READ_ALOUD", status: "PENDING", timing: { responseSeconds: 0 } },
+    });
+
+    expect(none?.currentTask?.timing).toBeNull();
+    expect(zero?.currentTask?.timing).toBeNull();
+  });
+
+  it("defaults a catalog task to timed-unavailable when the server does not say", () => {
+    const catalog = normalizeCatalogResponse({
+      productCode: "PTE_CORE_PRACTICE",
+      sections: [{ code: "SPEAKING", taskTypes: [
+        { code: "READ_ALOUD", availability: "RUNNABLE" },
+        { code: "REPEAT_SENTENCE", availability: "RUNNABLE", timedAvailable: true },
+      ] }],
+    });
+    const [readAloud, repeat] = catalog?.sections[0]?.taskTypes ?? [];
+
+    expect(readAloud?.timedAvailable).toBe(false);
+    expect(repeat?.timedAvailable).toBe(true);
+  });
+
+  it("reads a playback link and rejects one without a url", () => {
+    expect(normalizeRecordingPlayback({ url: "https://cdn/x.wav", expiresInSeconds: 900, durationSeconds: 7 }))
+      .toEqual({ url: "https://cdn/x.wav", expiresInSeconds: 900, durationSeconds: 7 });
+    expect(normalizeRecordingPlayback({ expiresInSeconds: 900 })).toBeNull();
   });
 });

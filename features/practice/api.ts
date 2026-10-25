@@ -5,10 +5,13 @@ import type {
   PracticeItemResult,
   PracticeReview,
   PracticeProgress,
+  PracticeRecordingPlayback,
+  StartSessionRequest,
   PracticeSession,
   PracticeSessionTokens,
   PracticeTaskContentOption,
 } from "./contracts";
+import { normalizeEstimatedScores, normalizeMockTests, type MockTest } from "../mockTests/mock-test-contracts";
 import type { PracticeAudioUploadGrant } from "./media/contracts";
 import {
   normalizeCatalogResponse,
@@ -16,6 +19,7 @@ import {
   normalizePracticeItemResult,
   normalizePracticeProgressResponse,
   normalizePracticeSessionResponse,
+  normalizeRecordingPlayback,
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 
@@ -56,16 +60,12 @@ export function createPracticeApiClient() {
       if (!catalog) throw new PracticeApiError(API_ERROR_TEXT.invalidCatalog, 502, "INVALID_CATALOG");
       return catalog;
     },
+    listMockTests: async (): Promise<MockTest[]> => normalizeMockTests(await request<unknown>(API_PATHS.mockTests)),
     getProgress: async (): Promise<PracticeProgress> => {
       const response = await request<unknown>(API_PATHS.progress);
       return normalizePracticeProgressResponse(response);
     },
-    startSession: async (body: {
-      productCode: string;
-      organizationId: string;
-      taskTypeCodes: string[];
-      capabilities: { supportedCapabilities: string[]; appVersion: string };
-    }, idempotencyKey = createPracticeIdempotencyKey("start")): Promise<PracticeSession> =>
+    startSession: async (body: StartSessionRequest, idempotencyKey = createPracticeIdempotencyKey("start")): Promise<PracticeSession> =>
       sessionMutation(API_PATHS.practiceSessions, "POST", body, idempotencyKey),
     getSession: async (publicId: string): Promise<PracticeSession> => {
       const response = await request<unknown>(`${API_PATHS.practiceSessions}/${publicId}`);
@@ -83,6 +83,20 @@ export function createPracticeApiClient() {
       confidence: "LOW" | "MEDIUM" | "HIGH";
     }, idempotencyKey = createPracticeIdempotencyKey("answer")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/answer`, "POST", body, idempotencyKey),
+    /** Saves the current item without leaving the session (a finished or re-done recording). */
+    saveDraft: async (publicId: string, itemPublicId: string, body: {
+      clientVersion: number;
+      payload: string;
+      confidence: "LOW" | "MEDIUM" | "HIGH" | null;
+    }, idempotencyKey = createPracticeIdempotencyKey("draft")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/draft`, "POST", body, idempotencyKey),
+    /** Short-lived link to the student's own saved recording, for replay and waveform after a reload. */
+    getRecordingPlayback: async (publicId: string, itemPublicId: string): Promise<PracticeRecordingPlayback> => {
+      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/recording`);
+      const playback = normalizeRecordingPlayback(response);
+      if (!playback) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_PLAYBACK");
+      return playback;
+    },
     skip: async (publicId: string, itemPublicId: string, clientVersion: number,
       idempotencyKey = createPracticeIdempotencyKey("skip")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/skip`, "POST", { clientVersion }, idempotencyKey),
@@ -120,7 +134,8 @@ export function createPracticeApiClient() {
           rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
           options: reviewOptions(item.options) }];
       }) : [];
-      return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items };
+      return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items,
+        estimatedScores: normalizeEstimatedScores(record.estimatedScores) };
     },
     requestResponseAudio: (body: {
       contentType: "audio/wav";

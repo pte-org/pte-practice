@@ -10,6 +10,7 @@ export const API_PATHS = {
   catalog: "/api/v1/student/practice/catalog",
   progress: "/api/v1/student/practice/progress",
   practiceSessions: "/api/v1/student/practice/sessions",
+  mockTests: "/api/v1/student/practice/mock-tests",
   mediaObjects: "/api/v1/objects",
 } as const;
 
@@ -41,7 +42,6 @@ export const UI_TEXT = {
   catalogError: "The practice catalog is unavailable. Preview cards remain locked until it loads.",
   sessionStarting: "Preparing your practice session...",
   sessionLoading: "Loading your practice session...",
-  sessionOverview: "Review the session before you begin.",
   sessionNext: "Next",
   sessionSubmit: "Submit answer",
   sessionSkip: "Skip",
@@ -122,27 +122,6 @@ export const AUTH_TEXT = {
   genericError: "We could not verify that request. Please try again.",
   rateLimited: "Too many requests. Please wait a moment and try again.",
 } as const;
-
-export const STUDY_PACKS = [
-  {
-    id: "speaking-foundation",
-    title: "Speaking foundation",
-    description: "Build a steady routine across speaking task types.",
-    icon: "mic",
-  },
-  {
-    id: "writing-toolkit",
-    title: "Writing toolkit",
-    description: "Review structures and practice prompts in one place.",
-    icon: "writing",
-  },
-  {
-    id: "reading-listening",
-    title: "Reading & Listening",
-    description: "Strengthen comprehension with short focused sessions.",
-    icon: "reading",
-  },
-] as const;
 
 export const PREVIEW_TASKS = [
   { code: "READ_ALOUD", displayName: "Read Aloud", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
