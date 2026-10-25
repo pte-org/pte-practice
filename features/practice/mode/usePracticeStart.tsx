@@ -4,14 +4,14 @@ import { useRouter } from "next/navigation";
 import { type ReactElement, useCallback, useState } from "react";
 import { canStartPractice, type PracticeCatalogSection, type PracticeCatalogTask } from "../contracts";
 import { usePractice } from "../PracticeProvider";
-import { writeModePreference, type ModePreference } from "./mode-preference";
+import { readModePreference, writeModePreference, type ModePreference } from "./mode-preference";
 import { preferenceKey, runnableTasks, skillTarget, taskTarget, type ModeTarget } from "./mode-target";
 import { PracticeModeDialog } from "./PracticeModeDialog";
 import { practiceMockTestUrl, practiceSessionUrl, practiceSkillSessionUrl } from "./practice-url";
 
 interface PracticeStart {
   openFor: (task: PracticeCatalogTask) => void;
-  /** Opens the dialog for every task type of a skill; {@code title} is the skill's display name. */
+  /** Starts practice for every task type of a skill; {@code title} is the skill's display name. */
   openForSkill: (section: PracticeCatalogSection, title: string) => void;
   /** Opens the timed / untimed choice for a mock test (see `mockTarget`). */
   openForMock: (target: ModeTarget) => void;
@@ -24,8 +24,8 @@ function untimed(preference: ModePreference): ModePreference {
 }
 
 /**
- * Every "start practice" button goes through this: it opens the mode dialog for a task type or a skill and, once
- * the student confirms, remembers the choice and opens the session. Render {@code dialog} once next to the buttons.
+ * Handles starting practice for tasks, skills, and mock tests. Task and skill practice
+ * navigate directly; mock tests open the timed/untimed choice dialog.
  */
 export function usePracticeStart(): PracticeStart {
   const router = useRouter();
@@ -34,13 +34,15 @@ export function usePracticeStart(): PracticeStart {
 
   const openFor = useCallback((candidate: PracticeCatalogTask) => {
     if (!isPracticeUnlocked || !canStartPractice("UNLOCKED", candidate)) return;
-    setTarget(taskTarget(candidate));
-  }, [isPracticeUnlocked]);
+    const pref = readModePreference(preferenceKey(taskTarget(candidate)));
+    router.push(practiceSessionUrl(candidate.code, untimed(pref)));
+  }, [isPracticeUnlocked, router]);
 
   const openForSkill = useCallback((section: PracticeCatalogSection, title: string) => {
     if (!isPracticeUnlocked || runnableTasks(section).length === 0) return;
-    setTarget(skillTarget(section, title));
-  }, [isPracticeUnlocked]);
+    const pref = readModePreference(preferenceKey(skillTarget(section, title)));
+    router.push(practiceSkillSessionUrl(section.code, untimed(pref)));
+  }, [isPracticeUnlocked, router]);
 
   const dialog = (
     <PracticeModeDialog target={target} onClose={() => setTarget(null)}
