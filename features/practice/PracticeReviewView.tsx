@@ -8,6 +8,7 @@ import { PRACTICE_ROUTES, UI_TEXT } from "./constants";
 import { createPracticeApiClient, PracticeApiError, type PracticeApiClient } from "./api";
 import type { PracticeReview, PracticeReviewItem } from "./contracts";
 import { describeSavedAnswer } from "./review-answer";
+import { EstimatedScores } from "../mockTests/EstimatedScores";
 import { ScoreView } from "./ScoreView";
 
 export function PracticeReviewView() {
@@ -38,6 +39,7 @@ export function PracticeReviewView() {
           {UI_TEXT.reviewBack}
         </button>
       </div>
+      {review.estimatedScores ? <EstimatedScores scores={review.estimatedScores} /> : null}
       <div className="review-list">
         {review.items.map((item) => <ReviewItem key={item.publicId} item={item} sessionId={sessionId} api={api} />)}
       </div>
