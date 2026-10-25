@@ -295,6 +295,8 @@ export function PracticeSessionView() {
       sessionRef.current = next;
       setCurrentAnswered(null);
       setViewingHistoryIndex(null);
+      setDraft({});
+      setDraftTaskId(next.currentTask?.publicId ?? null);
       dispatch({ type: "mutation_succeeded", session: next });
       return;
     }
@@ -439,6 +441,7 @@ export function PracticeSessionView() {
   return (
     <>
       <SessionTaskView
+        key={currentTask.publicId}
         api={api}
         session={session}
         task={currentTask}

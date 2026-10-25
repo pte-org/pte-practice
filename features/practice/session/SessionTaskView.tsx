@@ -105,7 +105,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   const locked = busy || offline;
 
   const renderBody = (timed?: TimedRendererControl, timedLocked = false, attempt = 0) => fixture ? (
-    <TaskRenderer key={attempt} fixture={fixture} rendererKey={task.rendererKey} value={value}
+    <TaskRenderer key={`${task.publicId}:${attempt}`} fixture={fixture} rendererKey={task.rendererKey} value={value}
       sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed}
       onUploadRecording={props.onUploadRecording} onLoadPlayback={props.onLoadPlayback}
       onActivityChange={props.onActivityChange}
