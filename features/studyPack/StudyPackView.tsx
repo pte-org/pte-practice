@@ -1,60 +1,60 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { AppIcon, type IconName } from "@/common/components";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
-import { LockBadge } from "@/common/components";
-import { PRACTICE_ROUTES, STUDY_PACKS } from "@/features/practice/constants";
-import { usePractice } from "@/features/practice/PracticeProvider";
+import { AppIcon, LockBadge } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
+import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
+import { iconForSection } from "@/features/practice/icon-mapping";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { usePractice } from "@/features/practice/PracticeProvider";
+import { studySkillRows, totalPracticeQuestions } from "./study-pack-rows";
 
 export function StudyPackView() {
-  const router = useRouter();
-  const { isPracticeUnlocked } = usePractice();
+  const { catalog, isPracticeUnlocked } = usePractice();
+  const { openForSkill, dialog } = usePracticeStart();
   const { t } = useTranslation();
+  const rows = studySkillRows(catalog.sections, isPracticeUnlocked);
+  const total = totalPracticeQuestions(rows);
 
   return (
-    <div className="page-stack" data-testid="study-pack-page">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">{t("studyPackView.guidedLearning")}</p>
-          <h1>{t("studyPackView.studyPack")}</h1>
-          <p>{t("studyPackView.keepRelated")}</p>
-        </div>
-        <div className="page-heading-mark" aria-hidden="true"><AppIcon name="studyPack" size={25} /></div>
-      </div>
+    <div className="study-pack" data-testid="study-pack-page">
       <AccessStatusBanner />
-      <div className="study-pack-grid">
-        {STUDY_PACKS.map((pack) => {
-          const packIdCamel = pack.id.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
-          return (
-            <article className={`study-pack-card${isPracticeUnlocked ? " study-pack-card-ready" : " study-pack-card-locked"}`} key={pack.id}>
-            <div className="study-pack-icon" aria-hidden="true"><AppIcon name={pack.icon as IconName} size={23} /></div>
-            <div className="study-pack-copy">
-              <div className="card-title-row">
-                <h2>{t(`studyPacks.${packIdCamel}Title` as TranslationKey)}</h2>
-                {!isPracticeUnlocked ? <LockBadge locked label={t("common.lockedAction")} /> : null}
-              </div>
-              <p>{t(`studyPacks.${packIdCamel}Desc` as TranslationKey)}</p>
-              <button
-                className={`button${isPracticeUnlocked ? " button-accent" : " button-muted"}`}
-                type="button"
-                disabled={!isPracticeUnlocked}
-                aria-label={isPracticeUnlocked ? `Open ${pack.title}` : `${pack.title} is locked`}
-                onClick={() => {
-                  if (!isPracticeUnlocked) return;
-                  router.push(PRACTICE_ROUTES.practiceTests);
-                }}
-              >
-                <AppIcon name={isPracticeUnlocked ? "play" : "lock"} size={15} />
-                {isPracticeUnlocked ? t("studyPackView.openPack") : t("common.lockedAction")}
-              </button>
-            </div>
-          </article>
-        );
-      })}
+      <div className="study-pack-summary">
+        <AppIcon name="sparkle" size={22} />
+        <div>
+          <strong>{total} {t("studyPackView.summaryTitle")}</strong>
+          <p>{t("studyPackView.summaryHint")}</p>
+        </div>
       </div>
+      <h2 className="study-pack-heading">{rows.length} {t("studyPackView.skillsHeading")}</h2>
+      <ul className="study-skill-list">
+        {rows.map((row) => {
+          const name = t(`skills.${row.code.toLowerCase()}` as TranslationKey);
+          return (
+            <li className="study-skill-row" key={row.code}>
+              <span className="study-skill-icon" aria-hidden="true">
+                <AppIcon name={iconForSection(row.code)} size={22} />
+              </span>
+              <span className="study-skill-copy">
+                <strong>{name}</strong>
+                <span>
+                  {row.total > 0
+                    ? `${row.answered} ${t("studyPackView.answeredOf")} ${row.total} ${t("studyPackView.questionsAnswered")}`
+                    : t("studyPackView.noQuestions")}
+                </span>
+              </span>
+              {!isPracticeUnlocked ? <LockBadge locked label={t("common.lockedAction")} /> : (
+                <button className="button button-primary button-pill" type="button" disabled={!row.canStart}
+                  aria-label={`${t("studyPackView.practice")} ${name}`}
+                  onClick={() => openForSkill(row.section, name)}>
+                  <AppIcon name="play" size={16} /> {t("studyPackView.practice")}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {dialog}
     </div>
   );
 }
