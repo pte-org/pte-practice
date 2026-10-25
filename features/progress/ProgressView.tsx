@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppIcon, ProgressRing } from "@/common/components";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import type { PracticeProgress, PracticeProgressEntry } from "@/features/practice/contracts";
@@ -63,61 +62,64 @@ export function ProgressView() {
 
   return (
     <div className="page-stack" data-testid="progress-page">
-      <AccessStatusBanner />
       <div className="progress-reference">
-        <section className="reference-card progress-overview" aria-labelledby="progress-overview-title">
-          <div className="progress-overview-header">
-            <h1 id="progress-overview-title">{t("ui.progressHeading")}</h1>
-            <p>{latest ? t("ui.progressLoadedDescription") : t("ui.progressEmptyDescription")}</p>
-          </div>
-          {loadState === "loading" ? <p className="progress-load-state" role="status">{t("ui.progressLoading")}</p> : null}
-          {loadState === "error" ? (
-            <div className="progress-error" role="alert">
-              <span>{error ?? t("ui.progressError")}</span>
-              <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
+        <div className="progress-column-overview">
+          <section className="reference-card progress-overview" aria-labelledby="progress-overview-title">
+            <div className="progress-overview-header">
+              <h1 id="progress-overview-title">{t("ui.progressHeading")}</h1>
+              <p>{latest ? t("ui.progressLoadedDescription") : t("ui.progressEmptyDescription")}</p>
             </div>
-          ) : null}
-          <div className="metric-grid">
-            {metrics.map((metric) => (
-              <div className="metric-cell" key={metric.label}>
-                <AppIcon name={metric.icon} size={21} />
-                <span>{metric.label}</span>
-                <strong className={progress.totalSessions ? "metric-value" : "metric-empty"}>{progress.totalSessions ? metric.value : t("ui.progressNoValue")}</strong>
+            {loadState === "loading" ? <p className="progress-load-state" role="status">{t("ui.progressLoading")}</p> : null}
+            {loadState === "error" ? (
+              <div className="progress-error" role="alert">
+                <span>{error ?? t("ui.progressError")}</span>
+                <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
               </div>
-            ))}
-          </div>
-          <div className="insight-strip"><AppIcon name="sparkle" size={20} /><span>{latest ? progressStatusLabel(latest, t) : t("ui.progressEmptyDescription")}</span></div>
-        </section>
-
-        <section className="reference-section" aria-labelledby="progress-speaking-title">
-          <h2 id="progress-speaking-title">{t("ui.progressSpeaking")}</h2>
-          <div className="progress-section-card">
-            <article className="progress-skill-card">
-              <ProgressRing variant={ring.variant} value={ring.value} max={ring.max} size="lg" thickness={10}
-                label={t("ui.progressLatestSession")}>
-                <span className="progress-ring-text">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</span>
-              </ProgressRing>
-              <div><h3>{t("ui.progressLatestSession")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
-            </article>
-            <div className="skills-list">
-              <div className="skill-list-row">
-                <span className="skill-list-icon" aria-hidden="true"><AppIcon name="mic" size={19} /></span>
-                <span className="skill-list-copy"><strong>{t("ui.progressSpeakingItems")}</strong><span>{taskRows.length ? `${taskRows.length} ${t("ui.progressTaskTypes")}` : t("ui.progressNoTaskTypes")}</span></span>
-              </div>
-              {taskRows.map((task) => (
-                <div className="skill-list-row" key={task.code}>
-                  <span className="skill-list-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={17} /></span>
-                  <span className="skill-list-copy"><strong>{task.displayName}</strong><span>{latest ? t("ui.progressSessionHistoryAvailable") : t("ui.progressNoResponse")}</span></span>
-                  <span className="state-badge state-badge-locked">{t("ui.progressNoValue")}</span>
-                  <span className="skill-list-action" aria-hidden="true"><AppIcon name="chevronRight" size={18} /></span>
+            ) : null}
+            <div className="metric-grid">
+              {metrics.map((metric) => (
+                <div className="metric-cell" key={metric.label}>
+                  <AppIcon name={metric.icon} size={21} />
+                  <span>{metric.label}</span>
+                  <strong className={progress.totalSessions ? "metric-value" : "metric-empty"}>{progress.totalSessions ? metric.value : t("ui.progressNoValue")}</strong>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
+            <div className="insight-strip"><AppIcon name="sparkle" size={20} /><span>{latest ? progressStatusLabel(latest, t) : t("ui.progressEmptyDescription")}</span></div>
+          </section>
 
-        {progress.entries.length ? <ProgressHistory entries={progress.entries} hasMore={progress.hasMore} t={t} /> : null}
-        <p className="quiet-note">{t("ui.progressReadOnlyNote")}</p>
+          <section className="reference-section" aria-labelledby="progress-speaking-title">
+            <h2 id="progress-speaking-title">{t("ui.progressSpeaking")}</h2>
+            <div className="progress-section-card">
+              <article className="progress-skill-card">
+                <ProgressRing variant={ring.variant} value={ring.value} max={ring.max} size="lg" thickness={10}
+                  label={t("ui.progressLatestSession")}>
+                  <span className="progress-ring-text">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</span>
+                </ProgressRing>
+                <div><h3>{t("ui.progressLatestSession")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
+              </article>
+              <div className="skills-list">
+                <div className="skill-list-row">
+                  <span className="skill-list-icon" aria-hidden="true"><AppIcon name="mic" size={19} /></span>
+                  <span className="skill-list-copy"><strong>{t("ui.progressSpeakingItems")}</strong><span>{taskRows.length ? `${taskRows.length} ${t("ui.progressTaskTypes")}` : t("ui.progressNoTaskTypes")}</span></span>
+                </div>
+                {taskRows.map((task) => (
+                  <div className="skill-list-row" key={task.code}>
+                    <span className="skill-list-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={17} /></span>
+                    <span className="skill-list-copy"><strong>{task.displayName}</strong><span>{latest ? t("ui.progressSessionHistoryAvailable") : t("ui.progressNoResponse")}</span></span>
+                    <span className="state-badge state-badge-locked">{t("ui.progressNoValue")}</span>
+                    <span className="skill-list-action" aria-hidden="true"><AppIcon name="chevronRight" size={18} /></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="progress-column-history">
+          {progress.entries.length ? <ProgressHistory entries={progress.entries} hasMore={progress.hasMore} t={t} /> : null}
+          <p className="quiet-note">{t("ui.progressReadOnlyNote")}</p>
+        </div>
       </div>
     </div>
   );

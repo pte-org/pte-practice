@@ -2,7 +2,6 @@
 
 import { AppIcon, LockBadge } from "@/common/components";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import { UI_TEXT } from "@/features/practice/constants";
 import { canStartPractice, type PracticeCatalogSection, type PracticeCatalogTask } from "@/features/practice/contracts";
 import { iconForSection, iconForTaskType } from "@/features/practice/icon-mapping";
 import { useTranslation } from "@/common/i18n";
