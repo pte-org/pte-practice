@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/common/providers/ThemeProvider";
 import { THEME_INIT_SCRIPT } from "@/common/providers/theme-init";
 import { LocaleProvider } from "@/common/i18n";
+import { ToastProvider } from "@/common/components";
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>
-          <LocaleProvider>{children}</LocaleProvider>
+          <LocaleProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
-import { COMMON_TEXT } from "@/common/constants";
 import { AppIcon, ProductMark } from "@/common/components";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { usePracticeAccessToast } from "@/features/practice/useAccessToast";
 import { readReadingSize } from "@/features/deviceCheck/device-check";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 
 export function StudentShell({ children }: { children: ReactNode }) {
+  usePracticeAccessToast();
   const pathname = usePathname();
   const router = useRouter();
   const { authStatus, signOut } = usePractice();

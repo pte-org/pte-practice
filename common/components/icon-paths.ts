@@ -1,5 +1,6 @@
 import {
   mdiAccountVoice,
+  mdiAlertCircleOutline,
   mdiBullhorn,
   mdiChartTimelineVariant,
   mdiClipboardOutline,
@@ -72,6 +73,7 @@ export const ICON_PATHS = {
   check: mdiCheckCircleOutline,
   signOut: mdiLogout,
   info: mdiInformationOutline,
+  alert: mdiAlertCircleOutline,
   sun: mdiWeatherSunny,
   moon: mdiWeatherNight,
   bookOpen: mdiBookOpenVariant,

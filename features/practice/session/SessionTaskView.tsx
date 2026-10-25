@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ProgressRing } from "@/common/components";
+import { ProgressRing, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeSession, PracticeTaskResponse } from "../contracts";
 import type { PracticeTaskFixture } from "../fixtures";
@@ -38,7 +38,14 @@ interface SessionTaskViewProps {
 export function SessionTaskView(props: SessionTaskViewProps) {
   const { session, task, fixture, busy, notice, missing, value } = props;
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const answerCardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (notice) {
+      showToast(notice, { tone: "error" });
+    }
+  }, [notice, showToast]);
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
   // Read-aloud, written-text, blank and highlight renderers draw the passage themselves; showing it here too doubles it.
   const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens);
@@ -86,7 +93,6 @@ export function SessionTaskView(props: SessionTaskViewProps) {
         ) : renderBody()}
         {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
       </div>
-      {notice ? <p className="inline-notice" role="alert">{notice}</p> : null}
       <div className="session-footer-actions">
         <button className="text-button" type="button" disabled={busy} onClick={props.onSaveExit}>{t("ui.sessionSaveExit")}</button>
         <div className="session-primary-actions">

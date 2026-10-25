@@ -315,4 +315,7 @@ export interface LocaleDict {
     noQuestions: string;
     practice: string;
   };
+  toast: {
+    close: string;
+  };
 }

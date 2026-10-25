@@ -1,7 +1,7 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
-import { AppIcon, CountdownTimer, Stepper } from "@/common/components";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { AppIcon, CountdownTimer, Stepper, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import type { TimedRendererControl } from "../renderers/RendererTypes";
@@ -34,11 +34,18 @@ interface TimedTaskFrameProps {
 export function TimedTaskFrame(props: TimedTaskFrameProps) {
   const { timing, isSpeaking, hasPromptAudio, hasSavedRecording, onRefreshPrompt, children } = props;
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { state, dispatch } = useTimedPhase({ timing, isSpeaking, hasPromptAudio, hasSavedRecording });
   const [attempt, setAttempt] = useState(0);
   // One fresh prompt link is tried per run; the command object lives in state so event handlers can use it.
   const [promptRefresh] = useState(createOnceCommand);
   const { phase } = state;
+
+  useEffect(() => {
+    if (phase === "timeUp") {
+      showToast(t("timed.timeUp"), { tone: "warning" });
+    }
+  }, [phase, showToast, t]);
 
   const timed = useMemo<TimedRendererControl>(() => ({
     playPrompt: phase === "prompt",
@@ -91,7 +98,6 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
           </button>
         </div>
       ) : null}
-      {phase === "timeUp" ? <p className="inline-notice" role="status">{t("timed.timeUp")}</p> : null}
       {children({ timed, locked: answerLocked(phase, isSpeaking), attempt })}
       {phase === "recording" && state.recordStarted ? (
         <div className="timed-frame-actions">

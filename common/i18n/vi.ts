@@ -315,4 +315,7 @@ export const vi: LocaleDict = {
     noQuestions: "Chưa có câu luyện tập",
     practice: "Luyện tập",
   },
+  toast: {
+    close: "Đóng",
+  },
 };

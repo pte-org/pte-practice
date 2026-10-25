@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { AppIcon, LoadingState, Modal, ProgressRing } from "@/common/components";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AppIcon, LoadingState, Modal, ProgressRing, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { createPracticeApiClient } from "@/features/practice/api";
 import { mockTarget } from "@/features/practice/mode/mode-target";
 import { practiceMockTestUrl } from "@/features/practice/mode/practice-url";
@@ -18,24 +17,53 @@ type LoadState = { status: "loading" } | { status: "error" } | { status: "ready"
 export function MockTestListView() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { isPracticeUnlocked, authStatus } = usePractice();
   const api = useMemo(() => createPracticeApiClient(), []);
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [confirmRestart, setConfirmRestart] = useState<MockTest | null>(null);
   const { openForMock, dialog } = usePracticeStart();
 
+  const fetchTests = useCallback((showErrorToast = true) => {
+    if (authStatus !== "authenticated") return undefined;
+    let active = true;
+    api.listMockTests()
+      .then((tests) => {
+        if (active) setState({ status: "ready", tests });
+      })
+      .catch(() => {
+        if (active) {
+          setState({ status: "error" });
+          if (showErrorToast) {
+            showToast(t("mockTests.loadError"), { tone: "error" });
+          }
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [api, authStatus, showToast, t]);
+
   useEffect(() => {
-    if (authStatus !== "authenticated") return;
-    void api.listMockTests()
-      .then((tests) => setState({ status: "ready", tests }))
-      .catch(() => setState({ status: "error" }));
-  }, [api, authStatus]);
+    return fetchTests(true);
+  }, [fetchTests]);
+
+  const handleRetry = () => {
+    setState({ status: "loading" });
+    fetchTests(true);
+  };
 
   return (
     <div className="mock-tests">
-      <AccessStatusBanner />
       {state.status === "loading" ? <LoadingState message={t("mockTests.loading")} /> : null}
-      {state.status === "error" ? <p className="catalog-note" role="alert">{t("mockTests.loadError")}</p> : null}
+      {state.status === "error" ? (
+        <div className="catalog-note" role="alert" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span>{t("mockTests.loadError")}</span>
+          <button className="text-button" type="button" onClick={handleRetry}>
+            {t("common.tryAgain")}
+          </button>
+        </div>
+      ) : null}
       {state.status === "ready" && state.tests.length === 0
         ? <p className="catalog-note" role="status">{t("mockTests.empty")}</p> : null}
       {state.status === "ready" && state.tests.length > 0 ? (

@@ -11,3 +11,5 @@ export { ProgressRing } from "./ProgressRing";
 export type { ProgressRingProps, ProgressRingTone, ProgressRingVariant } from "./ProgressRing";
 export { Stepper } from "./Stepper";
 export type { StepItem, StepperProps } from "./Stepper";
+export { ToastProvider, useToast, DEFAULT_TOAST_DURATION_MS } from "./Toast";
+export type { ShowToastOptions, ToastTone } from "./Toast";

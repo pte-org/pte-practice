@@ -3,7 +3,6 @@
 import { AppIcon, LockBadge } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
@@ -18,7 +17,6 @@ export function StudyPackView() {
 
   return (
     <div className="study-pack" data-testid="study-pack-page">
-      <AccessStatusBanner />
       <div className="study-pack-summary">
         <AppIcon name="sparkle" size={22} />
         <div>

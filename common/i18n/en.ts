@@ -315,4 +315,7 @@ export const en: LocaleDict = {
     noQuestions: "No practice questions yet",
     practice: "Practise",
   },
+  toast: {
+    close: "Close",
+  },
 };

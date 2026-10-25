@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { AppIcon, LockBadge, ProductMark, ProgressRing } from "@/common/components";
 import { SkillTaskList } from "@/features/catalog/SkillTaskList";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { flattenCatalogTasks } from "@/features/practice/catalog-order";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import { canStartPractice } from "@/features/practice/contracts";
@@ -45,8 +44,6 @@ export function HomeView() {
 
   return (
     <div className="page-stack" data-testid="home-page">
-      <AccessStatusBanner />
-
       <section className="reference-card experience-card" aria-labelledby="experience-title">
         <div className="experience-header">
           <div className="experience-identity">
@@ -63,9 +60,9 @@ export function HomeView() {
               const checked = passed(kind);
               return (
                 <button className="skill-tile skill-tile-check" type="button" key={skill.code} onClick={() => setCheck(kind)}>
-                  <ProgressRing variant={checked ? "progress" : "empty"} value={checked ? 1 : 0} max={1} tone="green" size={44}
+                  <ProgressRing variant={checked ? "progress" : "empty"} value={checked ? 1 : 0} max={1} tone="green" size={48}
                     label={`${skill.label}: ${checked ? t("deviceCheck.checked") : t("deviceCheck.notChecked")}`}>
-                    <AppIcon name={skill.icon} size={20} />
+                    <AppIcon name={skill.icon} size={24} />
                   </ProgressRing>
                   <strong>{skill.label}</strong>
                   <span>{t(CHECK_LABELS[kind])}</span>
