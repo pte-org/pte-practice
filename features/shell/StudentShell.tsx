@@ -7,6 +7,7 @@ import { COMMON_TEXT } from "@/common/constants";
 import { AppIcon, ProductMark } from "@/common/components";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { readReadingSize } from "@/features/deviceCheck/device-check";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
@@ -27,6 +28,11 @@ export function StudentShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (authStatus === "signed-out") router.replace(PRACTICE_ROUTES.signIn);
   }, [authStatus, router]);
+
+  // The text size the student picked in the reading check applies to every practice page.
+  useEffect(() => {
+    document.documentElement.dataset.readingSize = readReadingSize();
+  }, []);
 
   if (authStatus === "loading") return <ShellLoading t={t} />;
 

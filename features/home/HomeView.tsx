@@ -9,14 +9,26 @@ import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import { canStartPractice } from "@/features/practice/contracts";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
-import { skillReadiness } from "@/features/practice/progress-rings";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { useTranslation } from "@/common/i18n";
+import { useState } from "react";
+import { SKILL_DEVICE_CHECK, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
+import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
+import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
+
+const CHECK_LABELS = {
+  mic: "deviceCheck.micTile",
+  speaker: "deviceCheck.speakerTile",
+  keyboard: "deviceCheck.keyboardTile",
+  reading: "deviceCheck.readingTile",
+} as const;
 
 export function HomeView() {
   const { openFor: handleStartIntent, dialog: modeDialog } = usePracticeStart();
   const { catalog, entitlement, isPracticeUnlocked } = usePractice();
   const { t } = useTranslation();
+  const { passed, markPassed } = useDeviceChecks();
+  const [check, setCheck] = useState<DeviceCheckKind | null>(null);
   const orderedTasks = flattenCatalogTasks(catalog.sections);
   const hasRunnableTask = isPracticeUnlocked && orderedTasks.some((task) => task.availability === "RUNNABLE");
   const recommendedTasks = [
@@ -44,32 +56,27 @@ export function HomeView() {
               <p><AppIcon name="calendar" size={16} /> {t("home.examDate")} <strong>{t("home.notScheduled")}</strong></p>
             </div>
           </div>
-          <div className="skill-matrix" aria-label="Practice skill status">
+          {/* Each skill tile opens the device check that skill depends on (mic, speakers, keyboard, text size). */}
+          <div className="skill-matrix" aria-label={t("deviceCheck.micTitle")}>
             {skillTiles.map((skill) => {
-              const section = catalog.sections.find((item) => item.code === skill.code);
-              const hasRunnableTask = section?.taskTypes.some(
-                (task) => isPracticeUnlocked && canStartPractice("UNLOCKED", task),
-              ) ?? false;
-              const statusLabel = !isPracticeUnlocked
-                ? t("common.lockedAction")
-                : hasRunnableTask
-                  ? null
-                  : t("common.unavailableAction");
-
-              const readiness = skillReadiness(section, isPracticeUnlocked);
-
+              const kind = SKILL_DEVICE_CHECK[skill.code];
+              const checked = passed(kind);
               return (
-                <div className="skill-tile" key={skill.code}>
-                  <ProgressRing variant="empty" size={44} label={`${skill.label}: ${readiness.ready}/${readiness.total} ${t("home.skillReadyLabel")}`}>
+                <button className="skill-tile skill-tile-check" type="button" key={skill.code} onClick={() => setCheck(kind)}>
+                  <ProgressRing variant={checked ? "progress" : "empty"} value={checked ? 1 : 0} max={1} tone="green" size={44}
+                    label={`${skill.label}: ${checked ? t("deviceCheck.checked") : t("deviceCheck.notChecked")}`}>
                     <AppIcon name={skill.icon} size={20} />
                   </ProgressRing>
                   <strong>{skill.label}</strong>
-                  {readiness.total ? <span>{readiness.ready}/{readiness.total}</span> : null}
-                  {statusLabel ? <span>{statusLabel}</span> : null}
-                </div>
+                  <span>{t(CHECK_LABELS[kind])}</span>
+                  <span className={checked ? "device-status-ok" : "device-status-todo"}>
+                    {checked ? `✓ ${t("deviceCheck.checked")}` : t("deviceCheck.notChecked")}
+                  </span>
+                </button>
               );
             })}
           </div>
+          <DeviceCheckDialog kind={check} onClose={() => setCheck(null)} onPassed={markPassed} />
         </div>
         <div className="insight-strip">
           <AppIcon name="sparkle" size={20} />
