@@ -100,7 +100,15 @@ export function useSessionMutations(options: UseSessionMutationsOptions) {
     mutationKeys.current.set(scope, idempotencyKey);
     heartbeat.setBusy(true);
     try {
-      const result = await runInBackground({ settleHeartbeat, action: () => action(idempotencyKey) });
+      let result = await runInBackground({ settleHeartbeat, action: () => action(idempotencyKey) });
+      if (!result.ok && isVersionConflict(result.reason)) {
+        try {
+          await reloadAfterHeartbeatFailure();
+          result = await runInBackground({ settleHeartbeat, action: () => action(idempotencyKey) });
+        } catch {
+          // Keep original failure if reload fails
+        }
+      }
       if (result.ok) {
         mutationKeys.current.delete(scope);
         sessionRef.current = result.value;
@@ -110,7 +118,7 @@ export function useSessionMutations(options: UseSessionMutationsOptions) {
     } finally {
       heartbeat.setBusy(false);
     }
-  }, [dispatch, heartbeat, sessionRef, settleHeartbeat]);
+  }, [dispatch, heartbeat, reloadAfterHeartbeatFailure, sessionRef, settleHeartbeat]);
 
   /** Re-runs the last failed command; false when there is none (the caller then reloads the session instead). */
   const retryLastMutation = useCallback((): boolean => {

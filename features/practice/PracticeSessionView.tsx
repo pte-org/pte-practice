@@ -399,16 +399,21 @@ export function PracticeSessionView() {
     const session = sessionRef.current ?? state.session;
     const task = activeTask;
     if (!session || !task) return Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
-    const media = await uploadPracticeRecording(api, blob, session.publicId, task.publicId, durationSeconds);
-    const saved = await runBackgroundMutation(`draft:${task.publicId}:${media.mediaPublicId}`, (key) => sessionRef.current
-      ? api.saveDraft(sessionRef.current.publicId, task.publicId, {
-        clientVersion: sessionRef.current.version,
-        payload: JSON.stringify({ mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds }),
-        confidence: null,
-      }, key) : unavailable());
-    if (!saved.ok) throw new PracticeApiError(errorMessage(saved.reason), 0, "DRAFT_SAVE_FAILED");
-    editAnswer(session.publicId, task.publicId, { mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds });
-    return media;
+    heartbeat.setBusy(true);
+    try {
+      const media = await uploadPracticeRecording(api, blob, session.publicId, task.publicId, durationSeconds);
+      const saved = await runBackgroundMutation(`draft:${task.publicId}:${media.mediaPublicId}`, (key) => sessionRef.current
+        ? api.saveDraft(sessionRef.current.publicId, task.publicId, {
+          clientVersion: sessionRef.current.version,
+          payload: JSON.stringify({ mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds }),
+          confidence: null,
+        }, key) : unavailable());
+      if (!saved.ok) throw new PracticeApiError(errorMessage(saved.reason), 0, "DRAFT_SAVE_FAILED");
+      editAnswer(session.publicId, task.publicId, { mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds });
+      return media;
+    } finally {
+      heartbeat.setBusy(false);
+    }
   };
 
   const refreshPrompt = async () => {
