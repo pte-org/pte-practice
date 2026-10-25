@@ -4,7 +4,7 @@ import { BlankRenderer } from "./BlankRenderer";
 import { ChoiceRenderer } from "./ChoiceRenderer";
 import { HighlightRenderer } from "./HighlightRenderer";
 import { OrderRenderer } from "./OrderRenderer";
-import { RecordingRenderer } from "./RecordingRenderer";
+import { SpeakingRecorder } from "./SpeakingRecorder";
 import type { TaskRendererProps } from "./RendererTypes";
 import { TextRenderer } from "./TextRenderer";
 import { TypeInRenderer } from "./TypeInRenderer";
@@ -12,13 +12,13 @@ import { TypeInRenderer } from "./TypeInRenderer";
 type RegisteredRenderer = (props: TaskRendererProps) => ReactNode;
 
 const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRenderer>> = {
-  READ_ALOUD_V1: (props) => <RecordingRenderer {...props} />,
-  REPEAT_SENTENCE_V1: (props) => <RecordingRenderer {...props} />,
-  DESCRIBE_IMAGE_V1: (props) => <RecordingRenderer {...props} />,
-  RE_TELL_LECTURE_V1: (props) => <RecordingRenderer {...props} />,
-  ANSWER_SHORT_QUESTION_V1: (props) => <RecordingRenderer {...props} />,
-  RESPOND_TO_A_SITUATION_V1: (props) => <RecordingRenderer {...props} />,
-  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <RecordingRenderer {...props} />,
+  READ_ALOUD_V1: (props) => <SpeakingRecorder {...props} />,
+  REPEAT_SENTENCE_V1: (props) => <SpeakingRecorder {...props} />,
+  DESCRIBE_IMAGE_V1: (props) => <SpeakingRecorder {...props} />,
+  RE_TELL_LECTURE_V1: (props) => <SpeakingRecorder {...props} />,
+  ANSWER_SHORT_QUESTION_V1: (props) => <SpeakingRecorder {...props} />,
+  RESPOND_TO_A_SITUATION_V1: (props) => <SpeakingRecorder {...props} />,
+  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <SpeakingRecorder {...props} />,
   MC_READING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_READING_MULTIPLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_LISTENING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
