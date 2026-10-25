@@ -1,137 +1,120 @@
 "use client";
 
 import Link from "next/link";
-import { AppIcon, LockBadge, ProductMark, ProgressRing } from "@/common/components";
-import { SkillTaskList } from "@/features/catalog/SkillTaskList";
-import { flattenCatalogTasks } from "@/features/practice/catalog-order";
-import { PRACTICE_ROUTES } from "@/features/practice/constants";
-import { canStartPractice } from "@/features/practice/contracts";
-import { iconForTaskType } from "@/features/practice/icon-mapping";
-import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
-import { usePractice } from "@/features/practice/PracticeProvider";
+import { useEffect, useMemo, useState } from "react";
+import { AppIcon, ProductMark } from "@/common/components";
+import { useLatestRequest } from "@/common/hooks/useLatestRequest";
 import { useTranslation } from "@/common/i18n";
-import { useState } from "react";
+import { SkillTaskList } from "@/features/catalog/SkillTaskList";
 import { SKILL_DEVICE_CHECK, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
 import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
+import type { MockTest } from "@/features/mockTests/mock-test-contracts";
+import { createPracticeApiClient } from "@/features/practice/api";
+import { flattenCatalogTasks } from "@/features/practice/catalog-order";
+import { PRACTICE_ROUTES } from "@/features/practice/constants";
+import type { PracticeProgressEntry } from "@/features/practice/contracts";
+import { mockTarget } from "@/features/practice/mode/mode-target";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { usePractice } from "@/features/practice/PracticeProvider";
 import { ExamDateLine } from "./ExamDateLine";
+import { RecommendationCarousel } from "./RecommendationCarousel";
+import { buildRecommendations } from "./recommendations";
 
-const CHECK_LABELS = {
-  mic: "deviceCheck.micTile",
-  speaker: "deviceCheck.speakerTile",
-  keyboard: "deviceCheck.keyboardTile",
-  reading: "deviceCheck.readingTile",
-} as const;
+const SKILL_TILES = [
+  { code: "SPEAKING", label: "skills.speaking", icon: "mic" },
+  { code: "WRITING", label: "skills.writing", icon: "writing" },
+  { code: "READING", label: "skills.reading", icon: "reading" },
+  { code: "LISTENING", label: "skills.listening", icon: "listening" },
+] as const;
 
 export function HomeView() {
-  const { openFor: handleStartIntent, dialog: modeDialog } = usePracticeStart();
-  const { catalog, entitlement, isPracticeUnlocked } = usePractice();
+  const { openFor, openForMock, dialog: modeDialog } = usePracticeStart();
+  const { catalog, entitlement, isPracticeUnlocked, authStatus } = usePractice();
   const { t } = useTranslation();
   const { passed, markPassed } = useDeviceChecks();
   const [check, setCheck] = useState<DeviceCheckKind | null>(null);
-  const orderedTasks = flattenCatalogTasks(catalog.sections);
-  const hasRunnableTask = isPracticeUnlocked && orderedTasks.some((task) => task.availability === "RUNNABLE");
-  const recommendedTasks = [
-    ...orderedTasks.filter((task) => task.availability === "RUNNABLE"),
-    ...orderedTasks.filter((task) => task.availability === "VISIBLE"),
-  ].slice(0, 2);
-  const skillTiles = [
-    { code: "SPEAKING", label: t("skills.speaking"), icon: "mic" as const },
-    { code: "WRITING", label: t("skills.writing"), icon: "writing" as const },
-    { code: "READING", label: t("skills.reading"), icon: "reading" as const },
-    { code: "LISTENING", label: t("skills.listening"), icon: "listening" as const },
-  ];
+  const [mockTests, setMockTests] = useState<MockTest[]>([]);
+  const [entries, setEntries] = useState<PracticeProgressEntry[]>([]);
+  const api = useMemo(() => createPracticeApiClient(), []);
+  const gate = useLatestRequest();
+  const tasks = flattenCatalogTasks(catalog.sections);
+  const hasRunnableTask = isPracticeUnlocked && tasks.some((task) => task.availability === "RUNNABLE");
 
+  // Mock tests and unfinished sessions feed "Recommended for you"; a failure just leaves the row empty.
+  useEffect(() => {
+    if (authStatus !== "authenticated" || !isPracticeUnlocked) return;
+    const id = gate.begin();
+    void Promise.all([api.listMockTests().catch(() => []), api.getProgress().then((p) => p.entries).catch(() => [])])
+      .then(([tests, progressEntries]) => {
+        if (!gate.isLatest(id)) return;
+        setMockTests(tests);
+        setEntries(progressEntries);
+      });
+  }, [api, authStatus, gate, isPracticeUnlocked]);
+
+  const taskName = (code: string) => tasks.find((task) => task.code === code)?.displayName ?? code;
+  const cards = buildRecommendations(mockTests, entries, taskName, t);
 
   return (
-    <div className="page-stack" data-testid="home-page">
-      <section className="reference-card experience-card" aria-labelledby="experience-title">
-        <div className="experience-header">
-          <div className="experience-identity">
-            <div className="experience-ring" aria-hidden="true"><ProductMark /></div>
+    <div className="page-column" data-testid="home-page">
+      <section className="card home-hero" aria-labelledby="experience-title">
+        <div className="home-hero-top">
+          <div className="home-identity">
+            <div className="home-logo-ring" aria-hidden="true"><ProductMark /></div>
             <div>
               <h1 id="experience-title">{catalog.title}</h1>
               <ExamDateLine />
             </div>
           </div>
           {/* Each skill tile opens the device check that skill depends on (mic, speakers, keyboard, text size). */}
-          <div className="skill-matrix" aria-label={t("deviceCheck.micTitle")}>
-            {skillTiles.map((skill) => {
+          <div className="device-grid">
+            {SKILL_TILES.map((skill) => {
               const kind = SKILL_DEVICE_CHECK[skill.code];
               const checked = passed(kind);
               return (
-                <button className="skill-tile skill-tile-check" type="button" key={skill.code} onClick={() => setCheck(kind)}>
-                  <ProgressRing variant={checked ? "progress" : "empty"} value={checked ? 1 : 0} max={1} tone="green" size={48}
-                    label={`${skill.label}: ${checked ? t("deviceCheck.checked") : t("deviceCheck.notChecked")}`}>
-                    <AppIcon name={skill.icon} size={24} />
-                  </ProgressRing>
-                  <strong>{skill.label}</strong>
-                  <span>{t(CHECK_LABELS[kind])}</span>
-                  <span className={checked ? "device-status-ok" : "device-status-todo"}>
+                <button className="device-tile" type="button" key={skill.code} onClick={() => setCheck(kind)}>
+                  <AppIcon name={skill.icon} size={22} />
+                  <span>{t(skill.label)}</span>
+                  <strong className={checked ? "device-status-ok" : "device-status-todo"}>
                     {checked ? `✓ ${t("deviceCheck.checked")}` : t("deviceCheck.notChecked")}
-                  </span>
+                  </strong>
                 </button>
               );
             })}
           </div>
-          <DeviceCheckDialog kind={check} onClose={() => setCheck(null)} onPassed={markPassed} />
         </div>
-        <div className="insight-strip">
+        <div className="hint-strip">
           <AppIcon name="sparkle" size={20} />
           <span>
-            {!isPracticeUnlocked
-              ? t("home.explorePracticeAreas")
-              : hasRunnableTask
-                ? t("home.workspaceReady")
-                : t("home.accessActiveContentNotReady")}
+            {!isPracticeUnlocked ? t("home.explorePracticeAreas")
+              : hasRunnableTask ? t("home.workspaceReady") : t("home.accessActiveContentNotReady")}
           </span>
         </div>
       </section>
 
-      <section className="reference-section" aria-labelledby="recommended-title">
-        <h2 id="recommended-title">{t("home.recommendedForYou")}</h2>
-        {recommendedTasks.length > 0 ? (
-          <div className="recommendation-row">
-            {recommendedTasks.map((task) => {
-              const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
-              const isUnavailable = task.availability !== "RUNNABLE";
-              const statusLabel = !canStart && isUnavailable && isPracticeUnlocked
-                ? t("common.unavailableAction")
-                : t("common.lockedAction");
-
-              return (
-                <article className="recommendation-card" key={task.code}>
-                  <div className="recommendation-topline">
-                    <span className="recommendation-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={20} /></span>
-                    {!canStart ? <LockBadge locked label={statusLabel} /> : null}
-                  </div>
-                  <h3>{catalog.title} {task.displayName}</h3>
-                  <p>{task.scored ? t("home.reviewResultsInsights") : t("home.familiarizeExamFormat")}</p>
-                  <button className={`button${canStart ? " button-accent" : " button-muted"}`} type="button" disabled={!canStart} onClick={() => handleStartIntent(task)}>
-                    <AppIcon name={canStart ? "play" : "lock"} size={15} />
-                    {canStart ? t("ui.availableAction") : statusLabel}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="catalog-note">{t("home.noPracticeTaskAvailable")}</p>
-        )}
+      <section aria-labelledby="recommended-title" className="home-section">
+        <div className="section-heading-row">
+          <h2 id="recommended-title" className="section-title">{t("presentation.recommended")}</h2>
+          <Link className="text-link" href={PRACTICE_ROUTES.practiceTests}>{t("presentation.viewAll")}</Link>
+        </div>
+        {cards.length > 0
+          ? <RecommendationCarousel cards={cards} onStartMock={(publicId, title) => openForMock(mockTarget(publicId, title))} />
+          : <p className="catalog-note">{t("home.noPracticeTaskAvailable")}</p>}
       </section>
 
-      <section className="reference-section" aria-labelledby="skills-title">
-        <div className="section-heading-row"><h2 id="skills-title">{t("home.skills")}</h2><Link className="text-link" href={PRACTICE_ROUTES.practiceTests}>{t("home.viewAll")}</Link></div>
-        <SkillTaskList
-          sections={catalog.sections}
-          isPracticeUnlocked={isPracticeUnlocked}
-          onStartIntent={handleStartIntent}
-        />
+      <section aria-labelledby="skills-title" className="home-section">
+        <div className="section-heading-row">
+          <h2 id="skills-title" className="section-title">{t("presentation.skills")}</h2>
+          <Link className="text-link" href={PRACTICE_ROUTES.studyPack}>{t("presentation.viewAll")}</Link>
+        </div>
+        <SkillTaskList sections={catalog.sections} isPracticeUnlocked={isPracticeUnlocked} onStartIntent={openFor} />
       </section>
 
       {entitlement?.organizationContext ? (
         <p className="quiet-note">{t("home.workspace")} {entitlement.organizationContext.displayName}</p>
       ) : null}
+      <DeviceCheckDialog kind={check} onClose={() => setCheck(null)} onPassed={markPassed} />
       {modeDialog}
     </div>
   );

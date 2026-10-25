@@ -31,6 +31,8 @@ export interface TaskRendererProps {
   onLoadPlayback?: () => Promise<string>;
   /** Present only for a timed question; an untimed one renders exactly as before. */
   timed?: TimedRendererControl;
+  /** Recorder only: true while a recording is being made or uploaded, so the page can warn before leaving. */
+  onActivityChange?: (busy: boolean) => void;
   sessionPublicId?: string;
   itemPublicId?: string;
 }

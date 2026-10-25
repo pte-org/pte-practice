@@ -65,14 +65,14 @@ export function MockTestListView() {
         </div>
       ) : null}
       {state.status === "ready" && state.tests.length === 0
-        ? <p className="catalog-note" role="status">{t("mockTests.empty")}</p> : null}
+        ? <p className="card catalog-note" role="status">{t("mockTests.emptyBank")}</p> : null}
       {state.status === "ready" && state.tests.length > 0 ? (
         <ul className="mock-test-list">
           {state.tests.map((test) => {
             const action = mockTestAction(test);
             const attempt = test.latestAttempt;
             return (
-              <li className="mock-test-row" key={test.publicId}>
+              <li className="card mock-test-row" key={test.publicId}>
                 <span className={`mock-test-icon${action === "CONTINUE" ? " mock-test-icon-ring" : ""}`}>
                   {action === "CONTINUE" && attempt
                     ? <ProgressRing label={`${attempt.answeredItemCount}/${attempt.totalItemCount}`} variant="progress"
@@ -82,12 +82,12 @@ export function MockTestListView() {
                 <span className="mock-test-copy">
                   <strong>{test.title}</strong>
                   <span className="mock-test-chips">
-                    <span className="mock-test-chip"><AppIcon name="responses" size={14} /> {test.itemCount} {t("mockTests.questions")}</span>
-                    <span className="mock-test-chip"><AppIcon name="timer" size={14} /> {formatEstimatedDuration(test.estimatedMinutes)}</span>
+                    <span className="chip"><AppIcon name="responses" size={14} /> {test.itemCount} {t("mockTests.questions")}</span>
+                    <span className="chip"><AppIcon name="timer" size={14} /> {formatEstimatedDuration(test.estimatedMinutes)}</span>
                     {action === "CONTINUE" && attempt
-                      ? <span className="mock-test-chip">{attempt.answeredItemCount}/{attempt.totalItemCount}</span> : null}
+                      ? <span className="chip">{attempt.answeredItemCount}/{attempt.totalItemCount}</span> : null}
                     {action === "RETAKE" && attempt?.estimatedOverall != null
-                      ? <span className="mock-test-chip">{t("mockTests.estimatedScore")} {attempt.estimatedOverall}</span> : null}
+                      ? <span className="chip">{t("mockTests.estimatedScore")} {attempt.estimatedOverall}</span> : null}
                   </span>
                 </span>
                 {action === "CONTINUE"

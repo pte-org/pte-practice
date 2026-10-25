@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  currentTaskPosition, effectiveDraft, hasAnswer, parsePayload, progressFor, sessionErrorMessage,
+  currentTaskPosition, effectiveDraft, hasAnswer, isVersionConflict, parsePayload, progressFor, sessionErrorMessage,
 } from "./session-draft";
 
 const messages = { conflict: "changed", expired: "expired", fallback: "failed" };
@@ -51,6 +51,15 @@ describe("progress helpers", () => {
     expect(progressFor({ totalItemCount: 10, status: "IN_PROGRESS", currentTask: { orderIndex: 5 } as never })).toBe(50);
     expect(currentTaskPosition({ totalItemCount: 10, currentTask: { orderIndex: 2 } as never })).toBe(3);
     expect(currentTaskPosition({ totalItemCount: 10, currentTask: null })).toBe(10);
+  });
+});
+
+describe("isVersionConflict", () => {
+  it("is the stale-version case only, not every 409", () => {
+    expect(isVersionConflict({ status: 409 })).toBe(true);
+    expect(isVersionConflict({ code: "PRACTICE_STALE_SESSION_VERSION" })).toBe(true);
+    expect(isVersionConflict({ status: 409, code: "PRACTICE_IDEMPOTENCY_KEY_REUSED" })).toBe(false);
+    expect(isVersionConflict({ status: 500 })).toBe(false);
   });
 });
 

@@ -1,5 +1,11 @@
 export { AppIcon, ProductMark } from "./AppIcon";
 export type { IconName } from "./AppIcon";
+export { Checkbox } from "./Checkbox";
+export { CollapsibleSection } from "./CollapsibleSection";
+export { ConfirmDialog } from "./ConfirmDialog";
+export { SegmentedProgress } from "./SegmentedProgress";
+export { Tabs, TabPanel } from "./Tabs";
+export type { TabItem, TabsProps, TabPanelProps } from "./Tabs";
 export { CountdownTimer } from "./CountdownTimer";
 export type { CountdownTimerProps } from "./CountdownTimer";
 export { ErrorState } from "./ErrorState";

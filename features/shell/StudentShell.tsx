@@ -8,6 +8,7 @@ import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { usePracticeAccessToast } from "@/features/practice/useAccessToast";
 import { readReadingSize } from "@/features/deviceCheck/device-check";
+import { NavIcon, type NavIconName } from "./NavIcon";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
@@ -41,6 +42,11 @@ export function StudentShell({ children }: { children: ReactNode }) {
     return <ShellLoading t={t} />;
   }
 
+  // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
+  if (pathname === PRACTICE_ROUTES.practiceSession) {
+    return <main className="session-page">{children}</main>;
+  }
+
   return (
     <div className="student-shell">
       <aside className="side-rail" aria-label="Student navigation">
@@ -67,7 +73,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span className="nav-icon" aria-hidden="true"><AppIcon name={item.icon} size={21} /></span>
+                <span className="nav-icon" aria-hidden="true"><NavIcon name={item.icon as NavIconName} /></span>
                 <span>{t(`nav.${item.icon === "practice" ? "practiceTests" : item.icon}` as TranslationKey)}</span>
               </Link>
             );

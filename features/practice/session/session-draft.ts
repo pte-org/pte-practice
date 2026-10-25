@@ -50,6 +50,15 @@ export interface SessionErrorMessages {
   fallback: string;
 }
 
+/**
+ * The session changed elsewhere (another tab or device) since this screen loaded it. Other 409s, such as a reused
+ * idempotency key, are not this case.
+ */
+export function isVersionConflict(reason: unknown): boolean {
+  const error = reason as SessionErrorLike | undefined;
+  return error?.code === "PRACTICE_STALE_SESSION_VERSION" || (error?.status === 409 && !error?.code);
+}
+
 /** Maps an API failure to the message shown to the student; stale version and expiry have their own wording. */
 export function sessionErrorMessage(reason: unknown, messages: SessionErrorMessages): string {
   const error = reason as SessionErrorLike | undefined;

@@ -26,6 +26,8 @@ export const PREVIEW_CATALOG: PracticeCatalog = {
       provenance: "LOCAL_SHELL_PREVIEW",
       timedAvailable: false,
       timedUnavailableReason: null,
+      answeredQuestionCount: 0,
+      averageScore: null,
     })),
     practiceQuestionCount: 0,
     answeredQuestionCount: 0,

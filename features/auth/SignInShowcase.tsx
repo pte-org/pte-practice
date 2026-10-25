@@ -28,8 +28,7 @@ export function SignInShowcase() {
               <div className="showcase-score">
                 <span>{t("auth.showcaseScore")}</span>
                 <span>{t("auth.showcaseTime")}</span>
-                <span>{t("auth.showcaseConfidence")}</span>
-              </div>
+                  </div>
             </div>
           </div>
         </div>

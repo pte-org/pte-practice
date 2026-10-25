@@ -16,16 +16,16 @@ export function StudyPackView() {
   const total = totalPracticeQuestions(rows);
 
   return (
-    <div className="study-pack" data-testid="study-pack-page">
-      <div className="study-pack-summary">
+    <div className="page-column" data-testid="study-pack-page">
+      <div className="hint-strip study-pack-summary">
         <AppIcon name="sparkle" size={22} />
         <div>
           <strong>{total} {t("studyPackView.summaryTitle")}</strong>
           <p>{t("studyPackView.summaryHint")}</p>
         </div>
       </div>
-      <h2 className="study-pack-heading">{rows.length} {t("studyPackView.skillsHeading")}</h2>
-      <ul className="study-skill-list">
+      <h2 className="section-title">{rows.length} {t("studyPackView.skillsHeading")}</h2>
+      <ul className="card card-flush study-skill-list">
         {rows.map((row) => {
           const name = t(`skills.${row.code.toLowerCase()}` as TranslationKey);
           return (

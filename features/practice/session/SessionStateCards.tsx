@@ -1,9 +1,13 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import { UI_TEXT } from "../constants";
+import type { PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
+import { formatScore, scoreTone } from "../presentation";
+import { continueHref, sessionAverageScore } from "./complete-actions";
 
 export function SessionLoading() {
   const { t } = useTranslation();
@@ -39,41 +43,41 @@ export function SessionErrorCard({ message, hasRetryAction, onRetry, onBackHome 
   );
 }
 
-export function SessionExitedCard({ session, onBackHome }: { session: PracticeSession | null; onBackHome: () => void }) {
-  const { t } = useTranslation();
-  const expired = session?.status === "EXPIRED";
-  const discarded = session?.status === "DISCARDED";
-  return (
-    <section className="session-state-card" data-testid="practice-session-exited">
-      <AppIcon name="check" size={28} />
-      <h1>{expired ? t("ui.sessionExpired") : discarded ? t("ui.sessionNoProgressSaved") : t("ui.sessionProgressSaved")}</h1>
-      <p>{expired ? t("ui.sessionExpired") : discarded ? t("ui.sessionCanStartNew") : t("ui.sessionDraftAvailable")}</p>
-      <button className="button button-primary" type="button" onClick={onBackHome}>{t("ui.backHome")}</button>
-    </section>
-  );
-}
-
 interface SessionCompleteCardProps {
   session: PracticeSession;
+  api: PracticeApiClient;
   onReview: () => void;
   onBackHome: () => void;
 }
 
-export function SessionCompleteCard({ session, onReview, onBackHome }: SessionCompleteCardProps) {
+/** End of a session: how many answered, the average score so far, and where to go next. */
+export function SessionCompleteCard({ session, api, onReview, onBackHome }: SessionCompleteCardProps) {
   const { t } = useTranslation();
-  const summary = t("ui.sessionAnsweredTasks")
-    .replace("{answered}", session.answeredItemCount.toString())
-    .replace("{total}", session.totalItemCount.toString());
+  const [average, setAverage] = useState<number | null>(null);
+  const again = continueHref(session);
+
+  useEffect(() => {
+    let active = true;
+    void api.getReview(session.publicId)
+      .then((review) => { if (active) setAverage(sessionAverageScore(review.items.map((item) => item.score))); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [api, session.publicId]);
+
   return (
-    <section className="session-state-card" data-testid="practice-session-complete">
-      <AppIcon name="check" size={28} />
-      <h1>{t("ui.sessionCompleted")}</h1>
-      <p>{summary}</p>
+    <section className="session-state-card card" data-testid="practice-session-complete">
+      <AppIcon name="check" size={32} />
+      <h1>{t("review.completedTitle")}</h1>
+      <p>{t("review.completedSummary").replace("{answered}", String(session.answeredItemCount))
+        .replace("{total}", String(session.totalItemCount))}</p>
+      <p className="complete-average">
+        {t("review.averageScore")}: <span className={`score-badge score-badge-${scoreTone(average)}`}>{formatScore(average)}</span>
+      </p>
       <div className="session-actions">
-        <button className="button button-primary" type="button" onClick={onReview}>{UI_TEXT.reviewTitle}</button>
-        <button className="text-button" type="button" onClick={onBackHome}>{t("ui.backHome")}</button>
+        <button className="button button-primary button-pill" type="button" onClick={onReview}>{t("review.reviewAnswers")}</button>
+        {again ? <Link className="button button-outline button-pill" href={again}>{t("review.practiseAgain")}</Link> : null}
+        <button className="text-button" type="button" onClick={onBackHome}>{t("review.home")}</button>
       </div>
     </section>
   );
 }
-

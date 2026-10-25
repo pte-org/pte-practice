@@ -175,6 +175,8 @@ export interface LocaleDict {
     featureScoringDescription: string;
     featureProgressTitle: string;
     featureProgressDescription: string;
+    usernameRequired: string;
+    passwordRequired: string;
   };
   mode: {
     modeLabel: string;
@@ -205,6 +207,7 @@ export interface LocaleDict {
     estimatePending: string;
     estimateSkipped: string;
     estimateExcluded: string;
+    emptyBank: string;
   };
   deviceCheck: {
     checked: string;
@@ -243,6 +246,91 @@ export interface LocaleDict {
     reading_lg: string;
     reading_xl: string;
     readingUse: string;
+  };
+  presentation: {
+    questions: string;
+    skillPractice: string;
+    statusAnswered: string;
+    statusSkipped: string;
+    statusPending: string;
+    answers: string;
+    viewAll: string;
+    continue: string;
+    startTest: string;
+    inProgress: string;
+    minutes: string;
+    recommended: string;
+    skills: string;
+    skillItems: string;
+    mockDescription: string;
+    previous: string;
+    next: string;
+  };
+  session: {
+    recordedAnswer: string;
+    recording_short: string;
+    recording_silent: string;
+    keepRecording: string;
+    pause: string;
+    pauseTitle: string;
+    pauseDescription: string;
+    pauseConfirm: string;
+    cancel: string;
+    skip: string;
+    skipTitle: string;
+    skipDescription: string;
+    next: string;
+    part: string;
+    question: string;
+    savingRecording: string;
+    conflict: string;
+    offline: string;
+    online: string;
+    wordsTitle: string;
+    wordsDescription: string;
+    submitAnyway: string;
+    wordGuide: string;
+    copy: string;
+    cut: string;
+    paste: string;
+    audioCheckTitle: string;
+    audioCheckIntro: string;
+    audioCheckYouWillHear: string;
+    audioCheckSentence: string;
+    audioCheckTroubleshoot: string;
+    audioCheckTips: string;
+    audioCheckConfirm: string;
+  };
+  review: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    back: string;
+    loading: string;
+    loadError: string;
+    requiredSession: string;
+    completedTitle: string;
+    completedSummary: string;
+    averageScore: string;
+    reviewAnswers: string;
+    practiseAgain: string;
+    home: string;
+  };
+  progress: {
+    title: string;
+    metricSessions: string;
+    metricCompleted: string;
+    metricAnswered: string;
+    metricAverage: string;
+    bySkill: string;
+    practise: string;
+    history: string;
+    resume: string;
+    review: string;
+    empty: string;
+    inProgress: string;
+    completed: string;
+    loadError: string;
   };
   timed: {
     stepperLabel: string;

@@ -4,6 +4,7 @@ import { type Dispatch, type MutableRefObject, useCallback, useRef, useState } f
 import { createPracticeIdempotencyKey, PracticeApiError, type PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
 import type { PracticeSessionAction } from "../session-state";
+import { isVersionConflict } from "./session-draft";
 import { runInBackground, type BackgroundResult } from "./background-mutation";
 import type { HeartbeatState } from "./useHeartbeat";
 
@@ -16,6 +17,8 @@ interface UseSessionMutationsOptions {
   errorMessage: (reason: unknown) => string;
   /** Message for the case where a command is issued before any session was loaded. */
   unavailableMessage: string;
+  /** Called after a command found the session changed elsewhere and the latest state was loaded instead. */
+  onConflict?: () => void;
 }
 
 type SessionAction = (idempotencyKey: string) => Promise<PracticeSession>;
@@ -27,7 +30,7 @@ type SessionAction = (idempotencyKey: string) => Promise<PracticeSession>;
  * student has in memory, such as saving a recording.
  */
 export function useSessionMutations(options: UseSessionMutationsOptions) {
-  const { api, dispatch, sessionRef, heartbeat, hydrateDraft, errorMessage, unavailableMessage } = options;
+  const { api, dispatch, sessionRef, heartbeat, hydrateDraft, errorMessage, unavailableMessage, onConflict } = options;
   const mutationKeys = useRef(new Map<string, string>());
   const retryMutation = useRef<(() => Promise<void>) | null>(null);
   const [hasRetryAction, setHasRetryAction] = useState(false);
@@ -66,6 +69,19 @@ export function useSessionMutations(options: UseSessionMutationsOptions) {
         hydrateDraft(next);
         onSuccess(next);
       } catch (reason) {
+        // Changed in another tab: load the latest state (the local draft is kept) instead of an error screen.
+        if (isVersionConflict(reason)) {
+          try {
+            await reloadAfterHeartbeatFailure();
+            mutationKeys.current.delete(scope);
+            retryMutation.current = null;
+            setHasRetryAction(false);
+            onConflict?.();
+            return;
+          } catch {
+            // fall through to the error screen
+          }
+        }
         retryMutation.current = retry;
         setHasRetryAction(true);
         dispatch({ type: "failed", message: errorMessage(reason) });
@@ -75,7 +91,7 @@ export function useSessionMutations(options: UseSessionMutationsOptions) {
     };
     retryMutation.current = retry;
     await retry();
-  }, [dispatch, errorMessage, heartbeat, hydrateDraft, sessionRef, settleHeartbeat]);
+  }, [dispatch, errorMessage, heartbeat, hydrateDraft, onConflict, reloadAfterHeartbeatFailure, sessionRef, settleHeartbeat]);
 
   /** Same version and idempotency rules as `runMutation`, but a failure is returned instead of replacing the screen. */
   const runBackgroundMutation = useCallback(async (scope: string, action: SessionAction):

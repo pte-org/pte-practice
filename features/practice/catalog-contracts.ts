@@ -21,6 +21,10 @@ export interface PracticeCatalogTask {
   /** Whether the active Score Template can pace this task in timed mode; false when the server did not say. */
   timedAvailable: boolean;
   timedUnavailableReason: string | null;
+  /** Distinct questions of this task type the student has answered; 0 when the server did not say. */
+  answeredQuestionCount: number;
+  /** Mean score (0-100) of the student's scored answers; null while none is scored. */
+  averageScore: number | null;
 }
 
 export interface PracticeCatalogSection {
@@ -106,6 +110,8 @@ function normalizeCatalogTask(value: unknown): PracticeCatalogTask | null {
     provenance: asNullableString(record.provenance),
     timedAvailable: record.timedAvailable === true,
     timedUnavailableReason: asNullableString(record.timedUnavailableReason),
+    answeredQuestionCount: Math.max(0, asNumber(record.answeredQuestionCount, 0)),
+    averageScore: asNullableNumber(record.averageScore),
   };
 }
 

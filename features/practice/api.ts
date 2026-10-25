@@ -9,9 +9,9 @@ import type {
   StartSessionRequest,
   PracticeSession,
   PracticeSessionTokens,
-  PracticeTaskContentOption,
 } from "./contracts";
-import { normalizeEstimatedScores, normalizeMockTests, type MockTest } from "../mockTests/mock-test-contracts";
+import { normalizeMockTests, type MockTest } from "../mockTests/mock-test-contracts";
+import { normalizeReview } from "./review-contracts";
 import type { PracticeAudioUploadGrant } from "./media/contracts";
 import {
   normalizeCatalogResponse,
@@ -22,6 +22,7 @@ import {
   normalizeRecordingPlayback,
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
+import { refreshOnce } from "./token-refresh";
 
 export class PracticeApiError extends Error {
   constructor(
@@ -121,25 +122,8 @@ export function createPracticeApiClient() {
       requireItemResult(await request<unknown>(
         `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/scoring/retry`,
         { method: "POST", headers: { "Idempotency-Key": idempotencyKey } })),
-    getReview: async (sessionPublicId: string): Promise<PracticeReview> => {
-      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`);
-      const record = typeof response === "object" && response !== null ? response as Record<string, unknown> : {};
-      const items = Array.isArray(record.items) ? record.items.flatMap((value) => {
-        if (typeof value !== "object" || value === null) return [];
-        const item = value as Record<string, unknown>;
-        if (typeof item.publicId !== "string" || typeof item.taskCode !== "string") return [];
-        const status: "ANSWERED" | "SKIPPED" | "PENDING" = item.status === "ANSWERED" || item.status === "SKIPPED" ? item.status : "PENDING";
-        return [{ publicId: item.publicId, orderIndex: typeof item.orderIndex === "number" ? item.orderIndex : 0,
-          taskCode: item.taskCode, displayName: typeof item.displayName === "string" ? item.displayName : item.taskCode,
-          section: typeof item.section === "string" ? item.section : "UNKNOWN", status,
-          promptText: typeof item.promptText === "string" ? item.promptText : null,
-          savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
-          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
-          options: reviewOptions(item.options) }];
-      }) : [];
-      return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items,
-        estimatedScores: normalizeEstimatedScores(record.estimatedScores) };
-    },
+    getReview: async (sessionPublicId: string): Promise<PracticeReview> =>
+      normalizeReview(await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`), sessionPublicId),
     requestResponseAudio: (body: {
       contentType: "audio/wav";
       assetKind: "STUDENT_RESPONSE_AUDIO";
@@ -186,14 +170,6 @@ function requireItemResult(value: unknown): PracticeItemResult {
   return result;
 }
 
-function reviewOptions(value: unknown): PracticeTaskContentOption[] {
-  return Array.isArray(value) ? value.flatMap((entry) => {
-    const option = asRecord(entry);
-    if (typeof option.text !== "string" || typeof option.orderIndex !== "number") return [];
-    return [{ text: option.text, orderIndex: option.orderIndex, blankIndex: typeof option.blankIndex === "number" ? option.blankIndex : null }];
-  }) : [];
-}
-
 function requireSession(value: unknown): PracticeSession {
   const session = normalizePracticeSessionResponse(value);
   if (!session) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_SESSION");
@@ -226,7 +202,9 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
   }
 
   if (response.status === 401 && allowRefresh && session?.refreshToken) {
-    const refreshed = await refreshSession(session.refreshToken);
+    // Another request may already have refreshed while this one was in flight: retry with the new token.
+    if (getPracticeSession()?.accessToken !== session.accessToken) return request<T>(path, { ...options, allowRefresh: false });
+    const refreshed = await refreshOnce(session.refreshToken, refreshSession);
     if (refreshed) return request<T>(path, { ...options, allowRefresh: false });
     clearPracticeSession();
   }

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppIcon } from "@/common/components";
+import { useTranslation, type TranslationKey } from "@/common/i18n";
+import { recordingIssue } from "../answer-checks";
 import type { TaskRendererProps } from "./RendererTypes";
 import { AudioWaveform } from "../media/AudioWaveform";
 import { MAX_RECORDING_DURATION_SECONDS, RECORDING_TEXT } from "../media/constants";
@@ -10,7 +12,8 @@ import { useRecordingPlayback } from "../media/useRecordingPlayback";
 import { clampRecordingDuration, padLevels, WAVEFORM_BAR_COUNT } from "../media/waveform";
 import { createOnceCommand } from "../timed/play-once";
 
-type RecordingState = "idle" | "recording" | "uploading" | "recorded" | "saveFailed" | "error";
+// "review": an untimed recording that is very short or silent waits for the student to keep or redo it.
+type RecordingState = "idle" | "recording" | "uploading" | "review" | "recorded" | "saveFailed" | "error";
 
 interface PendingRecording {
   blob: Blob;
@@ -25,8 +28,11 @@ const FLAT_PEAKS: readonly number[] = new Array<number>(WAVEFORM_BAR_COUNT).fill
  * stops it and can record again; in a timed question the frame drives it through `timed` and there is no retake.
  */
 export function SpeakingRecorder({
-  fixture, value, disabled = false, onChange, onUploadRecording, onLoadPlayback, timed,
+  fixture, value, disabled = false, onChange, onUploadRecording, onLoadPlayback, timed, onActivityChange,
 }: TaskRendererProps) {
+  const { t } = useTranslation();
+  const [issue, setIssue] = useState<"short" | "silent" | null>(null);
+  const maxLevel = useRef(0);
   const [state, setState] = useState<RecordingState>(hasRecording(value) ? "recorded" : "idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
@@ -43,14 +49,23 @@ export function SpeakingRecorder({
   const playback = useRecordingPlayback(localUrl, onLoadPlayback ?? null, playbackFailed);
 
   useEffect(() => () => recorder.current?.cancel(), []);
+  // The session page warns before leaving while a recording is being made or uploaded.
+  useEffect(() => {
+    onActivityChange?.(state === "recording" || state === "uploading");
+  }, [onActivityChange, state]);
   useEffect(() => () => { if (localUrl) URL.revokeObjectURL(localUrl); }, [localUrl]);
 
   const startRecording = useCallback(async () => {
     setMessage(null);
     setLiveLevels([]);
+    setIssue(null);
+    maxLevel.current = 0;
     try {
       recorder.current = await startWavRecording({
-        onLevel: (level) => setLiveLevels((previous) => [...previous, Math.min(1, level * LEVEL_SCALE)].slice(-WAVEFORM_BAR_COUNT)),
+        onLevel: (level) => {
+          maxLevel.current = Math.max(maxLevel.current, level);
+          setLiveLevels((previous) => [...previous, Math.min(1, level * LEVEL_SCALE)].slice(-WAVEFORM_BAR_COUNT));
+        },
       });
       startedAt.current = Date.now();
       setElapsedSeconds(0);
@@ -94,8 +109,15 @@ export function SpeakingRecorder({
     };
     setPeaks(recording.peaks);
     setLocalUrl(URL.createObjectURL(recording.blob));
+    // Untimed only: a timed question must save whatever was recorded, its rhythm does not wait.
+    const found = timed ? null : recordingIssue(pending.current.durationSeconds, maxLevel.current);
+    if (found) {
+      setIssue(found);
+      setState("review");
+      return;
+    }
     await saveRecording(pending.current);
-  }, [maxSeconds, saveRecording, state]);
+  }, [maxSeconds, saveRecording, state, timed]);
 
   // The frame decides when to record: "start" opens the microphone once per run, "stop" ends and saves it.
   const command = timed?.recordCommand ?? null;
@@ -124,17 +146,20 @@ export function SpeakingRecorder({
     setLocalUrl(null);
     setLiveLevels([]);
     pending.current = null;
+    setIssue(null);
     setState("idle");
   }
 
   const shownDuration = state === "recording" ? elapsedSeconds : durationFromValue(value, elapsedSeconds);
   const recorded = state === "recorded";
   const waveform = state === "recording" ? padLevels(liveLevels) : peaks ?? FLAT_PEAKS;
-  const showWaveform = state === "recording" || state === "uploading" || state === "saveFailed" || recorded;
+  const showWaveform = state === "recording" || state === "uploading" || state === "review" || state === "saveFailed" || recorded;
 
   return (
     <div className="task-recording-panel">
       {fixture.text ? <p className="task-source-text">{fixture.text}</p> : null}
+      <div className="record-card">
+      <strong className="record-card-title">{t("session.recordedAnswer")}</strong>
       <div className="task-recording-status" role="status" aria-live="polite">
         <span className={`recording-indicator recording-indicator-${state}`} aria-hidden="true" />
         <span>{statusText(state)}</span>
@@ -148,6 +173,9 @@ export function SpeakingRecorder({
         </div>
       ) : null}
       {message ? <p className="task-recording-message" role="alert">{message}</p> : null}
+      {state === "review" && issue ? (
+        <p className="task-recording-message" role="alert">{t(`session.recording_${issue}` as TranslationKey)}</p>
+      ) : null}
       <div className="task-recording-actions">
         {state === "recording" ? (
           // A timed question stops through the frame's "stop early" button, so the recorder has no stop of its own.
@@ -158,6 +186,16 @@ export function SpeakingRecorder({
           )
         ) : state === "uploading" ? (
           <button className="button button-muted" type="button" disabled>{RECORDING_TEXT.uploading}</button>
+        ) : state === "review" ? (
+          <>
+            <button className="button button-muted" type="button" disabled={disabled} onClick={recordAgain}>
+              <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
+            </button>
+            <button className="button button-primary" type="button" disabled={disabled}
+              onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
+              {t("session.keepRecording")}
+            </button>
+          </>
         ) : state === "saveFailed" ? (
           <button className="button button-primary" type="button" disabled={disabled}
             onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
@@ -180,11 +218,13 @@ export function SpeakingRecorder({
           </button>
         )}
       </div>
+      </div>
     </div>
   );
 }
 
 function statusText(state: RecordingState): string {
+  if (state === "review") return RECORDING_TEXT.recorded;
   if (state === "recording") return RECORDING_TEXT.recording;
   if (state === "uploading") return RECORDING_TEXT.uploading;
   if (state === "recorded") return RECORDING_TEXT.recorded;

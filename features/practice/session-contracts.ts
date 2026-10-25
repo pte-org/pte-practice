@@ -114,6 +114,11 @@ export interface PracticeSession {
   timingMode: PracticeTimingMode;
   /** Questions per task type the student asked for; null for sessions from before the choice existed. */
   questionCount: number | null;
+  /** TASK, SKILL or MOCK_TEST; null from servers that predate kinds. */
+  kind: string | null;
+  skillCode: string | null;
+  /** The task type when the session covers exactly one. */
+  taskCode: string | null;
 }
 
 /** Short-lived link to the student's own saved recording, to replay it and draw its waveform after a reload. */
@@ -155,6 +160,9 @@ export function normalizePracticeSessionResponse(value: unknown): PracticeSessio
     itemResult: normalizePracticeItemResult(record.itemResult),
     timingMode: record.timingMode === "TIMED" ? "TIMED" : "UNTIMED",
     questionCount: asNullableNumber(record.questionCount),
+    kind: asNullableString(record.kind),
+    skillCode: asNullableString(record.skillCode),
+    taskCode: asNullableString(record.taskCode),
   };
 }
 

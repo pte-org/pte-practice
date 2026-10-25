@@ -48,6 +48,8 @@ export interface PracticeReviewItem {
   savedPayload: string | null;
   rendererKey: string | null;
   options: PracticeTaskContentOption[];
+  /** AI score, else the objective score (0-100); null while unscored. */
+  score: number | null;
 }
 
 export interface PracticeReview {
@@ -73,7 +75,13 @@ export interface PracticeProgressEntry {
   lowConfidenceCount: number;
   mediumConfidenceCount: number;
   highConfidenceCount: number;
+  /** Mean score (0-100) of the session's scored answers; null while none is scored. */
   score: number | null;
+  /** TASK, SKILL or MOCK_TEST; null from servers that predate kinds. */
+  kind: string | null;
+  skillCode: string | null;
+  /** The task type when the session covers exactly one. */
+  taskCode: string | null;
 }
 
 export interface PracticeProgress {
@@ -170,5 +178,8 @@ function normalizeProgressEntry(value: unknown): PracticeProgressEntry | null {
     mediumConfidenceCount: asNumber(record.mediumConfidenceCount, 0),
     highConfidenceCount: asNumber(record.highConfidenceCount, 0),
     score: asNullableNumber(record.score),
+    kind: asNullableString(record.kind),
+    skillCode: asNullableString(record.skillCode),
+    taskCode: asNullableString(record.taskCode),
   };
 }

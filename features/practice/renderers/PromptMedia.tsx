@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useLocale } from "../../../common/i18n/LocaleProvider";
 import type { PracticeTaskFixture } from "../fixtures";
+import { PromptAudioPlayer } from "../media/PromptAudioPlayer";
 import { createPlayOnceGuard } from "../timed/play-once";
 import type { TimedRendererControl } from "./RendererTypes";
 
@@ -26,14 +27,22 @@ export function PromptMedia({ fixture, timed }: PromptMediaProps) {
         <img className="task-prompt-image" src={fixture.imageUrl} alt={t("score.imagePrompt")} />
       ) : null}
       {fixture.audioUrl && timed ? <OncePrompt url={fixture.audioUrl} timed={timed} label={t("score.audioPrompt")} /> : null}
-      {fixture.audioUrl && !timed ? (
-        <audio className="task-prompt-audio" src={fixture.audioUrl} controls preload="auto"
-          aria-label={t("score.audioPrompt")} />
-      ) : null}
+      {fixture.audioUrl && !timed ? <FreePrompt url={fixture.audioUrl} label={t("score.audioPrompt")} /> : null}
       {audioMissing || imageMissing ? (
         <p className="task-recording-message" role="alert">{t("score.mediaUnavailable")}</p>
       ) : null}
     </div>
+  );
+}
+
+/** Untimed prompt: the student plays, pauses and seeks it as often as they like. */
+function FreePrompt({ url, label }: { url: string; label: string }) {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  return (
+    <>
+      <audio ref={audio} className="task-prompt-audio-hidden" src={url} preload="auto" aria-hidden="true" />
+      <PromptAudioPlayer url={url} label={label} audio={audio} interactive />
+    </>
   );
 }
 
@@ -57,7 +66,11 @@ function OncePrompt({ url, timed, label }: { url: string; timed: TimedRendererCo
   }, [playPrompt, url, onPromptBlocked, onPromptError]);
 
   return (
-    <audio ref={audio} className="task-prompt-audio-once" src={url} preload="auto" aria-label={label}
-      onEnded={timed.onPromptEnded} onError={() => { if (!guard.current.hasPlayed()) timed.onPromptError(); }} />
+    <>
+      <audio ref={audio} className="task-prompt-audio-once" src={url} preload="auto" aria-label={label}
+        onEnded={timed.onPromptEnded} onError={() => { if (!guard.current.hasPlayed()) timed.onPromptError(); }} />
+      {/* Display only: the timed prompt plays once on its own and cannot be paused or replayed. */}
+      <PromptAudioPlayer url={url} label={label} audio={audio} interactive={false} />
+    </>
   );
 }
