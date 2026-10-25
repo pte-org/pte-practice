@@ -39,6 +39,8 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   allowRefresh?: boolean;
 }
 
+const request = practiceRequest;
+
 export function createPracticeApiClient() {
   return {
     // The roster account an organization issued; no session exists yet, so a 401 is a bad password, not a stale token.
@@ -205,7 +207,7 @@ export function createPracticeIdempotencyKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function practiceRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { allowRefresh = true, body, headers: customHeaders, ...requestInit } = options;
   const session = getPracticeSession();
   const headers = new Headers(customHeaders);

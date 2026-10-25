@@ -318,4 +318,18 @@ export interface LocaleDict {
   toast: {
     close: string;
   };
+  examDate: {
+    label: string;
+    notScheduled: string;
+    editAria: string;
+    dialogTitle: string;
+    dateLabel: string;
+    save: string;
+    clear: string;
+    close: string;
+    saveSuccess: string;
+    clearSuccess: string;
+    saveError: string;
+    loading: string;
+  };
 }

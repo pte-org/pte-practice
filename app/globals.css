@@ -913,3 +913,69 @@ html[data-reading-size="xl"] .practice-session .task-source-text, html[data-read
   }
 }
 
+/* Target exam date line & dialog */
+.exam-date-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted-strong);
+}
+.exam-date-line strong {
+  color: var(--text);
+}
+.exam-date-edit-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.exam-date-edit-btn:hover {
+  border-color: var(--line-strong);
+  color: var(--accent);
+  background: var(--surface-raised);
+}
+.exam-date-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0 8px;
+}
+.exam-date-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted-strong);
+}
+.exam-date-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+.exam-date-input:focus {
+  border-color: var(--accent);
+}
+.text-button-danger {
+  color: var(--red);
+  margin-right: auto;
+}
+.text-button-danger:hover {
+  text-decoration: underline;
+}
+
+

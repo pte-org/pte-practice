@@ -14,6 +14,7 @@ import { useState } from "react";
 import { SKILL_DEVICE_CHECK, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
 import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
+import { ExamDateLine } from "./ExamDateLine";
 
 const CHECK_LABELS = {
   mic: "deviceCheck.micTile",
@@ -50,7 +51,7 @@ export function HomeView() {
             <div className="experience-ring" aria-hidden="true"><ProductMark /></div>
             <div>
               <h1 id="experience-title">{catalog.title}</h1>
-              <p><AppIcon name="calendar" size={16} /> {t("home.examDate")} <strong>{t("home.notScheduled")}</strong></p>
+              <ExamDateLine />
             </div>
           </div>
           {/* Each skill tile opens the device check that skill depends on (mic, speakers, keyboard, text size). */}

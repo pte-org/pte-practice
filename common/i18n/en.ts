@@ -318,4 +318,18 @@ export const en: LocaleDict = {
   toast: {
     close: "Close",
   },
+  examDate: {
+    label: "Exam date:",
+    notScheduled: "Not scheduled",
+    editAria: "Edit exam date",
+    dialogTitle: "Target Exam Date",
+    dateLabel: "Planned exam date",
+    save: "Save",
+    clear: "Clear exam date",
+    close: "Close",
+    saveSuccess: "Exam date updated.",
+    clearSuccess: "Exam date cleared.",
+    saveError: "Could not update exam date. Please try again.",
+    loading: "Loading…",
+  },
 };

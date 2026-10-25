@@ -318,4 +318,18 @@ export const vi: LocaleDict = {
   toast: {
     close: "Đóng",
   },
+  examDate: {
+    label: "Ngày thi:",
+    notScheduled: "Chưa đặt lịch",
+    editAria: "Sửa ngày thi",
+    dialogTitle: "Mục tiêu ngày thi",
+    dateLabel: "Ngày thi dự kiến",
+    save: "Lưu",
+    clear: "Xoá ngày thi",
+    close: "Đóng",
+    saveSuccess: "Đã cập nhật ngày thi.",
+    clearSuccess: "Đã xoá ngày thi.",
+    saveError: "Không thể cập nhật ngày thi. Vui lòng thử lại.",
+    loading: "Đang tải…",
+  },
 };

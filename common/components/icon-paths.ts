@@ -33,6 +33,7 @@ import {
   mdiNoteEditOutline,
   mdiPackageVariantClosed,
   mdiPause,
+  mdiPencilOutline,
   mdiPlay,
   mdiRadioboxMarked,
   mdiRecordCircleOutline,
@@ -77,6 +78,7 @@ export const ICON_PATHS = {
   sun: mdiWeatherSunny,
   moon: mdiWeatherNight,
   bookOpen: mdiBookOpenVariant,
+  edit: mdiPencilOutline,
   // Skills
   mic: mdiMicrophoneOutline,
   writing: mdiFileDocumentEditOutline,

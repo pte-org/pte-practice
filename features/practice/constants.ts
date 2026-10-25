@@ -11,6 +11,7 @@ export const API_PATHS = {
   progress: "/api/v1/student/practice/progress",
   practiceSessions: "/api/v1/student/practice/sessions",
   mockTests: "/api/v1/student/practice/mock-tests",
+  profile: "/api/v1/student/practice/profile",
   mediaObjects: "/api/v1/objects",
 } as const;
 
