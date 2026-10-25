@@ -31,5 +31,5 @@ export function useSessionDraft() {
     savePracticeDraft(sessionPublicId, itemPublicId, value);
   }, []);
 
-  return { draft, draftTaskId, hydrateDraft, editAnswer };
+  return { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer };
 }

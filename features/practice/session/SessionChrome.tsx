@@ -43,21 +43,105 @@ export function SessionHeader(props: SessionHeaderProps) {
 
 interface SessionFooterProps {
   busy: boolean;
-  nextDisabled: boolean;
-  nextLabel: string;
-  onSkip: () => void;
-  onNext: () => void;
+  showPrev?: boolean;
+  prevDisabled?: boolean;
+  prevLabel?: string;
+  onPrev?: () => void;
+  showSkip?: boolean;
+  skipDisabled?: boolean;
+  skipLabel?: string;
+  onSkip?: () => void;
+  showSubmit?: boolean;
+  submitDisabled?: boolean;
+  submitLabel?: string;
+  onSubmit?: () => void;
+  showNext?: boolean;
+  nextDisabled?: boolean;
+  nextLabel?: string;
+  onNext?: () => void;
 }
 
-/** Bottom bar: "Skip" on the left, "Next ›" (submits the answer) on the right. */
-export function SessionFooter({ busy, nextDisabled, nextLabel, onSkip, onNext }: SessionFooterProps) {
+/**
+ * Bottom action bar:
+ * - When !hasAnswer: [ ← Trước ] (if history) + [ Bỏ qua ⏭ ]
+ * - When hasAnswer: [ ← Trước ] (if history) + [ Nộp câu trả lời ]
+ * - When scoring: [ ← Trước ] (if history), Next hidden
+ * - When scored / viewing history: [ ← Trước ] + [ Tiếp theo › ]
+ */
+export function SessionFooter({
+  busy,
+  showPrev = false,
+  prevDisabled = false,
+  prevLabel,
+  onPrev,
+  showSkip = false,
+  skipDisabled = false,
+  skipLabel,
+  onSkip,
+  showSubmit = false,
+  submitDisabled = false,
+  submitLabel,
+  onSubmit,
+  showNext = false,
+  nextDisabled = false,
+  nextLabel,
+  onNext,
+}: SessionFooterProps) {
   const { t } = useTranslation();
   return (
     <footer className="session-footer">
-      <button className="text-button" type="button" disabled={busy} onClick={onSkip}>{t("session.skip")}</button>
-      <button className="button button-outline button-pill" type="button" disabled={nextDisabled} aria-busy={busy} onClick={onNext}>
-        {nextLabel} <AppIcon name="chevronRight" size={18} />
-      </button>
+      {showSubmit && onSubmit ? (
+        <div className="session-footer-center">
+          <button
+            className="session-btn-primary"
+            type="button"
+            disabled={busy || submitDisabled}
+            aria-busy={busy}
+            onClick={onSubmit}
+          >
+            <span>{submitLabel ?? t("session.submitAnswer")}</span>
+          </button>
+        </div>
+      ) : null}
+
+      <div className="session-footer-nav">
+        {showPrev && onPrev ? (
+          <button
+            className="session-btn-outline"
+            type="button"
+            disabled={busy || prevDisabled}
+            onClick={onPrev}
+          >
+            <AppIcon name="arrowLeft" size={18} />
+            <span>{prevLabel ?? t("session.previous")}</span>
+          </button>
+        ) : null}
+
+        {showSkip && onSkip ? (
+          <button
+            className="session-btn-outline"
+            type="button"
+            disabled={busy || skipDisabled}
+            onClick={onSkip}
+          >
+            <span>{skipLabel ?? t("session.skip")}</span>
+            <AppIcon name="skipNext" size={18} />
+          </button>
+        ) : null}
+
+        {showNext && onNext ? (
+          <button
+            className="session-btn-outline"
+            type="button"
+            disabled={busy || nextDisabled}
+            aria-busy={busy}
+            onClick={onNext}
+          >
+            <span>{nextLabel ?? t("session.next")}</span>
+            <AppIcon name="chevronRight" size={18} />
+          </button>
+        ) : null}
+      </div>
     </footer>
   );
 }

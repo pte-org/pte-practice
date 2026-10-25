@@ -300,6 +300,18 @@ export interface LocaleDict {
     audioCheckTroubleshoot: string;
     audioCheckTips: string;
     audioCheckConfirm: string;
+    submitAnswer: string;
+    previous: string;
+    correct: string;
+    incorrect: string;
+    partiallyCorrect: string;
+    scoreLabel: string;
+    speedLabel: string;
+    secondsShort: string;
+    explanation: string;
+    whatWeHeard: string;
+    scoringInProgress: string;
+    scoringFailed: string;
   };
   review: {
     eyebrow: string;
