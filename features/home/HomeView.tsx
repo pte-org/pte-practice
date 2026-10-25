@@ -1,20 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AppIcon, LockBadge, ProductMark } from "@/common/components";
+import { AppIcon, LockBadge, ProductMark, ProgressRing } from "@/common/components";
 import { SkillTaskList } from "@/features/catalog/SkillTaskList";
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { flattenCatalogTasks } from "@/features/practice/catalog-order";
-import { PRACTICE_ROUTES, UI_TEXT } from "@/features/practice/constants";
-import { canStartPractice, type PracticeCatalogTask } from "@/features/practice/contracts";
+import { PRACTICE_ROUTES } from "@/features/practice/constants";
+import { canStartPractice } from "@/features/practice/contracts";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { skillReadiness } from "@/features/practice/progress-rings";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { useTranslation } from "@/common/i18n";
-import type { TranslationKey } from "@/common/i18n";
 
 export function HomeView() {
-  const router = useRouter();
+  const { openFor: handleStartIntent, dialog: modeDialog } = usePracticeStart();
   const { catalog, entitlement, isPracticeUnlocked } = usePractice();
   const { t } = useTranslation();
   const orderedTasks = flattenCatalogTasks(catalog.sections);
@@ -30,10 +30,6 @@ export function HomeView() {
     { code: "LISTENING", label: t("skills.listening"), icon: "listening" as const },
   ];
 
-  function handleStartIntent(task: PracticeCatalogTask) {
-    if (!isPracticeUnlocked || !canStartPractice("UNLOCKED", task)) return;
-    router.push(`${PRACTICE_ROUTES.practiceSession}?task=${encodeURIComponent(task.code)}`);
-  }
 
   return (
     <div className="page-stack" data-testid="home-page">
@@ -60,10 +56,15 @@ export function HomeView() {
                   ? null
                   : t("common.unavailableAction");
 
+              const readiness = skillReadiness(section, isPracticeUnlocked);
+
               return (
                 <div className="skill-tile" key={skill.code}>
-                  <AppIcon name={skill.icon} size={22} />
+                  <ProgressRing variant="empty" size={44} label={`${skill.label}: ${readiness.ready}/${readiness.total} ${t("home.skillReadyLabel")}`}>
+                    <AppIcon name={skill.icon} size={20} />
+                  </ProgressRing>
                   <strong>{skill.label}</strong>
+                  {readiness.total ? <span>{readiness.ready}/{readiness.total}</span> : null}
                   {statusLabel ? <span>{statusLabel}</span> : null}
                 </div>
               );
@@ -126,6 +127,7 @@ export function HomeView() {
       {entitlement?.organizationContext ? (
         <p className="quiet-note">{t("home.workspace")} {entitlement.organizationContext.displayName}</p>
       ) : null}
+      {modeDialog}
     </div>
   );
 }

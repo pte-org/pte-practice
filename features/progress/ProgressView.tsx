@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppIcon } from "@/common/components";
+import { AppIcon, ProgressRing } from "@/common/components";
 import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import type { PracticeProgress, PracticeProgressEntry } from "@/features/practice/contracts";
 import { iconForTaskType } from "@/features/practice/icon-mapping";
+import { latestSessionRing } from "@/features/practice/progress-rings";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
@@ -52,6 +53,7 @@ export function ProgressView() {
   const speaking = orderCatalogSections(catalog.sections).find((section) => section.code === "SPEAKING");
   const taskRows = speaking?.taskTypes.slice(0, 5) ?? [];
   const latest = progress.entries[0] ?? null;
+  const ring = latestSessionRing(latest);
   const metrics = [
     { label: t("ui.progressMetricSessions"), value: progress.totalSessions, icon: "responses" as const },
     { label: t("ui.progressMetricCompleted"), value: progress.completedSessions, icon: "check" as const },
@@ -91,8 +93,11 @@ export function ProgressView() {
           <h2 id="progress-speaking-title">{t("ui.progressSpeaking")}</h2>
           <div className="progress-section-card">
             <article className="progress-skill-card">
-              <div className="progress-empty-ring" aria-hidden="true">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</div>
-              <div><h3>{t("ui.progressSpeakingProficiency")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
+              <ProgressRing variant={ring.variant} value={ring.value} max={ring.max} size="lg" thickness={10}
+                label={t("ui.progressLatestSession")}>
+                <span className="progress-ring-text">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</span>
+              </ProgressRing>
+              <div><h3>{t("ui.progressLatestSession")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
             </article>
             <div className="skills-list">
               <div className="skill-list-row">
