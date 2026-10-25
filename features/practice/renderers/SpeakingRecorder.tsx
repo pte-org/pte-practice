@@ -29,6 +29,7 @@ const FLAT_PEAKS: readonly number[] = new Array<number>(WAVEFORM_BAR_COUNT).fill
  */
 export function SpeakingRecorder({
   fixture, value, disabled = false, onChange, onUploadRecording, onLoadPlayback, timed, onActivityChange,
+  itemPublicId,
 }: TaskRendererProps) {
   const { t } = useTranslation();
   const [issue, setIssue] = useState<"short" | "silent" | null>(null);
@@ -45,10 +46,26 @@ export function SpeakingRecorder({
   const autoStart = useRef(createOnceCommand());
   const maxSeconds = timed?.maxSeconds ?? MAX_RECORDING_DURATION_SECONDS;
 
+  const [prevItemId, setPrevItemId] = useState(itemPublicId);
+  if (prevItemId !== itemPublicId) {
+    setPrevItemId(itemPublicId);
+    setState(hasRecording(value) ? "recorded" : "idle");
+    setElapsedSeconds(durationFromValue(value, 0));
+    setMessage(null);
+    setLiveLevels([]);
+    setPeaks(null);
+    setLocalUrl(null);
+    setIssue(null);
+  }
+
   const playbackFailed = useCallback(() => setMessage(RECORDING_TEXT.playbackFailed), []);
   const playback = useRecordingPlayback(localUrl, onLoadPlayback ?? null, playbackFailed);
 
-  useEffect(() => () => recorder.current?.cancel(), []);
+  useEffect(() => () => {
+    recorder.current?.cancel();
+    recorder.current = null;
+    pending.current = null;
+  }, [itemPublicId]);
   // The session page warns before leaving while a recording is being made or uploaded.
   useEffect(() => {
     onActivityChange?.(state === "recording" || state === "uploading");

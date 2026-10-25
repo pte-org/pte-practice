@@ -12,13 +12,13 @@ import { TypeInRenderer } from "./TypeInRenderer";
 type RegisteredRenderer = (props: TaskRendererProps) => ReactNode;
 
 const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRenderer>> = {
-  READ_ALOUD_V1: (props) => <SpeakingRecorder {...props} />,
-  REPEAT_SENTENCE_V1: (props) => <SpeakingRecorder {...props} />,
-  DESCRIBE_IMAGE_V1: (props) => <SpeakingRecorder {...props} />,
-  RE_TELL_LECTURE_V1: (props) => <SpeakingRecorder {...props} />,
-  ANSWER_SHORT_QUESTION_V1: (props) => <SpeakingRecorder {...props} />,
-  RESPOND_TO_A_SITUATION_V1: (props) => <SpeakingRecorder {...props} />,
-  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <SpeakingRecorder {...props} />,
+  READ_ALOUD_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "read-aloud"} {...props} />,
+  REPEAT_SENTENCE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "repeat-sentence"} {...props} />,
+  DESCRIBE_IMAGE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "describe-image"} {...props} />,
+  RE_TELL_LECTURE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "retell-lecture"} {...props} />,
+  ANSWER_SHORT_QUESTION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "answer-short-question"} {...props} />,
+  RESPOND_TO_A_SITUATION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "respond-situation"} {...props} />,
+  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "summarize-discussion"} {...props} />,
   MC_READING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_READING_MULTIPLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_LISTENING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,

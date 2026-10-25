@@ -182,6 +182,8 @@ export function PracticeSessionView() {
           isSkipped: true,
         },
       ]);
+      setDraft({});
+      setDraftTaskId(next.currentTask?.publicId ?? null);
       dispatch({ type: "mutation_succeeded", session: next });
     });
   };
