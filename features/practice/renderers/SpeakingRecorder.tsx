@@ -65,7 +65,7 @@ export function SpeakingRecorder({
     recorder.current?.cancel();
     recorder.current = null;
     pending.current = null;
-  }, [itemPublicId]);
+  }, []);
   // The session page warns before leaving while a recording is being made or uploaded.
   useEffect(() => {
     onActivityChange?.(state === "recording" || state === "uploading");

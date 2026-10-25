@@ -236,7 +236,7 @@ export function PracticeSessionView() {
           timeSpentSeconds: timeSpent,
         } : item));
         sessionRef.current = next;
-        dispatch({ type: "received", session: state.session! });
+        dispatch({ type: "mutation_succeeded", session: next });
       } else {
         setCurrentAnswered({
           task,
@@ -246,7 +246,8 @@ export function PracticeSessionView() {
           timeSpentSeconds: timeSpent,
           nextSession: next,
         });
-        dispatch({ type: "received", session: state.session! });
+        sessionRef.current = next;
+        dispatch({ type: "mutation_succeeded", session: next });
       }
     });
   };
@@ -275,9 +276,6 @@ export function PracticeSessionView() {
         setViewingHistoryIndex(viewingHistoryIndex + 1);
       } else {
         setViewingHistoryIndex(null);
-        if (sessionRef.current) {
-          dispatch({ type: "received", session: sessionRef.current });
-        }
       }
       return;
     }
@@ -293,13 +291,14 @@ export function PracticeSessionView() {
         isSkipped: false,
       };
       setHistory((prev) => [...prev, finishedItem]);
-      const next = currentAnswered.nextSession;
-      sessionRef.current = next;
+      const next = currentAnswered.nextSession ?? sessionRef.current ?? state.session;
+      if (next) {
+        sessionRef.current = next;
+      }
       setCurrentAnswered(null);
       setViewingHistoryIndex(null);
       setDraft({});
-      setDraftTaskId(next.currentTask?.publicId ?? null);
-      dispatch({ type: "mutation_succeeded", session: next });
+      setDraftTaskId(next?.currentTask?.publicId ?? null);
       return;
     }
 
