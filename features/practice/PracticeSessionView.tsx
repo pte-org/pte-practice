@@ -21,6 +21,7 @@ import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./sessio
 import { clearPracticeDraft } from "./session-storage";
 import { fixtureFromPracticeTask } from "./task-content";
 import { effectiveDraft, hasAnswer, sessionErrorMessage } from "./session/session-draft";
+import { SessionResultCard, type AnsweredResult } from "./session/SessionResultCard";
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
@@ -35,6 +36,7 @@ export function PracticeSessionView() {
   const { t } = useTranslation();
   const api = useMemo(() => createPracticeApiClient(), []);
   const [state, dispatch] = useReducer(practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE);
+  const [answered, setAnswered] = useState<AnsweredResult | null>(null);
   const [missing, setMissing] = useState<MissingField>(null);
   const sessionRef = useRef<PracticeSession | null>(null);
   const { draft, draftTaskId, hydrateDraft, editAnswer } = useSessionDraft();
@@ -64,6 +66,7 @@ export function PracticeSessionView() {
   });
   const resetScreen = useCallback(() => {
     // This view stays mounted across tasks; the previous task's warning must not leak into the next session.
+    setAnswered(null);
     setMissing(null);
     setChecksDone([]);
   }, []);
@@ -143,8 +146,14 @@ export function PracticeSessionView() {
         clientVersion: sessionRef.current.version, payload: JSON.stringify(answerDraft), confidence: null,
       }, key) : unavailable(),
     (next) => {
-      // Scores are shown only once the whole session is done (complete card and review), so go straight on.
       clearPracticeDraft(session.publicId, task.publicId);
+      if (next.itemResult) {
+        setAnswered({
+          itemPublicId: task.publicId,
+          displayName: task.displayName,
+          result: next.itemResult,
+        });
+      }
       dispatch({ type: "mutation_succeeded", session: next });
     });
   };
@@ -184,6 +193,10 @@ export function PracticeSessionView() {
   // Pausing goes straight back home (see saveAndExit); the session stays resumable from Home and Progress.
   if (state.phase === "exited") return <SessionLoading />;
   if (!session) return null;
+  if (answered) {
+    return <SessionResultCard api={api} sessionPublicId={session.publicId} answered={answered}
+      onContinue={() => setAnswered(null)} />;
+  }
   // A new session starts straight away: the mode was chosen before it was created, so there is no overview step.
   if (state.phase === "overview") return <SessionLoading />;
   if (state.phase === "completed") {
