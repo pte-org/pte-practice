@@ -92,17 +92,42 @@ export function ProgressView() {
             <TabPanel id={`progress-${current.code}`} active>
               {current.taskTypes.map((task) => {
                 const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
+                const activeSession = progress.entries.find(
+                  (entry) => (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS") && entry.taskCode === task.code
+                );
                 return (
                   <div className="skill-task-row" key={task.code}>
                     <span className="skill-task-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={20} /></span>
                     <span className="skill-task-copy">
                       <strong>{task.displayName}</strong>
-                      <span>{task.answeredQuestionCount} {t("presentation.answers")}</span>
+                      <span>
+                        {task.answeredQuestionCount} {t("presentation.answers")}
+                        {activeSession ? (
+                          <span className="active-session-indicator">
+                            {" "}· {t("progress.inProgress")} ({activeSession.answeredItemCount}/{activeSession.totalItemCount})
+                          </span>
+                        ) : null}
+                      </span>
                     </span>
                     <span className={`score-badge score-badge-${scoreTone(task.averageScore)}`}>{formatScore(task.averageScore)}</span>
-                    <button className="button button-outline button-pill" type="button" disabled={!canStart} onClick={() => openFor(task)}>
-                      {t("progress.practise")}
-                    </button>
+                    <div className="skill-task-actions">
+                      {activeSession ? (
+                        <Link
+                          className="button button-outline button-pill"
+                          href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
+                        >
+                          {t("progress.resume")}
+                        </Link>
+                      ) : null}
+                      <button
+                        className={`button ${activeSession ? "button-ghost" : "button-outline"} button-pill`}
+                        type="button"
+                        disabled={!canStart}
+                        onClick={() => openFor(task)}
+                      >
+                        {activeSession ? t("review.practiseAgain") : t("progress.practise")}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -117,17 +142,18 @@ export function ProgressView() {
         {progress.entries.length ? (
           <ul className="card card-flush history-list">
             {progress.entries.map((entry) => {
-              const inProgress = entry.status === "IN_PROGRESS";
+              const inProgress = entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS";
+              const targetUrl = inProgress
+                ? `${PRACTICE_ROUTES.practiceSession}?sessionId=${entry.sessionPublicId}`
+                : `${PRACTICE_ROUTES.practiceReview}?sessionId=${entry.sessionPublicId}`;
               return (
                 <li className="history-row" key={entry.sessionPublicId}>
-                  <span className="history-copy">
+                  <Link className="history-copy history-row-link" href={targetUrl}>
                     <strong>{sessionDisplayName(entry, taskName, t)}</strong>
                     <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
-                  </span>
+                  </Link>
                   <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
-                  <Link className="button button-outline button-pill" href={inProgress
-                    ? `${PRACTICE_ROUTES.practiceSession}?sessionId=${entry.sessionPublicId}`
-                    : `${PRACTICE_ROUTES.practiceReview}?sessionId=${entry.sessionPublicId}`}>
+                  <Link className="button button-outline button-pill" href={targetUrl}>
                     {inProgress ? t("progress.resume") : t("progress.review")}
                   </Link>
                 </li>

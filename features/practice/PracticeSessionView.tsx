@@ -85,6 +85,7 @@ export function PracticeSessionView() {
     api, dispatch, sessionRef, heartbeat, hydrateDraft, errorMessage, unavailableMessage: t("ui.sessionError"),
     onConflict: () => showToast(t("session.conflict"), { tone: "warning" }),
   });
+  const hydratedSessionId = useRef<string | null>(null);
   const resetScreen = useCallback(() => {
     // This view stays mounted across tasks; the previous task's warning must not leak into the next session.
     setCurrentAnswered(null);
@@ -92,6 +93,7 @@ export function PracticeSessionView() {
     setViewingHistoryIndex(null);
     setMissing(null);
     setChecksDone([]);
+    hydratedSessionId.current = null;
   }, []);
   const { reload } = useSessionLifecycle({
     api, dispatch, hydrateDraft, onReset: resetScreen, errorMessage,
@@ -101,6 +103,77 @@ export function PracticeSessionView() {
   useEffect(() => {
     sessionRef.current = state.session;
   }, [state.session]);
+
+  // Hydrate history when resuming a session that already has answered or skipped questions
+  useEffect(() => {
+    const session = state.session;
+    if (!session || hydratedSessionId.current === session.publicId) return;
+
+    if (session.answeredItemCount > 0 || (session.currentTask && session.currentTask.orderIndex > 0)) {
+      hydratedSessionId.current = session.publicId;
+      void api.getReview(session.publicId).then((review) => {
+        const completedItems = review.items.filter(
+          (item) => item.status === "ANSWERED" || item.status === "SKIPPED"
+        );
+        if (completedItems.length === 0) return;
+
+        const newHistory: HistoryItem[] = completedItems.map((item) => {
+          const pastTask: PracticeTaskResponse = {
+            publicId: item.publicId,
+            orderIndex: item.orderIndex,
+            taskCode: item.taskCode,
+            displayName: item.displayName,
+            section: item.section,
+            rendererKey: item.rendererKey,
+            contractVersion: 1,
+            answerSchemaVersion: 1,
+            status: item.status,
+            savedPayload: item.savedPayload,
+            confidence: null,
+            content: {
+              promptText: item.promptText,
+              minWordCount: null,
+              maxWordCount: null,
+              audioPromptRef: null,
+              imagePromptRef: null,
+              options: item.options,
+              audioUrl: null,
+              imageUrl: null,
+            },
+            timing: null,
+          };
+          const pastFixture = fixtureFromPracticeTask(pastTask);
+          const pastAnswer = parsePayload(item.savedPayload);
+          const pastResult: PracticeItemResult | null = item.status === "ANSWERED" ? {
+            itemPublicId: item.publicId,
+            taskCode: item.taskCode,
+            state: item.score !== null ? "SCORED" : "SCORING",
+            score: item.score ?? 0,
+            scoreStatus: null,
+            subScores: {},
+            feedback: null,
+            transcript: null,
+            failureCode: null,
+            retryable: false,
+            scoredAt: null,
+          } : null;
+
+          return {
+            task: pastTask,
+            fixture: pastFixture,
+            answer: pastAnswer,
+            result: pastResult,
+            timeSpentSeconds: 0,
+            isSkipped: item.status === "SKIPPED",
+          };
+        });
+
+        setHistory((prev) => (prev.length === 0 ? newHistory : prev));
+      }).catch(() => {
+        // Non-fatal if review fetch fails
+      });
+    }
+  }, [api, state.session]);
 
   const currentTaskId = state.session?.currentTask?.publicId;
   useEffect(() => {

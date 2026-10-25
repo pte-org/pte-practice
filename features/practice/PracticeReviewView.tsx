@@ -43,19 +43,31 @@ export function PracticeReviewView() {
       </div>
       {review.estimatedScores ? <EstimatedScores scores={review.estimatedScores} /> : null}
       <div className="review-list">
-        {review.items.map((item) => <ReviewItem key={item.publicId} item={item} sessionId={sessionId} api={api} />)}
+        {review.items.map((item, index) => (
+          <ReviewItem key={item.publicId} item={item} sessionId={sessionId} api={api} defaultExpanded={index === 0} />
+        ))}
       </div>
     </section>
   );
 }
 
 /** One question, collapsed to its name, status and score; opening it shows the answer and the scoring detail. */
-function ReviewItem({ item, sessionId, api }: { item: PracticeReviewItem; sessionId: string; api: PracticeApiClient }) {
+function ReviewItem({
+  item,
+  sessionId,
+  api,
+  defaultExpanded = false,
+}: {
+  item: PracticeReviewItem;
+  sessionId: string;
+  api: PracticeApiClient;
+  defaultExpanded?: boolean;
+}) {
   const { t } = useTranslation();
   const skill = skillKey(item.section);
   return (
     <article className="card review-card">
-      <CollapsibleSection title={`${item.orderIndex + 1}. ${item.displayName}`} defaultExpanded={false}
+      <CollapsibleSection title={`${item.orderIndex + 1}. ${item.displayName}`} defaultExpanded={defaultExpanded}
         subtitle={`${skill ? t(skill) : item.section} · ${t(itemStatusKey(item.status))}`}
         actions={<span className={`score-badge score-badge-${scoreTone(item.score)}`}>{formatScore(item.score)}</span>}>
         {item.promptText ? <p className="review-prompt">{item.promptText}</p> : null}
