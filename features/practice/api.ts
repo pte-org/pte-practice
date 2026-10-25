@@ -80,7 +80,8 @@ export function createPracticeApiClient() {
     answer: async (publicId: string, itemPublicId: string, body: {
       clientVersion: number;
       payload: string;
-      confidence: "LOW" | "MEDIUM" | "HIGH";
+      /** Practice no longer asks for confidence; always null. */
+      confidence: null;
     }, idempotencyKey = createPracticeIdempotencyKey("answer")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/answer`, "POST", body, idempotencyKey),
     /** Saves the current item without leaving the session (a finished or re-done recording). */

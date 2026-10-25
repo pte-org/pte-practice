@@ -1,4 +1,4 @@
-import type { PracticeSession, ResponseConfidence } from "../contracts";
+import type { PracticeSession } from "../contracts";
 
 /** Reads the saved answer payload of an item; anything that is not a JSON object reads as no answer. */
 export function parsePayload(payload: string | null): Record<string, unknown> {
@@ -15,11 +15,6 @@ export function parsePayload(payload: string | null): Record<string, unknown> {
 export function effectiveDraft(task: { publicId: string; savedPayload: string | null }, draftTaskId: string | null,
   draft: Record<string, unknown>): Record<string, unknown> {
   return draftTaskId === task.publicId ? draft : parsePayload(task.savedPayload);
-}
-
-export function effectiveConfidence(task: { publicId: string; confidence: ResponseConfidence | null },
-  draftTaskId: string | null, confidence: ResponseConfidence | null): ResponseConfidence | null {
-  return draftTaskId === task.publicId ? confidence : task.confidence;
 }
 
 export function hasAnswer(value: Record<string, unknown>): boolean {

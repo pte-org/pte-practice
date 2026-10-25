@@ -54,7 +54,7 @@ export function useSessionLifecycle(options: UseSessionLifecycleOptions): { relo
   const questionCount = isQuestionCountOption(requestedCount) ? requestedCount : DEFAULT_MODE_PREFERENCE.questionCount;
   const hasTarget = Boolean(taskCode || skillCode || mockTestId);
   const requestKey = sessionId ? `resume:${sessionId}`
-    : mockTestId ? `mock:${mockTestId}|${restartMockTest}`
+    : mockTestId ? `mock:${mockTestId}|${restartMockTest}|${timingMode}`
       : skillCode ? `skill:${skillCode}|${timingMode}|${questionCount}`
         : `task:${taskCode ?? "missing"}|${timingMode}|${questionCount}`;
 
@@ -75,8 +75,8 @@ export function useSessionLifecycle(options: UseSessionLifecycleOptions): { relo
       startKey.current = { request: requestKey, key: createPracticeIdempotencyKey("start") };
     }
     if (mockTestId) {
-      // A mock test is always timed and has a fixed length, so only the restart choice travels.
-      return api.startSession({ ...base, mockTestId, restart: restartMockTest || undefined }, startKey.current.key);
+      // A mock test has a fixed length, so only the timed / untimed choice and the restart travel.
+      return api.startSession({ ...base, mockTestId, restart: restartMockTest || undefined, timingMode }, startKey.current.key);
     }
     if (skillCode) {
       const section = catalog.sections.find((item) => item.code === skillCode);

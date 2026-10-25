@@ -10,7 +10,7 @@ import { uploadPracticeRecording } from "./media/api";
 import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./session-state";
 import { clearPracticeDraft } from "./session-storage";
 import { fixtureFromPracticeTask } from "./task-content";
-import { effectiveConfidence, effectiveDraft, hasAnswer, sessionErrorMessage } from "./session/session-draft";
+import { effectiveDraft, hasAnswer, sessionErrorMessage } from "./session/session-draft";
 import { SessionResultCard, type AnsweredResult } from "./session/SessionResultCard";
 import {
   SessionCompleteCard, SessionErrorCard, SessionExitedCard, SessionLoading,
@@ -29,7 +29,7 @@ export function PracticeSessionView() {
   const [answered, setAnswered] = useState<AnsweredResult | null>(null);
   const [missing, setMissing] = useState<MissingField>(null);
   const sessionRef = useRef<PracticeSession | null>(null);
-  const { draft, draftTaskId, confidence, hydrateDraft, editAnswer, chooseConfidence } = useSessionDraft();
+  const { draft, draftTaskId, hydrateDraft, editAnswer } = useSessionDraft();
 
   const errorMessage = useCallback((reason: unknown) => sessionErrorMessage(reason, {
     conflict: t("ui.sessionConflict"), expired: t("ui.sessionExpired"), fallback: t("ui.sessionError"),
@@ -75,8 +75,7 @@ export function PracticeSessionView() {
     const task = session.currentTask;
     const savedDraft = task ? effectiveDraft(task, draftTaskId, draft) : {};
     const draftRequest = task && hasAnswer(savedDraft) ? {
-      itemPublicId: task.publicId, payload: JSON.stringify(savedDraft),
-      confidence: effectiveConfidence(task, draftTaskId, confidence),
+      itemPublicId: task.publicId, payload: JSON.stringify(savedDraft), confidence: null,
     } : undefined;
     return runMutation(`exit:${task?.publicId ?? "overview"}`, (key) => sessionRef.current
       ? api.saveAndExit(sessionRef.current.publicId, sessionRef.current.version, draftRequest, key) : unavailable(),
@@ -100,14 +99,12 @@ export function PracticeSessionView() {
     const task = session?.currentTask;
     if (!session || !task) return Promise.resolve();
     const answerDraft = effectiveDraft(task, draftTaskId, draft);
-    const answerConfidence = effectiveConfidence(task, draftTaskId, confidence);
     // Missing input is a warning on the form, not a failed session: the student keeps their draft and fixes it in place.
     if (!hasAnswer(answerDraft)) { setMissing("answer"); return Promise.resolve(); }
-    if (!answerConfidence) { setMissing("confidence"); return Promise.resolve(); }
     setMissing(null);
     return runMutation(`answer:${task.publicId}`, (key) => sessionRef.current
       ? api.answer(sessionRef.current.publicId, task.publicId, {
-        clientVersion: sessionRef.current.version, payload: JSON.stringify(answerDraft), confidence: answerConfidence,
+        clientVersion: sessionRef.current.version, payload: JSON.stringify(answerDraft), confidence: null,
       }, key) : unavailable(),
     (next) => {
       clearPracticeDraft(session.publicId, task.publicId);
@@ -127,7 +124,7 @@ export function PracticeSessionView() {
       ? api.saveDraft(sessionRef.current.publicId, task.publicId, {
         clientVersion: sessionRef.current.version,
         payload: JSON.stringify({ mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds }),
-        confidence: effectiveConfidence(task, draftTaskId, confidence),
+        confidence: null,
       }, key) : unavailable());
     if (!saved.ok) throw new PracticeApiError(errorMessage(saved.reason), 0, "DRAFT_SAVE_FAILED");
     return media;
@@ -166,9 +163,7 @@ export function PracticeSessionView() {
   return (
     <SessionTaskView session={session} task={task} fixture={fixture} busy={state.phase === "submitting"}
       notice={state.error} missing={missing} value={effectiveDraft(task, draftTaskId, draft)}
-      confidence={effectiveConfidence(task, draftTaskId, confidence)}
       onChange={(value) => { setMissing(null); editAnswer(session.publicId, task.publicId, value); }}
-      onConfidence={(level) => { setMissing(null); chooseConfidence(task.publicId, level); }}
       onUploadRecording={uploadAndSaveRecording}
       onLoadPlayback={() => api.getRecordingPlayback(session.publicId, task.publicId).then((playback) => playback.url)}
       onRefreshPrompt={refreshPrompt}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  currentTaskPosition, effectiveConfidence, effectiveDraft, hasAnswer, parsePayload, progressFor, sessionErrorMessage,
+  currentTaskPosition, effectiveDraft, hasAnswer, parsePayload, progressFor, sessionErrorMessage,
 } from "./session-draft";
 
 const messages = { conflict: "changed", expired: "expired", fallback: "failed" };
@@ -16,16 +16,11 @@ describe("parsePayload", () => {
   });
 });
 
-describe("effectiveDraft / effectiveConfidence", () => {
+describe("effectiveDraft", () => {
   it("uses the local draft only for the item it belongs to", () => {
     expect(effectiveDraft(task, "i-1", { selectedOption: "2" })).toEqual({ selectedOption: "2" });
     expect(effectiveDraft(task, "other", { selectedOption: "2" })).toEqual({ selectedOption: "1" });
     expect(effectiveDraft(task, null, {})).toEqual({ selectedOption: "1" });
-  });
-
-  it("falls back to the saved confidence for another item", () => {
-    expect(effectiveConfidence(task, "i-1", "LOW")).toBe("LOW");
-    expect(effectiveConfidence(task, "other", "LOW")).toBe("HIGH");
   });
 });
 

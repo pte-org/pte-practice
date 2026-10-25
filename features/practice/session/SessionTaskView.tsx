@@ -3,17 +3,17 @@
 import { useEffect, useRef } from "react";
 import { ProgressRing } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import type { PracticeSession, PracticeTaskResponse, ResponseConfidence } from "../contracts";
+import type { PracticeSession, PracticeTaskResponse } from "../contracts";
 import type { PracticeTaskFixture } from "../fixtures";
 import { isClientRuntimeSupported } from "../renderer-allowlist";
 import { TaskRenderer } from "../renderers/TaskRenderer";
 import type { TaskRendererProps, TimedRendererControl } from "../renderers/RendererTypes";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
-import { ConfidencePanel, FieldWarning } from "./ConfidencePanel";
+import { FieldWarning } from "./FieldWarning";
 import { currentTaskPosition, progressFor } from "./session-draft";
 
-export type MissingField = "answer" | "confidence" | null;
+export type MissingField = "answer" | null;
 
 interface SessionTaskViewProps {
   session: PracticeSession;
@@ -25,9 +25,7 @@ interface SessionTaskViewProps {
   notice: string | null;
   missing: MissingField;
   value: Record<string, unknown>;
-  confidence: ResponseConfidence | null;
   onChange: (value: Record<string, unknown>) => void;
-  onConfidence: (level: ResponseConfidence) => void;
   onUploadRecording: TaskRendererProps["onUploadRecording"];
   onLoadPlayback: TaskRendererProps["onLoadPlayback"];
   /** Reloads the session so the prompt gets a fresh media link. */
@@ -38,10 +36,9 @@ interface SessionTaskViewProps {
 }
 
 export function SessionTaskView(props: SessionTaskViewProps) {
-  const { session, task, fixture, busy, notice, missing, value, confidence } = props;
+  const { session, task, fixture, busy, notice, missing, value } = props;
   const { t } = useTranslation();
   const answerCardRef = useRef<HTMLDivElement>(null);
-  const confidencePanelRef = useRef<HTMLDivElement>(null);
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
   // Read-aloud, written-text, blank and highlight renderers draw the passage themselves; showing it here too doubles it.
   const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens);
@@ -60,7 +57,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   ) : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>;
 
   useEffect(() => {
-    const target = missing === "answer" ? answerCardRef.current : missing === "confidence" ? confidencePanelRef.current : null;
+    const target = missing === "answer" ? answerCardRef.current : null;
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [missing]);
 
@@ -89,10 +86,6 @@ export function SessionTaskView(props: SessionTaskViewProps) {
         ) : renderBody()}
         {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
       </div>
-      {!unsupported ? (
-        <ConfidencePanel ref={confidencePanelRef} value={confidence} disabled={busy}
-          missing={missing === "confidence"} onChoose={props.onConfidence} />
-      ) : null}
       {notice ? <p className="inline-notice" role="alert">{notice}</p> : null}
       <div className="session-footer-actions">
         <button className="text-button" type="button" disabled={busy} onClick={props.onSaveExit}>{t("ui.sessionSaveExit")}</button>

@@ -2,7 +2,6 @@ import type { PracticeSessionTokens } from "./contracts";
 
 const SESSION_KEY = "pte.practice.session";
 const DRAFT_KEY_PREFIX = "pte.practice.draft.";
-export const CONFIDENCE_HINT_KEY = "pte.practice.confidence-hint.dismissed";
 
 export interface PracticeLocalDraft {
   payload: Record<string, unknown>;
@@ -78,17 +77,6 @@ export function savePracticeDraft(sessionPublicId: string, itemPublicId: string,
 export function clearPracticeDraft(sessionPublicId: string, itemPublicId: string): void {
   if (typeof window === "undefined" || !window.localStorage) return;
   window.localStorage.removeItem(draftKey(sessionPublicId, itemPublicId));
-}
-
-export function isConfidenceHintDismissed(): boolean {
-  if (typeof window === "undefined" || !window.localStorage) return false;
-  return window.localStorage.getItem(CONFIDENCE_HINT_KEY) === "true";
-}
-
-export function dismissConfidenceHint(): void {
-  if (typeof window === "undefined" || !window.localStorage) return;
-  window.localStorage.setItem(CONFIDENCE_HINT_KEY, "true");
-  window.dispatchEvent(new Event(CONFIDENCE_HINT_KEY));
 }
 
 function draftKey(sessionPublicId: string, itemPublicId: string): string {
