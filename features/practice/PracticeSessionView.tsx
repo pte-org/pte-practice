@@ -65,7 +65,7 @@ export function PracticeSessionView() {
   const online = useOnlineStatus();
   const { markPassed } = useDeviceChecks();
   const [recorderBusy, setRecorderBusy] = useState(false);
-  const [confirm, setConfirm] = useState<null | "pause" | "skip" | { words: number; min: number | null; max: number | null }>(null);
+  const [confirm, setConfirm] = useState<null | "pause" | { words: number; min: number | null; max: number | null }>(null);
   /** Device checks done since this session was opened; starting or resuming a session asks again. */
   const [checksDone, setChecksDone] = useState<DeviceCheckKind[]>([]);
   const finishCheck = (kind: DeviceCheckKind) => setChecksDone((done) => (done.includes(kind) ? done : [...done, kind]));
@@ -303,7 +303,7 @@ export function PracticeSessionView() {
     }
 
     // 3. Current question not submitted yet: Next acts as skip
-    setConfirm("skip");
+    void skip();
   };
 
   const handleSubmitAnswer = () => {
@@ -462,7 +462,7 @@ export function PracticeSessionView() {
         onPrev={handlePrev}
         prevDisabled={prevDisabled}
         showSkip={showSkip}
-        onSkip={() => setConfirm("skip")}
+        onSkip={() => void skip()}
         showSubmit={showSubmit}
         submitDisabled={state.phase === "submitting"}
         submitLabel={t("session.submitAnswer")}
@@ -485,9 +485,6 @@ export function PracticeSessionView() {
       <ConfirmDialog open={confirm === "pause"} title={t("session.pauseTitle")} description={t("session.pauseDescription")}
         confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.cancel")}
         onClose={closeConfirm} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
-      <ConfirmDialog open={confirm === "skip"} tone="warning" title={t("session.skipTitle")} description={t("session.skipDescription")}
-        confirmLabel={t("session.skip")} cancelLabel={t("session.cancel")}
-        onClose={closeConfirm} onConfirm={() => { closeConfirm(); void skip(); }} />
       {confirm !== null && typeof confirm === "object" ? (
         <ConfirmDialog open tone="warning" title={t("session.wordsTitle").replace("{n}", String(confirm.words))}
           description={t("session.wordsDescription").replace("{min}", String(confirm.min ?? 0))
