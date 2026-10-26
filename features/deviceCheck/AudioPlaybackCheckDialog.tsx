@@ -21,22 +21,45 @@ interface AudioPlaybackCheckDialogProps {
 export function AudioPlaybackCheckDialog({ open, onConfirm }: AudioPlaybackCheckDialogProps) {
   const { t } = useTranslation();
   const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const sentence = t("session.audioCheckSentence");
 
+  const stopPlayback = () => {
+    setPlaying(false);
+    setProgress(0);
+    setElapsed(0);
+  };
+
   const play = () => {
-    if (!("speechSynthesis" in window)) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
+    if (playing) {
+      stopPlayback();
+      return;
+    }
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = "en-GB";
-    utterance.onend = () => setPlaying(false);
-    utterance.onerror = () => setPlaying(false);
+    utterance.onend = stopPlayback;
+    utterance.onerror = stopPlayback;
     setPlaying(true);
+    const start = Date.now();
+    const duration = 4000;
+    const interval = window.setInterval(() => {
+      const diff = Date.now() - start;
+      if (diff >= duration || !window.speechSynthesis.speaking) {
+        window.clearInterval(interval);
+      } else {
+        setProgress(Math.min(1, diff / duration));
+        setElapsed(diff / 1000);
+      }
+    }, 80);
     window.speechSynthesis.speak(utterance);
   };
 
   const confirm = () => {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setPlaying(false);
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    stopPlayback();
     onConfirm();
   };
 
@@ -47,10 +70,19 @@ export function AudioPlaybackCheckDialog({ open, onConfirm }: AudioPlaybackCheck
       <div className="audio-check">
         <p>{t("session.audioCheckIntro")}</p>
         <div className="prompt-player">
-          <button className="prompt-player-button" type="button" onClick={play} aria-label={t("deviceCheck.speakerPlay")}>
-            <AppIcon name={playing ? "pause" : "play"} size={22} />
+          <button
+            className="prompt-player-button"
+            type="button"
+            onClick={play}
+            aria-label={t("deviceCheck.speakerPlay")}
+            data-state={playing ? "pause" : "play"}
+          >
+            <AppIcon name={playing ? "pause" : "play"} size={20} />
           </button>
-          <div className="prompt-player-wave"><AudioWaveform peaks={SAMPLE_PEAKS} progress={0} label={sentence} /></div>
+          <div className="prompt-player-wave">
+            <AudioWaveform peaks={SAMPLE_PEAKS} progress={progress} label={sentence} />
+          </div>
+          <span className="prompt-player-time">0:0{Math.min(4, Math.floor(elapsed))} / 0:04</span>
         </div>
         <p>{t("session.audioCheckYouWillHear")} <strong><em>{sentence}</em></strong></p>
         <CollapsibleSection title={t("session.audioCheckTroubleshoot")} defaultExpanded={false} className="audio-check-help"

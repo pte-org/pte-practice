@@ -1019,10 +1019,12 @@ body.modal-open { overflow: hidden; }
 .countdown-timer { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
 .countdown-warning { color: var(--red); font-size: 0.72rem; font-weight: 700; }
 .recording-waveform { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); }
-.audio-waveform { display: block; width: 100%; height: 56px; }
+.audio-waveform { display: block; width: 100%; height: 42px; overflow: visible; }
 .audio-waveform-seekable { cursor: pointer; }
-.audio-waveform-bar { fill: var(--muted); opacity: 0.55; }
+.audio-waveform-bar { fill: #94a3b8; opacity: 0.42; transition: fill 0.15s ease, opacity 0.15s ease; }
+html[data-theme="dark"] .audio-waveform-bar { fill: #64748b; opacity: 0.45; }
 .audio-waveform-bar-played { fill: var(--accent); opacity: 1; }
+.audio-waveform-seekable:hover .audio-waveform-bar:not(.audio-waveform-bar-played) { opacity: 0.65; }
 .task-recording-actions .button { display: inline-flex; align-items: center; gap: 6px; }
 .mode-option { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
 .mode-option:hover:not(:disabled) { border-color: var(--line-strong); }
@@ -1431,11 +1433,105 @@ div.skill-task-row { cursor: default; }
   opacity: 0.55;
   cursor: not-allowed;
 }
-.prompt-player { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 12px; background: var(--exam-banner); }
-.prompt-player-button { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: 0; border-radius: 50%; background: var(--exam-primary); color: #fff; cursor: pointer; }
-.prompt-player-button:disabled { cursor: default; opacity: 0.85; }
-.prompt-player-wave { min-width: 0; flex: 1; height: 40px; }
-.prompt-player-time { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prompt-player,
+.media-player {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 8px 18px 8px 10px;
+  min-height: 56px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+html[data-theme="dark"] .prompt-player,
+html[data-theme="dark"] .media-player {
+  background: #232734;
+  border-color: #333d52;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.prompt-player:hover,
+.media-player:hover {
+  border-color: rgba(65, 105, 232, 0.35);
+  box-shadow: 0 4px 16px rgba(65, 105, 232, 0.08);
+}
+
+.prompt-player-button,
+.media-player-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(65, 105, 232, 0.35);
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-player-button:hover:not(:disabled),
+.media-player-button:hover:not(:disabled) {
+  background: var(--accent-strong);
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px rgba(65, 105, 232, 0.48);
+}
+
+.prompt-player-button:active:not(:disabled),
+.media-player-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.prompt-player-button:disabled,
+.media-player-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+  box-shadow: none;
+}
+
+.prompt-player-button svg,
+.media-player-button svg {
+  display: block;
+  fill: #ffffff;
+}
+
+.prompt-player-button[data-state="play"] svg,
+.media-player-button[data-state="play"] svg {
+  transform: translateX(1px);
+}
+
+.prompt-player-wave,
+.media-player-wave {
+  min-width: 0;
+  flex: 1;
+  height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.prompt-player-time,
+.media-player-time {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  padding-right: 6px;
+  user-select: none;
+}
+
+.mic-check-player {
+  margin: 12px 0 8px;
+}
 .task-prompt-audio-hidden { display: none; }
 .editor-frame { border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--surface); }
 .editor-toolbar { display: flex; border-bottom: 1px solid var(--line); }

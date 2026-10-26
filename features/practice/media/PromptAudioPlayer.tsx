@@ -1,6 +1,6 @@
 "use client";
 
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { AppIcon } from "@/common/components";
 import { AudioWaveform } from "./AudioWaveform";
 import { loadPromptPeaks } from "./prompt-peaks";
@@ -15,52 +15,79 @@ function seekTo(element: HTMLAudioElement, seconds: number): void {
   element.currentTime = seconds;
 }
 
-interface PromptAudioPlayerProps {
+export interface PromptAudioPlayerProps {
   url: string;
   label: string;
-  /** The audio element that plays the prompt; the player only reads its position (timed prompts keep their own rules). */
-  audio: RefObject<HTMLAudioElement | null>;
+  /** Pre-calculated waveform peaks; if omitted, peaks are loaded from the url. */
+  peaks?: number[] | null;
+  /** The audio element that plays the prompt; if omitted, the player renders its own internal audio element. */
+  audio?: RefObject<HTMLAudioElement | null>;
   /** Untimed: the student plays, pauses and seeks. Timed: display only — the prompt plays once on its own. */
-  interactive: boolean;
+  interactive?: boolean;
+  autoPlay?: boolean;
+  className?: string;
 }
 
-/** Prompt audio as a round play button, its waveform (played part highlighted) and `0:12 / 1:24`. */
-export function PromptAudioPlayer({ url, label, audio, interactive }: PromptAudioPlayerProps) {
-  const [peaks, setPeaks] = useState<number[] | null>(null);
+/** Modern audio media player: circular play button in system blue, audio waveform bars, and `0:01 / 1:24` timestamp. */
+export function PromptAudioPlayer({
+  url,
+  label,
+  peaks: initialPeaks,
+  audio,
+  interactive = true,
+  autoPlay = false,
+  className,
+}: PromptAudioPlayerProps) {
+  const internalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeAudio = audio ?? internalAudioRef;
+  const [loadedPeaks, setLoadedPeaks] = useState<number[] | null>(null);
   const [position, setPosition] = useState({ current: 0, duration: 0, playing: false });
 
-  useEffect(() => {
-    let active = true;
-    void loadPromptPeaks(url).then((loaded) => { if (active) setPeaks(loaded); });
-    return () => { active = false; };
-  }, [url]);
+  const peaks = initialPeaks ?? loadedPeaks;
 
   useEffect(() => {
-    const element = audio.current;
+    if (initialPeaks) return;
+    let active = true;
+    void loadPromptPeaks(url).then((loaded) => { if (active) setLoadedPeaks(loaded); });
+    return () => { active = false; };
+  }, [url, initialPeaks]);
+
+  useEffect(() => {
+    const element = activeAudio.current;
     if (!element) return;
     const sync = () => setPosition({ current: element.currentTime, duration: element.duration || 0, playing: !element.paused });
     const events = ["timeupdate", "loadedmetadata", "play", "pause", "ended"] as const;
     events.forEach((name) => element.addEventListener(name, sync));
+    sync();
     return () => events.forEach((name) => element.removeEventListener(name, sync));
-  }, [audio, url]);
+  }, [activeAudio, url]);
 
   const toggle = () => {
-    const element = audio.current;
+    const element = activeAudio.current;
     if (!element || !interactive) return;
     if (element.paused) void element.play().catch(() => undefined);
     else element.pause();
   };
   const seek = (fraction: number) => {
-    const element = audio.current;
+    const element = activeAudio.current;
     if (element && interactive && element.duration) seekTo(element, fraction * element.duration);
   };
   const progress = position.duration ? position.current / position.duration : 0;
 
   return (
-    <div className="prompt-player">
-      <button className="prompt-player-button" type="button" onClick={toggle} disabled={!interactive}
-        aria-label={label}>
-        <AppIcon name={position.playing ? "pause" : "play"} size={22} />
+    <div className={`prompt-player${className ? ` ${className}` : ""}`}>
+      {!audio ? (
+        <audio ref={internalAudioRef} src={url} preload="auto" autoPlay={autoPlay} aria-hidden="true" />
+      ) : null}
+      <button
+        className="prompt-player-button"
+        type="button"
+        onClick={toggle}
+        disabled={!interactive}
+        aria-label={label}
+        data-state={position.playing ? "pause" : "play"}
+      >
+        <AppIcon name={position.playing ? "pause" : "play"} size={20} />
       </button>
       <div className="prompt-player-wave">
         {peaks ? <AudioWaveform peaks={peaks} progress={progress} label={label} onSeek={interactive ? seek : undefined} /> : null}
@@ -69,3 +96,5 @@ export function PromptAudioPlayer({ url, label, audio, interactive }: PromptAudi
     </div>
   );
 }
+
+export { PromptAudioPlayer as MediaPlayer };

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppIcon, Modal } from "@/common/components";
 import { useTranslation, type TranslationKey } from "@/common/i18n";
 import { AudioWaveform } from "@/features/practice/media/AudioWaveform";
+import { PromptAudioPlayer } from "@/features/practice/media/PromptAudioPlayer";
 import { RecorderError, startWavRecording, type WavRecorderHandle } from "@/features/practice/media/audio-recorder";
 import { padLevels, WAVEFORM_BAR_COUNT } from "@/features/practice/media/waveform";
 import {
@@ -89,15 +90,19 @@ function MicCheck({ onPass }: { onPass: () => void }) {
   return (
     <div className="device-check">
       <p>{t("deviceCheck.micIntro")}</p>
-      {phase === "recording" || phase === "done" ? (
+      {phase === "recording" ? (
         <div className="recording-waveform">
-          <AudioWaveform peaks={phase === "recording" ? padLevels(levels) : peaks ?? []} label={t("deviceCheck.micTitle")} />
+          <AudioWaveform peaks={padLevels(levels)} label={t("deviceCheck.micTitle")} />
         </div>
       ) : null}
       {phase === "recording" ? <p role="status">{t("deviceCheck.micRecording")}</p> : null}
       {phase === "done" && verdict ? <p role="status" className={`device-verdict device-verdict-${verdict}`}>{t(`deviceCheck.mic_${verdict}` as TranslationKey)}</p> : null}
       {error ? <p role="alert" className="device-verdict device-verdict-silent">{error}</p> : null}
-      {phase === "done" && url ? <audio className="device-audio" src={url} controls autoPlay /> : null}
+      {phase === "done" && url ? (
+        <div className="mic-check-player">
+          <PromptAudioPlayer url={url} label={t("deviceCheck.micTitle")} peaks={peaks} interactive autoPlay />
+        </div>
+      ) : null}
       <div className="device-actions">
         <button className="button button-pill button-outline" type="button" disabled={phase === "recording"} onClick={() => void record()}>
           <AppIcon name="record" size={16} /> {phase === "idle" ? t("deviceCheck.micStart") : t("deviceCheck.again")}

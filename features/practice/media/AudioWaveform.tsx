@@ -14,10 +14,10 @@ interface AudioWaveformProps {
   onSeek?: (fraction: number) => void;
 }
 
-const BAR_WIDTH = 3;
-const BAR_GAP = 2;
-const HEIGHT = 56;
-const MIN_BAR_HEIGHT = 3;
+const BAR_WIDTH = 2.5;
+const BAR_GAP = 2.5;
+const HEIGHT = 44;
+const MIN_BAR_HEIGHT = 4;
 const KEY_STEP = 0.05;
 
 /** Waveform of a recording as SVG bars. Classes carry the colours, so it follows the light and dark themes. */
