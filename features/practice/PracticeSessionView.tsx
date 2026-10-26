@@ -437,7 +437,7 @@ export function PracticeSessionView() {
 
   // A new session starts straight away: the mode was chosen before it was created, so there is no overview step.
   if (state.phase === "overview") return <SessionLoading />;
-  if (state.phase === "completed") {
+  if (state.phase === "completed" && !currentAnswered && viewingHistoryIndex === null) {
     return <SessionCompleteCard session={session} api={api} onBackHome={goHome}
       onReview={() => router.push(`${PRACTICE_ROUTES.practiceReview}?sessionId=${session.publicId}`)} />;
   }
@@ -546,7 +546,11 @@ export function PracticeSessionView() {
         submitLabel={t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
         showNext={showNext}
-        nextLabel={t("session.next")}
+        nextLabel={
+          session.status === "COMPLETED" || currentAnswered?.nextSession?.status === "COMPLETED"
+            ? t("score.continue")
+            : t("session.next")
+        }
         onChange={(value) => {
           if (!isViewingOrSubmitted) {
             setMissing(null);

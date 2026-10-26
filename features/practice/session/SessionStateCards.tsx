@@ -58,10 +58,28 @@ export function SessionCompleteCard({ session, api, onReview, onBackHome }: Sess
 
   useEffect(() => {
     let active = true;
-    void api.getReview(session.publicId)
-      .then((review) => { if (active) setAverage(sessionAverageScore(review.items.map((item) => item.score))); })
-      .catch(() => undefined);
-    return () => { active = false; };
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const loadReview = () => {
+      api.getReview(session.publicId)
+        .then((review) => {
+          if (!active) return;
+          setAverage(sessionAverageScore(review.items.map((item) => item.score)));
+          const stillScoring = review.items.some(
+            (item) => item.status === "ANSWERED" && item.score === null
+          );
+          if (stillScoring && active) {
+            timer = setTimeout(loadReview, 2000);
+          }
+        })
+        .catch(() => undefined);
+    };
+
+    loadReview();
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+    };
   }, [api, session.publicId]);
 
   return (
