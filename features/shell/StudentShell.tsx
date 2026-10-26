@@ -73,51 +73,119 @@ export function StudentShell({ children }: { children: ReactNode }) {
       <aside className="side-rail" aria-label="Student navigation">
         <div className="rail-brand">
           <div className="brand-mark" aria-hidden="true"><ProductMark /></div>
-          <div>
-            <strong>{t("shell.pearson")}</strong>
-            <span>{t("shell.pteOfficialAIPractice")}</span>
+          <div className="rail-brand-text">
+            <div className="rail-brand-title">
+              <strong>{t("shell.pearson")}</strong>
+              <span className="rail-brand-badge">AI</span>
+            </div>
+            <span className="rail-brand-subtitle">{t("shell.pteOfficialAIPractice")}</span>
           </div>
         </div>
-        <Link className="quick-study-button" href={PRACTICE_ROUTES.home}>
-          <AppIcon name="bookOpen" size={22} />
-          <span>{t("shell.quickStudy")}</span>
-        </Link>
-        <nav className="side-nav">
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.href === PRACTICE_ROUTES.home
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            return (
-              <Link
-                className={`nav-link${isActive ? " nav-link-active" : ""}`}
-                href={item.href}
-                key={item.href}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <span className="nav-icon" aria-hidden="true"><NavIcon name={item.icon as NavIconName} /></span>
-                <span>{t(`nav.${item.icon === "practice" ? "practiceTests" : item.icon}` as TranslationKey)}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="rail-spacer" />
+
+        <button
+          type="button"
+          className="quick-study-button"
+          onClick={() => setSearchOpen(true)}
+          aria-label={t("shell.quickStudy")}
+        >
+          <div className="quick-study-left">
+            <span className="quick-study-icon" aria-hidden="true"><AppIcon name="sparkle" size={16} /></span>
+            <span>{t("shell.quickStudy")}</span>
+          </div>
+          <kbd className="quick-study-kbd">⌘K</kbd>
+        </button>
+
+        <div className="side-rail-body">
+          <div className="nav-group">
+            <span className="nav-group-title">{t("shell.menuTitle")}</span>
+            <nav className="side-nav" aria-label="Main navigation">
+              {NAV_ITEMS.map((item) => {
+                const isActive = item.href === PRACTICE_ROUTES.home
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    className={`nav-link${isActive ? " nav-link-active" : ""}`}
+                    href={item.href}
+                    key={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <span className="nav-icon" aria-hidden="true"><NavIcon name={item.icon as NavIconName} /></span>
+                    <span>{t(`nav.${item.icon === "practice" ? "practiceTests" : item.icon}` as TranslationKey)}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div className="nav-group nav-group-skills">
+            <span className="nav-group-title">{t("shell.skillsTitle")}</span>
+            <nav className="side-nav side-nav-skills" aria-label="Skills navigation">
+              {[
+                { code: "SPEAKING", labelKey: "skills.speaking", icon: "mic" as const },
+                { code: "WRITING", labelKey: "skills.writing", icon: "writing" as const },
+                { code: "READING", labelKey: "skills.reading", icon: "reading" as const },
+                { code: "LISTENING", labelKey: "skills.listening", icon: "listening" as const },
+              ].map((skill) => (
+                <Link
+                  className="nav-link nav-link-skill"
+                  href={PRACTICE_ROUTES.studyPack}
+                  key={skill.code}
+                >
+                  <span className="nav-icon" aria-hidden="true"><AppIcon name={skill.icon} size={17} /></span>
+                  <span>{t(skill.labelKey as TranslationKey)}</span>
+                  <span className="nav-skill-arrow" aria-hidden="true"><AppIcon name="chevronRight" size={14} /></span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="rail-goal-card">
+            <div className="rail-goal-header">
+              <div className="rail-goal-title">
+                <AppIcon name="star" size={15} />
+                <span>{t("shell.dailyGoal")}</span>
+              </div>
+              <span className="rail-goal-streak">
+                <AppIcon name="sparkle" size={12} />
+                {t("shell.streakBadge")}
+              </span>
+            </div>
+            <div className="rail-goal-bar-wrap" aria-hidden="true">
+              <div className="rail-goal-bar" style={{ width: "65%" }} />
+            </div>
+            <div className="rail-goal-footer">
+              <span>{t("shell.dailyGoalProgress").replace("{done}", "13").replace("{total}", "20")}</span>
+              <span className="rail-goal-pct">65%</span>
+            </div>
+          </div>
+        </div>
+
         <div className="account-card">
-          <div className="account-avatar" aria-hidden="true">S</div>
-          <div className="account-copy">
-            <strong>{t("shell.student")}</strong>
-            <span>{t("shell.account")}</span>
+          <div className="account-profile-row">
+            <div className="account-avatar-wrap">
+              <div className="account-avatar" aria-hidden="true">S</div>
+              <span className="account-online-dot" aria-label="Online" />
+            </div>
+            <div className="account-copy">
+              <strong>{t("shell.student")}</strong>
+              <span>{t("shell.pearsonPTECore")}</span>
+            </div>
           </div>
-          <button className="icon-button" type="button" onClick={toggleLocale} aria-label="Toggle language" title="Toggle language">
-            {locale.toUpperCase()}
-          </button>
-          <button className="icon-button" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
-            <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
-          </button>
-          <button className="icon-button" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
-            <AppIcon name="signOut" size={18} />
-          </button>
+          <div className="account-actions-row">
+            <button className="account-tool-btn" type="button" onClick={toggleLocale} aria-label="Toggle language" title="Toggle language">
+              <AppIcon name="translate" size={14} />
+              <span>{locale.toUpperCase()}</span>
+            </button>
+            <button className="account-tool-btn" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+              <AppIcon name={theme === "dark" ? "sun" : "moon"} size={15} />
+              <span>{theme === "dark" ? "Light" : "Dark"}</span>
+            </button>
+            <button className="account-tool-btn account-tool-danger" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+              <AppIcon name="signOut" size={15} />
+            </button>
+          </div>
         </div>
-        <p className="rail-footer">{t("shell.practiceWorkspace")}</p>
       </aside>
 
       <div className="workspace">

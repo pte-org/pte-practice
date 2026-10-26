@@ -403,6 +403,11 @@ export const en: LocaleDict = {
     practiceWorkspace: "Practice workspace",
     student: "Student",
     account: "Account",
+    menuTitle: "Menu",
+    skillsTitle: "Skills",
+    dailyGoal: "Daily goal",
+    dailyGoalProgress: "{done}/{total} completed",
+    streakBadge: "3-day streak",
   },
   home: {
     examDate: "Exam date:",
