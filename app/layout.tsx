@@ -11,6 +11,15 @@ export const metadata: Metadata = {
     template: "%s · PTE Practice",
   },
   description: "Student practice workspace for PTE preparation.",
+  icons: {
+    icon: [
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-ppte.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
