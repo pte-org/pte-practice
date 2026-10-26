@@ -370,9 +370,10 @@ export const en: LocaleDict = {
     loadError: "We could not load your progress.",
     sessionChoiceTitle: "Choose practice mode",
     resumeOptionTitle: "Resume in-progress session",
-    resumeOptionDescription: "In progress ({answered}/{total} items) · Continue from where you left off",
+    resumeOptionBadge: "{answered}/{total} completed",
+    resumeOptionDescription: "Continue from where you left off",
     newOptionTitle: "Start fresh session",
-    newOptionDescription: "Start a new practice session from the beginning with new questions",
+    newOptionDescription: "Start a new session with fresh questions",
     startSession: "Start practice",
   },
   timed: {

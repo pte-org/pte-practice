@@ -1841,6 +1841,132 @@ div.skill-task-row { cursor: default; }
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+/* Practice Session Choice Modal (Direct-action cards) */
+.session-choice-dialog {
+  max-width: 440px;
+}
+.session-choice-options {
+  display: grid;
+  gap: 10px;
+}
+.session-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.session-choice-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.session-choice-card:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.session-choice-card-resume {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.session-choice-card-resume:hover {
+  border-color: var(--accent);
+}
+.session-choice-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  transition: transform 0.18s ease;
+}
+.session-choice-card-resume .session-choice-icon {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.session-choice-card-new .session-choice-icon {
+  background: var(--surface-soft);
+  color: var(--muted-strong);
+}
+.session-choice-card:hover .session-choice-icon {
+  transform: scale(1.05);
+}
+.session-choice-content {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.session-choice-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.session-choice-title {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.session-choice-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.session-choice-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.session-choice-arrow {
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  flex: 0 0 auto;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+.session-choice-card:hover .session-choice-arrow {
+  color: var(--accent);
+  transform: translateX(3px);
+}
+.session-choice-cancel-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+.session-choice-cancel-btn:hover {
+  background: var(--surface-soft);
+  border-color: var(--line-strong);
+  color: var(--text);
+}
 @media (max-width: 760px) {
   .home-hero-top { grid-template-columns: 1fr; }
   .device-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

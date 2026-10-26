@@ -370,6 +370,7 @@ export interface LocaleDict {
     loadError: string;
     sessionChoiceTitle: string;
     resumeOptionTitle: string;
+    resumeOptionBadge: string;
     resumeOptionDescription: string;
     newOptionTitle: string;
     newOptionDescription: string;

@@ -44,12 +44,10 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
   ) {
     const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
-    const [choice, setChoice] = useState<"resume" | "new">("resume");
 
     const handleActionClick = () => {
       if (!canStart) return;
       if (activeSession) {
-        setChoice("resume");
         setShowModal(true);
       } else {
         onStart(task);
@@ -80,69 +78,62 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
             title={taskDisplayName(task.code, task.displayName, t)}
             titleIcon={<AppIcon name={iconForTaskType(task.code)} size={22} />}
             closeLabel={t("mode.close")}
+            size="sm"
+            className="session-choice-dialog"
             footer={
-              <>
-                <button
-                  className="button button-pill button-outline-danger"
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                >
-                  {t("mode.close")}
-                </button>
-                {choice === "resume" ? (
-                  <Link
-                    className="button button-outline button-pill"
-                    href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
-                    onClick={() => setShowModal(false)}
-                  >
-                    {t("progress.startSession")}
-                  </Link>
-                ) : (
-                  <button
-                    className="button button-outline button-pill"
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      onStart(task);
-                    }}
-                  >
-                    {t("progress.startSession")}
-                  </button>
-                )}
-              </>
+              <button
+                type="button"
+                className="session-choice-cancel-btn"
+                onClick={() => setShowModal(false)}
+              >
+                {t("mode.close")}
+              </button>
             }
           >
-            <div className="mode-options" role="radiogroup" aria-label={t("progress.sessionChoiceTitle")}>
+            <div className="session-choice-options">
+              <Link
+                className="session-choice-card session-choice-card-resume"
+                href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
+                onClick={() => setShowModal(false)}
+              >
+                <span className="session-choice-icon" aria-hidden="true">
+                  <AppIcon name="play" size={20} />
+                </span>
+                <div className="session-choice-content">
+                  <div className="session-choice-heading">
+                    <span className="session-choice-title">{t("progress.resumeOptionTitle")}</span>
+                    <span className="session-choice-badge">
+                      {t("progress.resumeOptionBadge")
+                        .replace("{answered}", String(answered))
+                        .replace("{total}", String(total))}
+                    </span>
+                  </div>
+                  <p className="session-choice-desc">{t("progress.resumeOptionDescription")}</p>
+                </div>
+                <span className="session-choice-arrow" aria-hidden="true">
+                  <AppIcon name="chevronRight" size={18} />
+                </span>
+              </Link>
+
               <button
                 type="button"
-                role="radio"
-                aria-checked={choice === "resume"}
-                className={`mode-option${choice === "resume" ? " mode-option-selected" : ""}`}
-                onClick={() => setChoice("resume")}
+                className="session-choice-card session-choice-card-new"
+                onClick={() => {
+                  setShowModal(false);
+                  onStart(task);
+                }}
               >
-                <span className="mode-option-title">
-                  <AppIcon name="play" size={18} />
-                  {t("progress.resumeOptionTitle")}
+                <span className="session-choice-icon" aria-hidden="true">
+                  <AppIcon name="retake" size={20} />
                 </span>
-                <span className="mode-option-description">
-                  {t("progress.resumeOptionDescription")
-                    .replace("{answered}", String(answered))
-                    .replace("{total}", String(total))}
-                </span>
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={choice === "new"}
-                className={`mode-option${choice === "new" ? " mode-option-selected" : ""}`}
-                onClick={() => setChoice("new")}
-              >
-                <span className="mode-option-title">
-                  <AppIcon name="retake" size={18} />
-                  {t("progress.newOptionTitle")}
-                </span>
-                <span className="mode-option-description">
-                  {t("progress.newOptionDescription")}
+                <div className="session-choice-content">
+                  <div className="session-choice-heading">
+                    <span className="session-choice-title">{t("progress.newOptionTitle")}</span>
+                  </div>
+                  <p className="session-choice-desc">{t("progress.newOptionDescription")}</p>
+                </div>
+                <span className="session-choice-arrow" aria-hidden="true">
+                  <AppIcon name="chevronRight" size={18} />
                 </span>
               </button>
             </div>
