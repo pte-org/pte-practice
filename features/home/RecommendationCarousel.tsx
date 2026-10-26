@@ -83,16 +83,40 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
     };
   }, [checkScrollability, cards.length]);
 
+  const [activeButton, setActiveButton] = useState<"left" | "right" | null>(null);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right" | null>(null);
+
   const scroll = (direction: "left" | "right") => {
     const el = carouselRef.current;
     if (!el) return;
+
+    setActiveButton(direction);
+    setSlideDirection(direction);
+    setTimeout(() => {
+      setActiveButton(null);
+      setSlideDirection(null);
+    }, 450);
+
     const firstChild = el.firstElementChild as HTMLElement | null;
-    const step = firstChild ? firstChild.offsetWidth + 14 : el.clientWidth * 0.6;
-    el.scrollBy({
-      left: direction === "left" ? -step : step,
+    const cardWidth = firstChild ? firstChild.offsetWidth : 300;
+    const gap = 16;
+    const step = cardWidth + gap;
+
+    const targetLeft = direction === "left"
+      ? Math.max(0, el.scrollLeft - step)
+      : Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + step);
+
+    // Disable snap during smooth transition for silky glide
+    el.style.scrollSnapType = "none";
+    el.scrollTo({
+      left: targetLeft,
       behavior: "smooth",
     });
-    setTimeout(checkScrollability, 360);
+
+    setTimeout(() => {
+      if (el) el.style.scrollSnapType = "x mandatory";
+      checkScrollability();
+    }, 400);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -146,7 +170,7 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
           <div className="carousel-nav-buttons" role="group" aria-label="Carousel navigation">
             <button
               type="button"
-              className="carousel-nav-btn"
+              className={`carousel-nav-btn carousel-nav-btn-prev${activeButton === "left" ? " carousel-nav-btn-pressed" : ""}`}
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               aria-label={t("presentation.previous")}
@@ -156,7 +180,7 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
             </button>
             <button
               type="button"
-              className="carousel-nav-btn"
+              className={`carousel-nav-btn carousel-nav-btn-next${activeButton === "right" ? " carousel-nav-btn-pressed" : ""}`}
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               aria-label={t("presentation.next")}
@@ -169,7 +193,7 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
       ) : null}
       <div
         ref={carouselRef}
-        className="carousel"
+        className={`carousel${slideDirection ? ` carousel-sliding-${slideDirection}` : ""}`}
         role="list"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
