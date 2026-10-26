@@ -456,4 +456,24 @@ export interface LocaleDict {
     saveError: string;
     loading: string;
   };
+  commandPalette: {
+    placeholder: string;
+    navigation: string;
+    skills: string;
+    tasks: string;
+    quickActions: string;
+    leaderboard: string;
+    redeem: string;
+    toggleTheme: string;
+    toggleLanguage: string;
+    checkMic: string;
+    checkSpeaker: string;
+    checkKeyboard: string;
+    checkReading: string;
+    noResults: string;
+    hintNavigate: string;
+    hintSelect: string;
+    hintClose: string;
+    featureComingSoon: string;
+  };
 }

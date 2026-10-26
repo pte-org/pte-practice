@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AppIcon, ProductMark } from "@/common/components";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { usePracticeAccessToast } from "@/features/practice/useAccessToast";
-import { readReadingSize } from "@/features/deviceCheck/device-check";
+import { readReadingSize, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
+import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
+import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { CommandPalette } from "./CommandPalette";
 import { NavIcon, type NavIconName } from "./NavIcon";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { useTranslation } from "@/common/i18n";
@@ -20,8 +24,25 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { authStatus, signOut } = usePractice();
   const { theme, toggleTheme } = useTheme();
   const { t, locale, setLocale } = useTranslation();
-  
+  const { markPassed } = useDeviceChecks();
+  const { openFor, dialog: practiceModeDialog } = usePracticeStart();
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [deviceCheckKind, setDeviceCheckKind] = useState<DeviceCheckKind | null>(null);
+
   const toggleLocale = () => setLocale(locale === "en" ? "vi" : "en");
+
+  // Global shortcut: ⌘K / Ctrl+K toggles the command palette
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   
   const activeNavItem = NAV_ITEMS.find((item) => item.href === PRACTICE_ROUTES.home
     ? pathname === item.href
@@ -107,11 +128,16 @@ export function StudentShell({ children }: { children: ReactNode }) {
           </div>
           <span className="top-page-title">{activeNavItem ? t(`nav.${activeNavItem.icon === "practice" ? "practiceTests" : activeNavItem.icon}` as TranslationKey) : t("nav.home")}</span>
           <div className="top-bar-spacer" />
-          <div className="search-pill" aria-label="Search is not available in this release">
+          <button
+            type="button"
+            className="search-pill"
+            onClick={() => setSearchOpen(true)}
+            aria-label={t("commandPalette.placeholder")}
+          >
             <AppIcon name="search" size={20} />
             <span>{t("shell.search")}</span>
             <kbd>⌘ K</kbd>
-          </div>
+          </button>
           <div className="top-context" aria-label="Current practice product">
             <span>{t("shell.pearsonPTECore")}</span>
             <AppIcon name="chevronDown" size={17} />
@@ -119,6 +145,21 @@ export function StudentShell({ children }: { children: ReactNode }) {
         </header>
         <main className="main-content">{children}</main>
       </div>
+
+      {searchOpen ? (
+        <CommandPalette
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onStartTask={openFor}
+          onOpenDeviceCheck={(kind) => setDeviceCheckKind(kind)}
+        />
+      ) : null}
+      <DeviceCheckDialog
+        kind={deviceCheckKind}
+        onClose={() => setDeviceCheckKind(null)}
+        onPassed={markPassed}
+      />
+      {practiceModeDialog}
     </div>
   );
 }

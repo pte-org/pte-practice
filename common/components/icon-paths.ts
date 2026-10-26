@@ -55,6 +55,9 @@ import {
   mdiWeatherNight,
   mdiWeatherSunny,
   mdiDragVariant,
+  mdiGiftOutline,
+  mdiTranslate,
+  mdiTrophyOutline,
 } from "@mdi/js";
 
 /**
@@ -91,6 +94,9 @@ export const ICON_PATHS = {
   moon: mdiWeatherNight,
   bookOpen: mdiBookOpenVariant,
   edit: mdiPencilOutline,
+  trophy: mdiTrophyOutline,
+  gift: mdiGiftOutline,
+  translate: mdiTranslate,
   // Skills
   mic: mdiMicrophoneOutline,
   writing: mdiFileDocumentEditOutline,
