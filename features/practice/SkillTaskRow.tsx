@@ -4,7 +4,7 @@ import { AppIcon, LockBadge } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { canStartPractice, type PracticeCatalogTask } from "./contracts";
 import { iconForTaskType } from "./icon-mapping";
-import { formatScore, scoreTone } from "./presentation";
+import { formatScore, scoreTone, taskDisplayName } from "./presentation";
 import { TaskActionButtons } from "./TaskActionButtons";
 
 export interface SkillTaskRowProps {
@@ -40,7 +40,7 @@ export function SkillTaskRow({
         <AppIcon name={iconForTaskType(task.code)} size={20} />
       </span>
       <span className="skill-task-copy">
-        <strong>{task.displayName}</strong>
+        <strong>{taskDisplayName(task.code, task.displayName, t)}</strong>
         <span>
           {task.answeredQuestionCount} {t("presentation.answers")}
           {activeSession ? (

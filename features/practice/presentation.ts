@@ -26,6 +26,18 @@ export function skillKey(code: string | null | undefined): TranslationKey | null
   return code ? SKILL_KEYS[code.toUpperCase()] ?? null : null;
 }
 
+/** Localized display name of a PTE task code with fallback to the catalog title. */
+export function taskDisplayName(
+  code: string | null | undefined,
+  fallback: string,
+  t: (key: TranslationKey) => string,
+): string {
+  if (!code) return fallback;
+  const key = `tasks.${code}` as TranslationKey;
+  const translated = t(key);
+  return translated && translated !== key ? translated : fallback;
+}
+
 const STATUS_KEYS: Record<string, TranslationKey> = {
   ANSWERED: "presentation.statusAnswered",
   SKIPPED: "presentation.statusSkipped",

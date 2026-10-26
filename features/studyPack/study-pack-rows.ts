@@ -1,8 +1,8 @@
 import type { PracticeCatalogSection } from "@/features/practice/contracts";
 import { runnableTasks } from "@/features/practice/mode/mode-target";
 
-/** Order of the skills on the Study-Pack page. */
-export const STUDY_SKILL_ORDER = ["READING", "LISTENING", "SPEAKING", "WRITING"] as const;
+/** Order of the skills on the Study-Pack page. Standard PTE order: Speaking -> Writing -> Reading -> Listening. */
+export const STUDY_SKILL_ORDER = ["SPEAKING", "WRITING", "READING", "LISTENING"] as const;
 
 export interface StudySkillRow {
   code: string;

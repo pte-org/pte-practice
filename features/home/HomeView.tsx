@@ -16,6 +16,7 @@ import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import type { PracticeProgressEntry } from "@/features/practice/contracts";
 import { mockTarget } from "@/features/practice/mode/mode-target";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { taskDisplayName } from "@/features/practice/presentation";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { ExamDateLine } from "./ExamDateLine";
 import { RecommendationCarousel } from "./RecommendationCarousel";
@@ -53,7 +54,10 @@ export function HomeView() {
       });
   }, [api, authStatus, gate, isPracticeUnlocked]);
 
-  const taskName = (code: string) => tasks.find((task) => task.code === code)?.displayName ?? code;
+  const taskName = (code: string) => {
+    const found = tasks.find((task) => task.code === code);
+    return taskDisplayName(code, found?.displayName ?? code, t);
+  };
   const cards = buildRecommendations(mockTests, entries, taskName, t);
 
   return (

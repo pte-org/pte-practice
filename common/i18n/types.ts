@@ -16,6 +16,30 @@ export interface LocaleDict {
     reading: string;
     listening: string;
   };
+  tasks: {
+    READ_ALOUD: string;
+    REPEAT_SENTENCE: string;
+    DESCRIBE_IMAGE: string;
+    RE_TELL_LECTURE: string;
+    ANSWER_SHORT_QUESTION: string;
+    SUMMARIZE_GROUP_DISCUSSION: string;
+    RESPOND_TO_A_SITUATION: string;
+    SUMMARIZE_WRITTEN_TEXT: string;
+    WRITE_ESSAY: string;
+    SUMMARIZE_SPOKEN_TEXT: string;
+    WRITE_FROM_DICTATION: string;
+    FILL_IN_THE_BLANKS_DROPDOWN: string;
+    MC_READING_MULTIPLE: string;
+    RE_ORDER_PARAGRAPHS: string;
+    FILL_IN_THE_BLANKS_DRAG_AND_DROP: string;
+    MC_READING_SINGLE: string;
+    HIGHLIGHT_CORRECT_SUMMARY: string;
+    HIGHLIGHT_INCORRECT_WORDS: string;
+    MC_LISTENING_MULTIPLE: string;
+    FILL_IN_THE_BLANKS_TYPE_IN: string;
+    MC_LISTENING_SINGLE: string;
+    SELECT_MISSING_WORD: string;
+  };
   commonApiError: {
     network: string;
     requestRejected: string;

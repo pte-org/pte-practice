@@ -12,7 +12,7 @@ import type { PracticeProgress } from "@/features/practice/contracts";
 import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
-import { formatScore, scoreTone, sessionDisplayName, skillKey } from "@/features/practice/presentation";
+import { formatScore, scoreTone, sessionDisplayName, skillKey, taskDisplayName } from "@/features/practice/presentation";
 import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
 import { progressMetrics } from "./progress-summary";
 
@@ -53,7 +53,10 @@ export function ProgressView() {
   }, [loadProgress]);
 
   const metrics = progressMetrics(progress);
-  const taskName = (code: string) => sections.flatMap((section) => section.taskTypes).find((task) => task.code === code)?.displayName ?? code;
+  const taskName = (code: string) => {
+    const found = sections.flatMap((section) => section.taskTypes).find((task) => task.code === code);
+    return taskDisplayName(code, found?.displayName ?? code, t);
+  };
   const cells = [
     { label: t("progress.metricSessions"), value: String(metrics.sessions), icon: "responses" as const },
     { label: t("progress.metricCompleted"), value: String(metrics.completed), icon: "check" as const },

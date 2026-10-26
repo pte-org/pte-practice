@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatScore, itemStatusKey, scoreTone, sessionDisplayName } from "./presentation";
+import { formatScore, itemStatusKey, scoreTone, sessionDisplayName, taskDisplayName } from "./presentation";
 
 const t = (key: string) => ({
   "presentation.questions": "câu",
@@ -24,6 +24,13 @@ describe("score display", () => {
   it("names item statuses through i18n keys", () => {
     expect(itemStatusKey("ANSWERED")).toBe("presentation.statusAnswered");
     expect(itemStatusKey("whatever")).toBe("presentation.statusPending");
+  });
+
+  it("resolves task names from translation keys or falls back", () => {
+    const mockT = (key: string) => (key === "tasks.READ_ALOUD" ? "Read Aloud (Đọc đoạn văn)" : key);
+    expect(taskDisplayName("READ_ALOUD", "Read Aloud", mockT as never)).toBe("Read Aloud (Đọc đoạn văn)");
+    expect(taskDisplayName("UNKNOWN_TASK", "Fallback Name", mockT as never)).toBe("Fallback Name");
+    expect(taskDisplayName(null, "Fallback Name", mockT as never)).toBe("Fallback Name");
   });
 });
 
