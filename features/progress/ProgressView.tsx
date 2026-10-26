@@ -100,12 +100,18 @@ export function ProgressView() {
                     entry.taskCode === task.code &&
                     (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
                 );
+                const completedSession = progress.entries.find(
+                  (entry) =>
+                    entry.taskCode === task.code &&
+                    (entry.status !== "IN_PROGRESS" && entry.sessionStatus !== "IN_PROGRESS"),
+                );
                 return (
                   <SkillTaskRow
                     key={task.code}
                     task={task}
                     isPracticeUnlocked={isPracticeUnlocked}
                     activeSession={activeSession}
+                    completedSession={completedSession}
                     onStart={openFor}
                   />
                 );

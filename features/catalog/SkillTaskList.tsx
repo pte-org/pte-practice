@@ -44,6 +44,11 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent, pro
                   entry.taskCode === task.code &&
                   (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
               );
+              const completedSession = progressEntries?.find(
+                (entry) =>
+                  entry.taskCode === task.code &&
+                  (entry.status !== "IN_PROGRESS" && entry.sessionStatus !== "IN_PROGRESS"),
+              );
               return (
                 <SkillTaskRow
                   key={task.code}
@@ -51,6 +56,7 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent, pro
                   task={task}
                   isPracticeUnlocked={isPracticeUnlocked}
                   activeSession={activeSession}
+                  completedSession={completedSession}
                   onStart={onStartIntent}
                 />
               );

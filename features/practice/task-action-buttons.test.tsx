@@ -46,6 +46,20 @@ describe("TaskActionButtons", () => {
     expect(html).toContain("task-chevron-btn");
   });
 
+  it("renders chevron right button when completedSession exists", () => {
+    const html = renderWithLocale(
+      <TaskActionButtons
+        task={sampleTask}
+        activeSession={null}
+        completedSession={{ sessionPublicId: "sess-completed", answeredItemCount: 10, totalItemCount: 10, score: 85 }}
+        canStart={true}
+        onStart={vi.fn()}
+      />
+    );
+
+    expect(html).toContain("task-chevron-btn");
+  });
+
   it("disables the chevron button when canStart is false", () => {
     const html = renderWithLocale(
       <TaskActionButtons

@@ -375,6 +375,14 @@ export interface LocaleDict {
     newOptionTitle: string;
     newOptionDescription: string;
     startSession: string;
+    reviewOptionTitle: string;
+    reviewOptionDescription: string;
+    completedBadge: string;
+    taskBriefingTitle: string;
+    taskBriefingFormat: string;
+    taskBriefingAIGraded: string;
+    taskBriefingTipsHeader: string;
+    startPracticeNow: string;
   };
   timed: {
     stepperLabel: string;

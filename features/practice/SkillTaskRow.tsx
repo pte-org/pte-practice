@@ -16,6 +16,12 @@ export interface SkillTaskRowProps {
     answeredItemCount: number;
     totalItemCount: number;
   } | null;
+  completedSession?: {
+    sessionPublicId: string;
+    answeredItemCount?: number;
+    totalItemCount?: number;
+    score?: number | null;
+  } | null;
   onStart: (task: PracticeCatalogTask) => void;
   className?: string;
 }
@@ -28,6 +34,7 @@ export function SkillTaskRow({
   task,
   isPracticeUnlocked,
   activeSession,
+  completedSession,
   onStart,
   className,
 }: SkillTaskRowProps) {
@@ -80,6 +87,7 @@ export function SkillTaskRow({
         ref={actionRef}
         task={task}
         activeSession={activeSession}
+        completedSession={completedSession}
         canStart={canStart}
         onStart={onStart}
       />
