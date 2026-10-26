@@ -32,7 +32,7 @@ export function SessionHeader(props: SessionHeaderProps) {
           <span>{t("session.part").replace("{n}", String(parts.partNumber)).replace("{total}", String(parts.partCount))}</span>
           <strong>{t("session.question").replace("{n}", String(props.questionNumber)).replace("{total}", String(props.questionCount))}</strong>
         </div>
-        <button className="button button-outline-danger button-pill" type="button" disabled={props.pauseDisabled} onClick={props.onPause}>
+        <button className="button button-outline button-pill session-pause-btn" type="button" disabled={props.pauseDisabled} onClick={props.onPause}>
           {props.pauseLabel}
         </button>
       </div>

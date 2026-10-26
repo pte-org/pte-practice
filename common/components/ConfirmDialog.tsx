@@ -31,9 +31,7 @@ export const ConfirmDialog = ({
   onConfirm,
   onClose,
 }: ConfirmDialogProps): ReactElement => {
-  const cancelBtnClass = tone === "danger"
-    ? "button button-pill button-outline"
-    : "button button-pill button-outline-danger";
+  const cancelBtnClass = "button button-pill button-outline";
 
   return (
     <Modal
