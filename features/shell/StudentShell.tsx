@@ -143,7 +143,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <AppIcon name="chevronDown" size={17} />
           </div>
         </header>
-        <main className="main-content">{children}</main>
+        <main className="main-content" key={pathname}>{children}</main>
       </div>
 
       {searchOpen ? (

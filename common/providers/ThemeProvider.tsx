@@ -75,6 +75,11 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
     };
 
     if (typeof docWithTransition.startViewTransition === "function") {
+      document.documentElement.classList.add("theme-transitioning");
+      const cleanup = () => {
+        document.documentElement.classList.remove("theme-transitioning");
+      };
+
       const transition = docWithTransition.startViewTransition(() => {
         setTheme(nextTheme);
       });
@@ -86,7 +91,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
             `circle(${endRadius}px at ${x}px ${y}px)`,
           ];
 
-          (document.documentElement as unknown as {
+          const anim = (document.documentElement as unknown as {
             animate: (keyframes: unknown[], options: unknown) => Animation;
           }).animate(
             [
@@ -94,15 +99,15 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
               { clipPath: clipPath[1] },
             ],
             {
-              duration: 500,
-              easing: "ease-in-out",
+              duration: 450,
+              easing: "cubic-bezier(0.2, 0.9, 0.3, 1)",
               pseudoElement: "::view-transition-new(root)",
             }
           );
+          anim.onfinish = cleanup;
+          anim.oncancel = cleanup;
         })
-        .catch(() => {
-          // If view transition fails, theme is already set
-        });
+        .catch(cleanup);
       return;
     }
 

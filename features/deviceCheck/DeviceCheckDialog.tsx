@@ -45,7 +45,7 @@ export function DeviceCheckDialog({ kind, onClose, onPassed }: DeviceCheckDialog
 }
 
 function MicCheck({ onPass }: { onPass: () => void }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [phase, setPhase] = useState<"idle" | "recording" | "done" | "error">("idle");
   const [levels, setLevels] = useState<number[]>([]);
   const [peaks, setPeaks] = useState<number[] | null>(null);
@@ -60,15 +60,23 @@ function MicCheck({ onPass }: { onPass: () => void }) {
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
 
   useEffect(() => {
-    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    let active = true;
+
+    const check = () => {
       navigator.permissions
         .query({ name: "microphone" as PermissionName })
         .then((permissionStatus) => {
+          if (!active) return;
           if (permissionStatus.state === "denied") {
             setIsPermissionDenied(true);
             setError(t("deviceCheck.micDenied"));
+          } else if (permissionStatus.state === "granted") {
+            setIsPermissionDenied(false);
+            setError(null);
           }
           permissionStatus.onchange = () => {
+            if (!active) return;
             if (permissionStatus.state === "granted") {
               setIsPermissionDenied(false);
               setError(null);
@@ -79,7 +87,14 @@ function MicCheck({ onPass }: { onPass: () => void }) {
           };
         })
         .catch(() => undefined);
-    }
+    };
+
+    check();
+    window.addEventListener("focus", check);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", check);
+    };
   }, [t]);
 
   const record = async () => {
@@ -123,7 +138,33 @@ function MicCheck({ onPass }: { onPass: () => void }) {
       ) : null}
       {phase === "recording" ? <p role="status">{t("deviceCheck.micRecording")}</p> : null}
       {phase === "done" && verdict ? <p role="status" className={`device-verdict device-verdict-${verdict}`}>{t(`deviceCheck.mic_${verdict}` as TranslationKey)}</p> : null}
-      {error ? <p role="alert" className="device-verdict device-verdict-silent">{error}</p> : null}
+      {isPermissionDenied ? (
+        <div className="mic-denied-box" role="alert">
+          <div className="mic-denied-box-header">
+            <span className="mic-denied-badge">🔒 {t("deviceCheck.micDenied")}</span>
+          </div>
+          <div className="mic-denied-steps">
+            <div className="mic-step-item">
+              <span className="mic-step-num">1</span>
+              <span>
+                {locale === "vi"
+                  ? "Bấm vào icon Cài đặt / Ổ khóa 🔒 ở bên trái thanh địa chỉ trình duyệt Chrome (cạnh URL)."
+                  : "Click the site settings / lock icon 🔒 on the left of the Chrome address bar."}
+              </span>
+            </div>
+            <div className="mic-step-item">
+              <span className="mic-step-num">2</span>
+              <span>
+                {locale === "vi"
+                  ? "Chuyển Microphone sang Cho phép (Allow), sau đó quay lại trang này."
+                  : "Switch Microphone to Allow, then return to this page."}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : error ? (
+        <p role="alert" className="device-verdict device-verdict-silent">{error}</p>
+      ) : null}
       {phase === "done" && url ? (
         <div className="mic-check-player">
           <PromptAudioPlayer url={url} label={t("deviceCheck.micTitle")} peaks={peaks} interactive autoPlay />

@@ -2314,18 +2314,18 @@ html[data-theme="dark"] .media-player {
 .inline-result-section h4 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text); }
 .inline-result-text { margin: 0; font-size: 0.92rem; line-height: 1.55; color: var(--muted-strong); white-space: pre-wrap; }
 
-/* Circular spreading reveal transition when switching dark/light mode */
-::view-transition-old(root),
-::view-transition-new(root) {
+/* Circular spreading reveal transition ONLY when switching dark/light mode */
+.theme-transitioning::view-transition-old(root),
+.theme-transitioning::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-::view-transition-old(root) {
+.theme-transitioning::view-transition-old(root) {
   z-index: 1;
 }
 
-::view-transition-new(root) {
+.theme-transitioning::view-transition-new(root) {
   z-index: 999999;
 }
 
@@ -2342,6 +2342,83 @@ html[data-theme="dark"] .media-player {
 
 .theme-ripple-overlay.is-active {
   transform: translate(-50%, -50%) scale(1);
+}
+
+/* Smooth page transitions for regular navigation */
+.main-content,
+.session-page,
+.content-frame {
+  animation: pageFadeIn 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-link {
+  transition: background 160ms cubic-bezier(0.2, 0, 0, 1), color 160ms ease, transform 120ms ease;
+}
+.nav-link:active {
+  transform: scale(0.98);
+}
+
+/* Microphone denied guide box */
+.mic-denied-box {
+  display: grid;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--amber-soft);
+  border: 1.5px solid var(--amber);
+  color: var(--text);
+  margin: 12px 0;
+  animation: pageFadeIn 250ms ease;
+}
+.mic-denied-box-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.mic-denied-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--amber);
+  font-weight: 700;
+}
+.mic-denied-steps {
+  display: grid;
+  gap: 10px;
+}
+.mic-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.mic-step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex: 0 0 20px;
+  margin-top: 2px;
 }
 
 

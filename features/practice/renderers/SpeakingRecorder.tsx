@@ -30,7 +30,7 @@ export function SpeakingRecorder({
   fixture, value, disabled = false, onChange, onUploadRecording, onLoadPlayback, timed, onActivityChange,
   itemPublicId,
 }: TaskRendererProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [issue, setIssue] = useState<"short" | "silent" | null>(null);
   const maxLevel = useRef(0);
   const [state, setState] = useState<RecordingState>(hasRecording(value) ? "recorded" : "idle");
@@ -82,11 +82,22 @@ export function SpeakingRecorder({
   useEffect(() => () => { if (localUrl) URL.revokeObjectURL(localUrl); }, [localUrl]);
 
   useEffect(() => {
-    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    let active = true;
+
+    const check = () => {
       navigator.permissions
         .query({ name: "microphone" as PermissionName })
         .then((permissionStatus) => {
+          if (!active) return;
+          if (permissionStatus.state === "denied") {
+            setIsPermissionDenied(true);
+          } else if (permissionStatus.state === "granted") {
+            setIsPermissionDenied(false);
+            setMessage(null);
+          }
           permissionStatus.onchange = () => {
+            if (!active) return;
             if (permissionStatus.state === "granted") {
               setIsPermissionDenied(false);
               setMessage(null);
@@ -96,7 +107,14 @@ export function SpeakingRecorder({
           };
         })
         .catch(() => undefined);
-    }
+    };
+
+    check();
+    window.addEventListener("focus", check);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", check);
+    };
   }, []);
 
   const startRecording = useCallback(async () => {
@@ -247,6 +265,32 @@ export function SpeakingRecorder({
               <PromptAudioPlayer url={audioUrl} peaks={peaks} label={t("session.recordedAnswer")} interactive={!disabled} />
             ) : null}
           </>
+        ) : null}
+
+        {isPermissionDenied ? (
+          <div className="mic-denied-box" role="alert">
+            <div className="mic-denied-box-header">
+              <span className="mic-denied-badge">🔒 {t("deviceCheck.micDenied")}</span>
+            </div>
+            <div className="mic-denied-steps">
+              <div className="mic-step-item">
+                <span className="mic-step-num">1</span>
+                <span>
+                  {locale === "vi"
+                    ? "Bấm vào icon Cài đặt / Ổ khóa 🔒 ở bên trái thanh địa chỉ trình duyệt Chrome (cạnh URL)."
+                    : "Click the site settings / lock icon 🔒 on the left of the Chrome address bar."}
+                </span>
+              </div>
+              <div className="mic-step-item">
+                <span className="mic-step-num">2</span>
+                <span>
+                  {locale === "vi"
+                    ? "Chuyển Microphone sang Cho phép (Allow), sau đó quay lại trang này."
+                    : "Switch Microphone to Allow, then return to this page."}
+                </span>
+              </div>
+            </div>
+          </div>
         ) : null}
 
         {message ? <p className="task-recording-message" role="alert">{message}</p> : null}
