@@ -6,9 +6,9 @@ import { useTranslation, type TranslationKey } from "@/common/i18n";
 import { recordingIssue } from "../answer-checks";
 import type { TaskRendererProps } from "./RendererTypes";
 import { AudioWaveform } from "../media/AudioWaveform";
+import { PromptAudioPlayer } from "../media/PromptAudioPlayer";
 import { MAX_RECORDING_DURATION_SECONDS, RECORDING_TEXT } from "../media/constants";
 import { RecorderError, startWavRecording, type WavRecorderHandle } from "../media/audio-recorder";
-import { useRecordingPlayback } from "../media/useRecordingPlayback";
 import { clampRecordingDuration, padLevels, WAVEFORM_BAR_COUNT } from "../media/waveform";
 import { createOnceCommand } from "../timed/play-once";
 
@@ -21,7 +21,6 @@ interface PendingRecording {
 }
 
 const LEVEL_SCALE = 3;
-const FLAT_PEAKS: readonly number[] = new Array<number>(WAVEFORM_BAR_COUNT).fill(0.15);
 
 /**
  * Records the spoken answer, shows its waveform, and lets the student replay it. Untimed, the student starts and
@@ -40,6 +39,7 @@ export function SpeakingRecorder({
   const [liveLevels, setLiveLevels] = useState<number[]>([]);
   const [peaks, setPeaks] = useState<number[] | null>(null);
   const [localUrl, setLocalUrl] = useState<string | null>(null);
+  const [serverPlaybackUrl, setServerPlaybackUrl] = useState<string | null>(null);
   const recorder = useRef<WavRecorderHandle | null>(null);
   const startedAt = useRef<number | null>(null);
   const pending = useRef<PendingRecording | null>(null);
@@ -55,11 +55,18 @@ export function SpeakingRecorder({
     setLiveLevels([]);
     setPeaks(null);
     setLocalUrl(null);
+    setServerPlaybackUrl(null);
     setIssue(null);
   }
 
-  const playbackFailed = useCallback(() => setMessage(RECORDING_TEXT.playbackFailed), []);
-  const playback = useRecordingPlayback(localUrl, onLoadPlayback ?? null, playbackFailed);
+  useEffect(() => {
+    if (localUrl || !onLoadPlayback || (state !== "recorded" && state !== "review")) return;
+    let active = true;
+    void onLoadPlayback()
+      .then((url) => { if (active) setServerPlaybackUrl(url); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [localUrl, onLoadPlayback, state]);
 
   useEffect(() => () => {
     recorder.current?.cancel();
@@ -161,6 +168,7 @@ export function SpeakingRecorder({
     setMessage(null);
     setPeaks(null);
     setLocalUrl(null);
+    setServerPlaybackUrl(null);
     setLiveLevels([]);
     pending.current = null;
     setIssue(null);
@@ -168,73 +176,95 @@ export function SpeakingRecorder({
   }
 
   const shownDuration = state === "recording" ? elapsedSeconds : durationFromValue(value, elapsedSeconds);
-  const recorded = state === "recorded";
-  const waveform = state === "recording" ? padLevels(liveLevels) : peaks ?? FLAT_PEAKS;
-  const showWaveform = state === "recording" || state === "uploading" || state === "review" || state === "saveFailed" || recorded;
+  const audioUrl = localUrl ?? serverPlaybackUrl;
 
   return (
     <div className="task-recording-panel">
       {fixture.text ? <p className="task-source-text">{fixture.text}</p> : null}
-      <div className="record-card">
-      <strong className="record-card-title">{t("session.recordedAnswer")}</strong>
-      <div className="task-recording-status" role="status" aria-live="polite">
-        <span className={`recording-indicator recording-indicator-${state}`} aria-hidden="true" />
-        <span>{statusText(state)}</span>
-        <span className="task-recording-duration">{formatDuration(shownDuration)} / {formatDuration(maxSeconds)}</span>
-      </div>
-      {showWaveform ? (
-        <div className="recording-waveform">
-          <AudioWaveform peaks={waveform} label={RECORDING_TEXT.waveform}
-            progress={recorded ? playback.progress : 0}
-            onSeek={recorded && !disabled ? playback.seek : undefined} />
+      <div className={`record-card${state === "recording" ? " record-card-recording" : ""}`}>
+        <div className="record-card-header">
+          <div className="record-card-title-group">
+            <span className={`record-card-icon${state === "recording" ? " record-card-icon-recording" : ""}`} aria-hidden="true">
+              <AppIcon name="mic" size={18} />
+            </span>
+            <strong className="record-card-title">{t("session.recordedAnswer")}</strong>
+          </div>
+          <div className="record-card-meta">
+            <span className={`recording-status-badge recording-status-${state}`}>
+              <span className="recording-status-dot" aria-hidden="true" />
+              {statusText(state)}
+            </span>
+            <span className="task-recording-duration">{formatDuration(shownDuration)} / {formatDuration(maxSeconds)}</span>
+          </div>
         </div>
-      ) : null}
-      {message ? <p className="task-recording-message" role="alert">{message}</p> : null}
-      {state === "review" && issue ? (
-        <p className="task-recording-message" role="alert">{t(`session.recording_${issue}` as TranslationKey)}</p>
-      ) : null}
-      <div className="task-recording-actions">
+
         {state === "recording" ? (
-          // A timed question stops through the frame's "stop early" button, so the recorder has no stop of its own.
-          timed ? null : (
-            <button className="button button-primary" type="button" disabled={disabled} onClick={() => void stopRecording()}>
-              <AppIcon name="stop" size={18} /> {RECORDING_TEXT.stop}
-            </button>
+          <div className="recording-live-wave">
+            <AudioWaveform peaks={padLevels(liveLevels)} label={RECORDING_TEXT.waveform} />
+          </div>
+        ) : null}
+
+        {state === "recorded" ? (
+          audioUrl ? (
+            <PromptAudioPlayer url={audioUrl} peaks={peaks} label={t("session.recordedAnswer")} interactive={!disabled} />
+          ) : (
+            <div className="recording-loading-strip">
+              <span className="loading-dot" /> <span>{t("ui.sessionLoading")}</span>
+            </div>
           )
-        ) : state === "uploading" ? (
-          <button className="button button-muted" type="button" disabled>{RECORDING_TEXT.uploading}</button>
-        ) : state === "review" ? (
+        ) : null}
+
+        {state === "review" ? (
           <>
-            <button className="button button-muted" type="button" disabled={disabled} onClick={recordAgain}>
-              <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
-            </button>
-            <button className="button button-primary" type="button" disabled={disabled}
-              onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
-              {t("session.keepRecording")}
-            </button>
+            {issue ? (
+              <p className="task-recording-message" role="alert">{t(`session.recording_${issue}` as TranslationKey)}</p>
+            ) : null}
+            {audioUrl ? (
+              <PromptAudioPlayer url={audioUrl} peaks={peaks} label={t("session.recordedAnswer")} interactive={!disabled} />
+            ) : null}
           </>
-        ) : state === "saveFailed" ? (
-          <button className="button button-primary" type="button" disabled={disabled}
-            onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
-            {RECORDING_TEXT.retrySave}
-          </button>
-        ) : recorded ? (
-          <>
-            <button className="button button-primary" type="button" disabled={disabled} onClick={playback.toggle}>
-              <AppIcon name={playback.playing ? "pause" : "play"} size={18} /> {playback.playing ? RECORDING_TEXT.pause : RECORDING_TEXT.play}
-            </button>
-            {timed ? null : (
-              <button className="button button-muted" type="button" disabled={disabled} onClick={recordAgain}>
+        ) : null}
+
+        {message ? <p className="task-recording-message" role="alert">{message}</p> : null}
+
+        <div className="task-recording-actions">
+          {state === "recording" ? (
+            timed ? null : (
+              <button className="button button-danger button-pill" type="button" disabled={disabled} onClick={() => void stopRecording()}>
+                <AppIcon name="stop" size={18} /> {RECORDING_TEXT.stop}
+              </button>
+            )
+          ) : state === "uploading" ? (
+            <div className="recording-loading-strip">
+              <span className="loading-dot" /> <span>{RECORDING_TEXT.uploading}...</span>
+            </div>
+          ) : state === "review" ? (
+            <>
+              <button className="button button-outline-danger button-pill" type="button" disabled={disabled} onClick={recordAgain}>
                 <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
               </button>
-            )}
-          </>
-        ) : timed ? null : (
-          <button className="button button-primary" type="button" disabled={disabled} onClick={() => void startRecording()}>
-            <AppIcon name="record" size={18} /> {state === "error" ? RECORDING_TEXT.retry : RECORDING_TEXT.start}
-          </button>
-        )}
-      </div>
+              <button className="button button-primary button-pill" type="button" disabled={disabled}
+                onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
+                {t("session.keepRecording")}
+              </button>
+            </>
+          ) : state === "saveFailed" ? (
+            <button className="button button-primary button-pill" type="button" disabled={disabled}
+              onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
+              {RECORDING_TEXT.retrySave}
+            </button>
+          ) : state === "recorded" ? (
+            timed ? null : (
+              <button className="button button-outline-danger button-pill" type="button" disabled={disabled} onClick={recordAgain}>
+                <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
+              </button>
+            )
+          ) : timed ? null : (
+            <button className="button button-primary button-pill" type="button" disabled={disabled} onClick={() => void startRecording()}>
+              <AppIcon name="record" size={18} /> {state === "error" ? RECORDING_TEXT.retry : RECORDING_TEXT.start}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1019,11 +1019,12 @@ body.modal-open { overflow: hidden; }
 .countdown-timer { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
 .countdown-warning { color: var(--red); font-size: 0.72rem; font-weight: 700; }
 .recording-waveform { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); }
-.audio-waveform { display: block; width: 100%; height: 42px; overflow: visible; }
+.audio-waveform { display: flex; align-items: center; width: 100%; height: 38px; user-select: none; }
 .audio-waveform-seekable { cursor: pointer; }
-.audio-waveform-bar { fill: #94a3b8; opacity: 0.42; transition: fill 0.15s ease, opacity 0.15s ease; }
-html[data-theme="dark"] .audio-waveform-bar { fill: #64748b; opacity: 0.45; }
-.audio-waveform-bar-played { fill: var(--accent); opacity: 1; }
+.audio-waveform-bars { display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; height: 100%; }
+.audio-waveform-bar { flex: 1 1 0; max-width: 3px; min-width: 1.5px; border-radius: 999px; background-color: #94a3b8; opacity: 0.42; transition: background-color 0.12s ease, opacity 0.12s ease; fill: #94a3b8; }
+html[data-theme="dark"] .audio-waveform-bar { background-color: #64748b; opacity: 0.45; fill: #64748b; }
+.audio-waveform-bar-played { background-color: var(--accent); opacity: 1; fill: var(--accent); }
 .audio-waveform-seekable:hover .audio-waveform-bar:not(.audio-waveform-bar-played) { opacity: 0.65; }
 .task-recording-actions .button { display: inline-flex; align-items: center; gap: 6px; }
 .mode-option { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
@@ -1538,8 +1539,144 @@ html[data-theme="dark"] .media-player {
 .editor-toolbar button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 0; border-right: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
 .editor-toolbar button:hover:not(:disabled) { background: var(--surface-raised); }
 .editor-frame .task-answer-textarea { width: 100%; min-height: 200px; border: 0; border-radius: 0; }
-.record-card { display: grid; gap: 12px; padding: 18px 20px; border-radius: 12px; background: var(--exam-record-card); }
-.record-card-title { justify-self: center; font-weight: 700; }
+.record-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.record-card-recording {
+  border-color: rgba(228, 94, 104, 0.4);
+  box-shadow: 0 4px 20px rgba(228, 94, 104, 0.1);
+}
+
+.record-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.record-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.record-card-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.record-card-icon-recording {
+  background: var(--red-soft);
+  color: var(--red);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.record-card-title {
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.record-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.recording-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.recording-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 7px;
+}
+
+.recording-status-idle {
+  background: var(--surface-raised);
+  color: var(--muted-strong);
+}
+.recording-status-idle .recording-status-dot {
+  background: var(--muted);
+}
+
+.recording-status-recording {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.recording-status-recording .recording-status-dot {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(228, 94, 104, 0.25);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.recording-status-uploading {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.recording-status-uploading .recording-status-dot {
+  background: var(--amber);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.recording-status-recorded,
+.recording-status-review {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.recording-status-recorded .recording-status-dot,
+.recording-status-review .recording-status-dot {
+  background: var(--green);
+}
+
+.recording-status-saveFailed,
+.recording-status-error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.recording-status-saveFailed .recording-status-dot,
+.recording-status-error .recording-status-dot {
+  background: var(--red);
+}
+
+.recording-live-wave {
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+}
+
+.recording-loading-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
 .collapsible { display: grid; gap: 8px; }
 .collapsible-head { display: flex; align-items: center; gap: 10px; }
 .collapsible-toggle { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
