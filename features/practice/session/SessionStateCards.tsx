@@ -34,7 +34,7 @@ export function SessionErrorCard({ message, hasRetryAction, onRetry, onBackHome 
       <h1>{t("common.genericErrorTitle")}</h1>
       <p>{message ?? t("ui.sessionError")}</p>
       <div className="session-actions">
-        <button className="button button-primary button-pill" type="button" onClick={onRetry}>
+        <button className="button button-outline button-pill" type="button" onClick={onRetry}>
           {hasRetryAction ? t("ui.sessionRetryAction") : t("common.tryAgain")}
         </button>
         <button className="button button-outline-danger button-pill" type="button" onClick={onBackHome}>{t("ui.backHome")}</button>
@@ -74,7 +74,7 @@ export function SessionCompleteCard({ session, api, onReview, onBackHome }: Sess
         {t("review.averageScore")}: <span className={`score-badge score-badge-${scoreTone(average)}`}>{formatScore(average)}</span>
       </p>
       <div className="session-actions">
-        <button className="button button-primary button-pill" type="button" onClick={onReview}>{t("review.reviewAnswers")}</button>
+        <button className="button button-outline button-pill" type="button" onClick={onReview}>{t("review.reviewAnswers")}</button>
         {again ? <Link className="button button-outline button-pill" href={again}>{t("review.practiseAgain")}</Link> : null}
         <button className="button button-outline-danger button-pill" type="button" onClick={onBackHome}>{t("review.home")}</button>
       </div>

@@ -103,7 +103,7 @@ function InlineResultCardInner({
             <p>{t("score.failed")}</p>
             {result.retryable ? (
               <button
-                className="button button-primary button-pill inline-retry-btn"
+                className="button button-outline button-pill inline-retry-btn"
                 type="button"
                 disabled={retrying}
                 onClick={retryScoring}

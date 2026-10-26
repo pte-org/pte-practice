@@ -71,7 +71,7 @@ export function SignInForm({ onSignedIn }: SignInFormProps) {
       </div>
       {validation.errors.password ? <FieldWarning message={validation.errors.password} /> : null}
       {errorKey ? <p className="form-error" role="alert">{t(errorKey)}</p> : null}
-      <button className="button button-primary button-wide button-pill" type="submit" disabled={isSubmitting}>
+      <button className="button button-outline button-wide button-pill" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.submitting") : t("auth.submit")}
       </button>
       <p className="auth-footnote">{t("auth.forgotPassword")}</p>

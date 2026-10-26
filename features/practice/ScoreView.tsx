@@ -42,7 +42,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
       <div className={className} role="alert">
         <p>{t("score.failed")}</p>
         {result.retryable ? (
-          <button className="button button-primary" type="button" disabled={retrying} onClick={retryScoring}>
+          <button className="button button-outline button-pill" type="button" disabled={retrying} onClick={retryScoring}>
             {retrying ? t("score.retrying") : t("score.retry")}
           </button>
         ) : <small>{t("score.retryLimit")}</small>}

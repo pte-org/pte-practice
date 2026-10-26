@@ -107,7 +107,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
         <button className="button button-pill button-outline" type="button" disabled={phase === "recording"} onClick={() => void record()}>
           <AppIcon name="record" size={16} /> {phase === "idle" ? t("deviceCheck.micStart") : t("deviceCheck.again")}
         </button>
-        <button className="button button-primary button-pill" type="button" disabled={phase !== "done"} onClick={onPass}>
+        <button className="button button-outline button-pill" type="button" disabled={phase !== "done"} onClick={onPass}>
           {t("deviceCheck.works")}
         </button>
       </div>
@@ -153,7 +153,7 @@ function SpeakerCheck({ onPass }: { onPass: () => void }) {
       {cantHear ? <p role="status" className="device-verdict device-verdict-quiet">{t("deviceCheck.speakerTips")}</p> : null}
       <div className="device-actions">
         <button className="button button-pill button-outline-danger" type="button" onClick={() => setCantHear(true)}>{t("deviceCheck.speakerCantHear")}</button>
-        <button className="button button-primary button-pill" type="button" onClick={onPass}>{t("deviceCheck.speakerHeard")}</button>
+        <button className="button button-outline button-pill" type="button" onClick={onPass}>{t("deviceCheck.speakerHeard")}</button>
       </div>
     </div>
   );
@@ -185,7 +185,7 @@ function KeyboardCheck({ onPass }: { onPass: () => void }) {
       {matches && wpm !== null ? <p role="status" className="device-verdict device-verdict-good">{wpm} {t("deviceCheck.keyboardWpm")}</p> : null}
       <div className="device-actions">
         <button className="button button-pill button-outline" type="button" onClick={() => { setTyped(""); setStartedAt(null); setWpm(null); }}>{t("deviceCheck.again")}</button>
-        <button className="button button-primary button-pill" type="button" disabled={!matches || vietnamese} onClick={onPass}>
+        <button className="button button-outline button-pill" type="button" disabled={!matches || vietnamese} onClick={onPass}>
           {t("deviceCheck.works")}
         </button>
       </div>
@@ -210,7 +210,7 @@ function ReadingCheck({ onPass }: { onPass: () => void }) {
       </div>
       <p className={`device-sample reading-size-${size}`}>{READING_SAMPLE}</p>
       <div className="device-actions">
-        <button className="button button-primary button-pill" type="button" onClick={() => {
+        <button className="button button-outline button-pill" type="button" onClick={() => {
           writeReadingSize(size);
           document.documentElement.dataset.readingSize = size;
           onPass();

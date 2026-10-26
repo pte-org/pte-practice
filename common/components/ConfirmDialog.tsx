@@ -50,7 +50,7 @@ export const ConfirmDialog = ({
             {cancelLabel}
           </button>
           <button
-            className={`button button-pill ${tone === "danger" ? "button-danger" : "button-primary"}`}
+            className={`button button-pill ${tone === "danger" ? "button-danger" : "button-outline"}`}
             type="button"
             disabled={isConfirming}
             aria-busy={isConfirming}

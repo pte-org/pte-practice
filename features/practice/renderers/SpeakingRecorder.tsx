@@ -243,13 +243,13 @@ export function SpeakingRecorder({
               <button className="button button-outline-danger button-pill" type="button" disabled={disabled} onClick={recordAgain}>
                 <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
               </button>
-              <button className="button button-primary button-pill" type="button" disabled={disabled}
+              <button className="button button-outline button-pill" type="button" disabled={disabled}
                 onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
                 {t("session.keepRecording")}
               </button>
             </>
           ) : state === "saveFailed" ? (
-            <button className="button button-primary button-pill" type="button" disabled={disabled}
+            <button className="button button-outline button-pill" type="button" disabled={disabled}
               onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
               {RECORDING_TEXT.retrySave}
             </button>
@@ -260,7 +260,7 @@ export function SpeakingRecorder({
               </button>
             )
           ) : timed ? null : (
-            <button className="button button-primary button-pill" type="button" disabled={disabled} onClick={() => void startRecording()}>
+            <button className="button button-outline button-pill" type="button" disabled={disabled} onClick={() => void startRecording()}>
               <AppIcon name="record" size={18} /> {state === "error" ? RECORDING_TEXT.retry : RECORDING_TEXT.start}
             </button>
           )}

@@ -79,7 +79,7 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
       {phase === "gate" ? (
         <div className="timed-gate">
           <p>{t("timed.startQuestionHint")}</p>
-          <button className="button button-primary" type="button"
+          <button className="button button-outline button-pill" type="button"
             onClick={() => dispatch({ type: "ACTIVATED", now: Date.now() })}>
             <AppIcon name="play" size={18} /> {t("timed.startQuestion")}
           </button>
@@ -89,7 +89,7 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
       {phase === "error" ? (
         <div className="timed-gate">
           <p role="alert">{t("timed.micFailed")}</p>
-          <button className="button button-primary" type="button" onClick={() => {
+          <button className="button button-outline button-pill" type="button" onClick={() => {
             setAttempt((value) => value + 1);
             promptRefresh.reset();
             dispatch({ type: "RETRY_ITEM", now: Date.now() });

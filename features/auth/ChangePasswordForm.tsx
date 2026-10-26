@@ -52,7 +52,7 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
       <input id="confirm-password" type="password" autoComplete="new-password" required value={confirmPassword}
         onChange={(event) => setConfirmPassword(event.target.value)} />
       {errorKey ? <p className="form-error" role="alert">{t(errorKey)}</p> : null}
-      <button className="button button-primary button-wide button-pill" type="submit" disabled={isSubmitting}>
+      <button className="button button-outline button-wide button-pill" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.changingPassword") : t("auth.changePasswordSubmit")}
       </button>
       <button className="button button-outline-danger button-wide button-pill" type="button" disabled={isSubmitting} onClick={onCancel}>

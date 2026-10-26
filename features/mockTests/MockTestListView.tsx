@@ -139,7 +139,7 @@ export function MockTestListView() {
             >
               {t("mode.close")}
             </button>
-            <button className="button button-primary button-pill" type="button" onClick={() => {
+            <button className="button button-outline button-pill" type="button" onClick={() => {
               if (confirmRestart) openForMock(mockTarget(confirmRestart.publicId, confirmRestart.title, true));
               setConfirmRestart(null);
             }}>{t("mockTests.startOver")}</button>

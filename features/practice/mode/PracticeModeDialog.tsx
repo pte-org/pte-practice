@@ -34,7 +34,7 @@ function ModeChoice({ target, onClose, onStart }: Omit<PracticeModeDialogProps, 
           <button className="button button-pill button-outline-danger" type="button" onClick={onClose}>
             {t("mode.close")}
           </button>
-          <button className="button button-primary button-pill" type="button"
+          <button className="button button-outline button-pill" type="button"
             onClick={() => onStart(target, { timingMode, questionCount: initial.questionCount })}>{t("mode.start")}</button>
         </>
       )}>

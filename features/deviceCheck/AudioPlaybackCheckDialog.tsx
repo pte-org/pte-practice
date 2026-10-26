@@ -66,7 +66,7 @@ export function AudioPlaybackCheckDialog({ open, onConfirm }: AudioPlaybackCheck
   return (
     <Modal open={open} onClose={confirm} title={t("session.audioCheckTitle")} titleIcon={<AppIcon name="listening" size={22} />}
       closeLabel={t("session.audioCheckConfirm")} isDismissDisabled
-      footer={<button className="button button-primary button-pill" type="button" onClick={confirm}>{t("session.audioCheckConfirm")}</button>}>
+      footer={<button className="button button-outline button-pill" type="button" onClick={confirm}>{t("session.audioCheckConfirm")}</button>}>
       <div className="audio-check">
         <p>{t("session.audioCheckIntro")}</p>
         <div className="prompt-player">
