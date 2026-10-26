@@ -63,7 +63,7 @@ export function TaskActionButtons({
         disabled={!canStart}
         onClick={handleActionClick}
       >
-        {activeSession ? t("progress.resume") : t("progress.practise")}
+        {t("progress.practise")}
       </button>
 
       {showModal && activeSession ? (
