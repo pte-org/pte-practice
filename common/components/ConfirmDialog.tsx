@@ -30,25 +30,38 @@ export const ConfirmDialog = ({
   isConfirming = false,
   onConfirm,
   onClose,
-}: ConfirmDialogProps): ReactElement => (
-  <Modal
-    open={open}
-    title={title}
-    titleIcon={tone === "warning" ? <span className="confirm-dialog-warning"><AppIcon name="info" size={18} /></span> : undefined}
-    onClose={onClose}
-    isDismissDisabled={isConfirming}
-    size="sm"
-    closeLabel={cancelLabel}
-    footer={(
-      <>
-        <button className="text-button" type="button" onClick={onClose} disabled={isConfirming}>{cancelLabel}</button>
-        <button className={`button button-pill ${tone === "danger" ? "button-danger" : "button-primary"}`} type="button"
-          disabled={isConfirming} aria-busy={isConfirming} onClick={onConfirm}>
-          {confirmLabel}
-        </button>
-      </>
-    )}
-  >
-    <div className="confirm-dialog-description">{description}</div>
-  </Modal>
-);
+}: ConfirmDialogProps): ReactElement => {
+  const cancelBtnClass = tone === "danger"
+    ? "button button-pill button-outline"
+    : "button button-pill button-outline-danger";
+
+  return (
+    <Modal
+      open={open}
+      title={title}
+      titleIcon={tone === "warning" ? <span className="confirm-dialog-warning"><AppIcon name="info" size={18} /></span> : undefined}
+      onClose={onClose}
+      isDismissDisabled={isConfirming}
+      size="sm"
+      closeLabel={cancelLabel}
+      footer={(
+        <>
+          <button className={cancelBtnClass} type="button" onClick={onClose} disabled={isConfirming}>
+            {cancelLabel}
+          </button>
+          <button
+            className={`button button-pill ${tone === "danger" ? "button-danger" : "button-primary"}`}
+            type="button"
+            disabled={isConfirming}
+            aria-busy={isConfirming}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </button>
+        </>
+      )}
+    >
+      <div className="confirm-dialog-description">{description}</div>
+    </Modal>
+  );
+};

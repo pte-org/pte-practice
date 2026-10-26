@@ -111,7 +111,7 @@ export function ExamDateLine() {
           <>
             {examDate ? (
               <button
-                className="text-button text-button-danger"
+                className="button button-pill button-outline-danger"
                 type="button"
                 disabled={busy}
                 onClick={handleClear}
@@ -120,7 +120,7 @@ export function ExamDateLine() {
               </button>
             ) : null}
             <button
-              className="text-button"
+              className="button button-pill button-outline"
               type="button"
               disabled={busy}
               onClick={handleClose}

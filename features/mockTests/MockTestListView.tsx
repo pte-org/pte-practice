@@ -132,7 +132,13 @@ export function MockTestListView() {
         titleIcon={<AppIcon name="retake" size={22} />} closeLabel={t("mode.close")}
         footer={(
           <>
-            <button className="text-button" type="button" onClick={() => setConfirmRestart(null)}>{t("mode.close")}</button>
+            <button
+              className="button button-pill button-outline-danger"
+              type="button"
+              onClick={() => setConfirmRestart(null)}
+            >
+              {t("mode.close")}
+            </button>
             <button className="button button-primary button-pill" type="button" onClick={() => {
               if (confirmRestart) openForMock(mockTarget(confirmRestart.publicId, confirmRestart.title, true));
               setConfirmRestart(null);

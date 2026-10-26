@@ -99,7 +99,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
       {error ? <p role="alert" className="device-verdict device-verdict-silent">{error}</p> : null}
       {phase === "done" && url ? <audio className="device-audio" src={url} controls autoPlay /> : null}
       <div className="device-actions">
-        <button className="button button-muted" type="button" disabled={phase === "recording"} onClick={() => void record()}>
+        <button className="button button-pill button-outline" type="button" disabled={phase === "recording"} onClick={() => void record()}>
           <AppIcon name="record" size={16} /> {phase === "idle" ? t("deviceCheck.micStart") : t("deviceCheck.again")}
         </button>
         <button className="button button-primary button-pill" type="button" disabled={phase !== "done"} onClick={onPass}>
@@ -141,13 +141,13 @@ function SpeakerCheck({ onPass }: { onPass: () => void }) {
     <div className="device-check">
       <p>{t("deviceCheck.speakerIntro")}</p>
       <div className="device-actions device-actions-start">
-        <button className="button button-muted" type="button" onClick={speak}><AppIcon name="play" size={16} /> {t("deviceCheck.speakerPlay")}</button>
-        <button className="button button-muted" type="button" onClick={() => tone(-1)}>{t("deviceCheck.speakerLeft")}</button>
-        <button className="button button-muted" type="button" onClick={() => tone(1)}>{t("deviceCheck.speakerRight")}</button>
+        <button className="button button-pill button-outline" type="button" onClick={speak}><AppIcon name="play" size={16} /> {t("deviceCheck.speakerPlay")}</button>
+        <button className="button button-pill button-outline" type="button" onClick={() => tone(-1)}>{t("deviceCheck.speakerLeft")}</button>
+        <button className="button button-pill button-outline" type="button" onClick={() => tone(1)}>{t("deviceCheck.speakerRight")}</button>
       </div>
       {cantHear ? <p role="status" className="device-verdict device-verdict-quiet">{t("deviceCheck.speakerTips")}</p> : null}
       <div className="device-actions">
-        <button className="text-button" type="button" onClick={() => setCantHear(true)}>{t("deviceCheck.speakerCantHear")}</button>
+        <button className="button button-pill button-outline-danger" type="button" onClick={() => setCantHear(true)}>{t("deviceCheck.speakerCantHear")}</button>
         <button className="button button-primary button-pill" type="button" onClick={onPass}>{t("deviceCheck.speakerHeard")}</button>
       </div>
     </div>
@@ -179,7 +179,7 @@ function KeyboardCheck({ onPass }: { onPass: () => void }) {
       {vietnamese ? <p role="alert" className="device-verdict device-verdict-loud">{t("deviceCheck.keyboardVietnamese")}</p> : null}
       {matches && wpm !== null ? <p role="status" className="device-verdict device-verdict-good">{wpm} {t("deviceCheck.keyboardWpm")}</p> : null}
       <div className="device-actions">
-        <button className="text-button" type="button" onClick={() => { setTyped(""); setStartedAt(null); setWpm(null); }}>{t("deviceCheck.again")}</button>
+        <button className="button button-pill button-outline" type="button" onClick={() => { setTyped(""); setStartedAt(null); setWpm(null); }}>{t("deviceCheck.again")}</button>
         <button className="button button-primary button-pill" type="button" disabled={!matches || vietnamese} onClick={onPass}>
           {t("deviceCheck.works")}
         </button>

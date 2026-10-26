@@ -55,7 +55,7 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
       <button className="button button-primary button-wide button-pill" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.changingPassword") : t("auth.changePasswordSubmit")}
       </button>
-      <button className="text-button" type="button" disabled={isSubmitting} onClick={onCancel}>
+      <button className="button button-outline-danger button-wide button-pill" type="button" disabled={isSubmitting} onClick={onCancel}>
         {t("auth.backToSignIn")}
       </button>
     </form>
