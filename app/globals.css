@@ -1809,12 +1809,38 @@ html[data-theme="light"] { --amber-soft: #fff6e5; --exam-primary: #4169e8; --exa
 .skill-group-copy, .skill-task-copy { display: grid; min-width: 0; flex: 1; gap: 2px; }
 .skill-group-copy strong { font-size: 1.05rem; font-weight: 600; }
 .skill-group-copy span, .skill-task-copy span { color: var(--muted); font-size: 0.78rem; }
-.skill-task-row { display: flex; width: 100%; align-items: center; gap: 14px; padding: 14px 20px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; text-align: left; }
-button.skill-task-row { cursor: pointer; }
+.skill-task-row { display: flex; width: 100%; align-items: center; gap: 14px; padding: 14px 20px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; text-align: left; transition: background 120ms ease; }
+button.skill-task-row, div.skill-task-row-ready { cursor: pointer; }
 div.skill-task-row { cursor: default; }
 .skill-task-row:hover:not(:disabled) { background: var(--surface-raised); }
 .skill-task-row:disabled { cursor: default; opacity: 0.7; }
 .skill-task-copy strong { font-size: 0.95rem; font-weight: 600; }
+.task-chevron-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+  flex-shrink: 0;
+}
+.task-chevron-btn:hover:not(:disabled),
+.skill-task-row:hover .task-chevron-btn:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-soft);
+  transform: translateX(3px);
+}
+.task-chevron-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 @media (max-width: 760px) {
   .home-hero-top { grid-template-columns: 1fr; }
   .device-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

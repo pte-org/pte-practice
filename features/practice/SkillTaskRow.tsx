@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { AppIcon, LockBadge } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { canStartPractice, type PracticeCatalogTask } from "./contracts";
@@ -21,7 +22,7 @@ export interface SkillTaskRowProps {
 
 /**
  * Unified task row component used in both Trang chủ (Home) and Tiến độ (Progress).
- * Includes icon, title, question counts, in-progress indicator, score/lock badge, and TaskActionButtons.
+ * Includes icon, title, question counts, in-progress indicator, score/lock badge, and chevron right action.
  */
 export function SkillTaskRow({
   task,
@@ -33,16 +34,34 @@ export function SkillTaskRow({
   const { t } = useTranslation();
   const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
   const blockedLabel = isPracticeUnlocked ? t("common.unavailableAction") : t("common.lockedAction");
+  const actionRef = useRef<HTMLButtonElement>(null);
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    if (!canStart) return;
+    if (
+      (e.target as HTMLElement).closest(".task-chevron-btn") ||
+      (e.target as HTMLElement).closest(".modal-backdrop") ||
+      (e.target as HTMLElement).closest(".modal-dialog")
+    ) {
+      return;
+    }
+    actionRef.current?.click();
+  };
 
   return (
-    <div className={`skill-task-row ${className ?? ""}`.trim()}>
+    <div
+      className={`skill-task-row ${canStart ? "skill-task-row-ready" : ""} ${className ?? ""}`.trim()}
+      onClick={handleRowClick}
+    >
       <span className="skill-task-icon" aria-hidden="true">
         <AppIcon name={iconForTaskType(task.code)} size={20} />
       </span>
       <span className="skill-task-copy">
         <strong>{taskDisplayName(task.code, task.displayName, t)}</strong>
         <span>
-          {task.answeredQuestionCount} {t("presentation.answers")}
+          {task.answeredQuestionCount > 0
+            ? `${task.answeredQuestionCount} ${t("presentation.answers")}`
+            : t("presentation.statusPending")}
           {activeSession ? (
             <span className="active-session-indicator">
               {" "}· {t("progress.inProgress")} ({activeSession.answeredItemCount}/{activeSession.totalItemCount})
@@ -58,6 +77,7 @@ export function SkillTaskRow({
         </span>
       ) : null}
       <TaskActionButtons
+        ref={actionRef}
         task={task}
         activeSession={activeSession}
         canStart={canStart}

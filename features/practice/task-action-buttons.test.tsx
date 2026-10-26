@@ -20,7 +20,7 @@ const renderWithLocale = (element: React.ReactElement) =>
   renderToStaticMarkup(<LocaleProvider>{element}</LocaleProvider>);
 
 describe("TaskActionButtons", () => {
-  it("renders single action button (outline) when activeSession exists", () => {
+  it("renders chevron right button when activeSession exists", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
@@ -30,12 +30,10 @@ describe("TaskActionButtons", () => {
       />
     );
 
-    expect(html).toContain("button-outline");
-    expect(html).not.toContain("button-ghost");
-    expect(html).toContain("button-pill");
+    expect(html).toContain("task-chevron-btn");
   });
 
-  it("renders single practise button (outline) when no activeSession exists", () => {
+  it("renders chevron right button when no activeSession exists", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
@@ -45,12 +43,10 @@ describe("TaskActionButtons", () => {
       />
     );
 
-    expect(html).toContain("button-outline");
-    expect(html).not.toContain("button-ghost");
-    expect(html).toContain("button-pill");
+    expect(html).toContain("task-chevron-btn");
   });
 
-  it("disables the practise button when canStart is false", () => {
+  it("disables the chevron button when canStart is false", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
