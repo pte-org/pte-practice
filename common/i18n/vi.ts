@@ -391,7 +391,7 @@ export const vi: LocaleDict = {
   nav: {
     home: "Trang chủ",
     practiceTests: "Luyện đề",
-    studyPack: "Luyện kỹ năng",
+    studyPack: "Gói học tập",
     progress: "Tiến trình",
   },
   shell: {
@@ -403,11 +403,6 @@ export const vi: LocaleDict = {
     practiceWorkspace: "Không gian luyện tập",
     student: "Học viên",
     account: "Tài khoản",
-    menuTitle: "Menu chính",
-    skillsTitle: "Luyện kỹ năng",
-    dailyGoal: "Mục tiêu hôm nay",
-    dailyGoalProgress: "{done}/{total} câu hoàn thành",
-    streakBadge: "Chuỗi 3 ngày",
   },
   home: {
     examDate: "Ngày thi:",

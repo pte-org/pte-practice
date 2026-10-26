@@ -36,6 +36,6 @@ describe("CommandPalette", () => {
     expect(html).toContain("command-palette-dialog");
     expect(html).toContain("command-palette-input");
     expect(html).toContain("command-palette-item");
-    expect(html).toContain("Skill practice");
+    expect(html).toContain("Study-Pack");
   });
 });

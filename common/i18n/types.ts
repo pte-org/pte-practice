@@ -403,11 +403,6 @@ export interface LocaleDict {
     practiceWorkspace: string;
     student: string;
     account: string;
-    menuTitle: string;
-    skillsTitle: string;
-    dailyGoal: string;
-    dailyGoalProgress: string;
-    streakBadge: string;
   };
   home: {
     examDate: string;

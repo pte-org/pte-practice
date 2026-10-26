@@ -73,13 +73,16 @@ export function StudentShell({ children }: { children: ReactNode }) {
       <aside className="side-rail" aria-label="Student navigation">
         <div className="rail-brand">
           <div className="brand-mark" aria-hidden="true"><ProductMark /></div>
-          <div className="rail-brand-text">
+          <div>
             <strong>{t("shell.pearson")}</strong>
-            <span className="rail-brand-subtitle">{t("shell.pteOfficialAIPractice")}</span>
+            <span>{t("shell.pteOfficialAIPractice")}</span>
           </div>
         </div>
-
-        <nav className="side-nav" aria-label="Main navigation">
+        <Link className="quick-study-button" href={PRACTICE_ROUTES.home}>
+          <AppIcon name="bookOpen" size={22} />
+          <span>{t("shell.quickStudy")}</span>
+        </Link>
+        <nav className="side-nav">
           {NAV_ITEMS.map((item) => {
             const isActive = item.href === PRACTICE_ROUTES.home
               ? pathname === item.href
@@ -97,34 +100,24 @@ export function StudentShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-
         <div className="rail-spacer" />
-
         <div className="account-card">
-          <div className="account-profile-row">
-            <div className="account-avatar-wrap">
-              <div className="account-avatar" aria-hidden="true">S</div>
-              <span className="account-online-dot" aria-label="Online" />
-            </div>
-            <div className="account-copy">
-              <strong>{t("shell.student")}</strong>
-              <span>{t("shell.pearsonPTECore")}</span>
-            </div>
+          <div className="account-avatar" aria-hidden="true">S</div>
+          <div className="account-copy">
+            <strong>{t("shell.student")}</strong>
+            <span>{t("shell.account")}</span>
           </div>
-          <div className="account-actions-row">
-            <button className="account-tool-btn" type="button" onClick={toggleLocale} aria-label="Toggle language" title="Toggle language">
-              <AppIcon name="translate" size={14} />
-              <span>{locale.toUpperCase()}</span>
-            </button>
-            <button className="account-tool-btn" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
-              <AppIcon name={theme === "dark" ? "sun" : "moon"} size={15} />
-              <span>{theme === "dark" ? "Light" : "Dark"}</span>
-            </button>
-            <button className="account-tool-btn account-tool-danger" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
-              <AppIcon name="signOut" size={15} />
-            </button>
-          </div>
+          <button className="icon-button" type="button" onClick={toggleLocale} aria-label="Toggle language" title="Toggle language">
+            {locale.toUpperCase()}
+          </button>
+          <button className="icon-button" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+            <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
+          </button>
+          <button className="icon-button" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+            <AppIcon name="signOut" size={18} />
+          </button>
         </div>
+        <p className="rail-footer">{t("shell.practiceWorkspace")}</p>
       </aside>
 
       <div className="workspace">
