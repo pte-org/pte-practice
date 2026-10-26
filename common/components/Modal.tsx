@@ -13,6 +13,7 @@ export interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: ModalSize;
+  className?: string;
   closeOnBackdropClick?: boolean;
   /** Blocks Escape, the backdrop and the close button, for example while a request is in flight. */
   isDismissDisabled?: boolean;
@@ -30,6 +31,7 @@ export function Modal({
   children,
   footer,
   size = "md",
+  className,
   closeOnBackdropClick = true,
   isDismissDisabled = false,
   closeLabel,
@@ -74,7 +76,7 @@ export function Modal({
     >
       <div
         ref={dialogRef}
-        className={`modal-dialog modal-${size}`}
+        className={`modal-dialog modal-${size}${className ? ` ${className}` : ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}

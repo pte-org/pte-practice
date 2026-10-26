@@ -455,6 +455,11 @@ export const vi: LocaleDict = {
     clearSuccess: "Đã xoá ngày thi.",
     saveError: "Không thể cập nhật ngày thi. Vui lòng thử lại.",
     loading: "Đang tải…",
+    chooseDate: "Chọn ngày thi",
+    unselected: "Chưa chọn ngày",
+    prevMonth: "Tháng trước",
+    nextMonth: "Tháng sau",
+    toggleManualInput: "Chuyển chế độ nhập",
   },
   commandPalette: {
     placeholder: "Nhập lệnh hoặc tìm kiếm",

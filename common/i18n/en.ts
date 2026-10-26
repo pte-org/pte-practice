@@ -455,6 +455,11 @@ export const en: LocaleDict = {
     clearSuccess: "Exam date cleared.",
     saveError: "Could not update exam date. Please try again.",
     loading: "Loading…",
+    chooseDate: "Select exam date",
+    unselected: "No date selected",
+    prevMonth: "Previous month",
+    nextMonth: "Next month",
+    toggleManualInput: "Switch input mode",
   },
   commandPalette: {
     placeholder: "Type a command or search",

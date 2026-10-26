@@ -1241,6 +1241,288 @@ html[data-reading-size="xl"] .practice-session .task-source-text, html[data-read
   text-decoration: underline;
 }
 
+/* Custom Exam Date Calendar Dialog (Google Calendar / Material Picker style) */
+.exam-calendar-dialog {
+  max-width: 350px;
+  padding: 16px 20px 20px;
+  border-radius: 24px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+  gap: 0;
+}
+.exam-calendar-modal-content {
+  display: flex;
+  flex-direction: column;
+}
+.exam-calendar-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.exam-calendar-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.exam-calendar-close-btn:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+.exam-calendar-save-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 150ms ease;
+}
+.exam-calendar-save-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.exam-calendar-save-btn:not(:disabled):hover {
+  background: var(--accent-soft);
+}
+.exam-calendar-display {
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+}
+.exam-calendar-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.exam-calendar-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.exam-calendar-big-date {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.exam-calendar-pencil-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.exam-calendar-pencil-btn:hover,
+.exam-calendar-pencil-btn.is-active {
+  background: var(--surface-soft);
+  color: var(--accent);
+}
+.exam-calendar-manual-entry {
+  margin-top: 10px;
+}
+.exam-calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.exam-calendar-nav-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+.exam-calendar-nav-title:hover {
+  background: var(--surface-soft);
+}
+.exam-calendar-nav-arrows {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.exam-calendar-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.exam-calendar-nav-btn:hover:not(:disabled) {
+  background: var(--surface-soft);
+}
+.exam-calendar-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.exam-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.exam-calendar-weekday {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 4px 0;
+}
+.exam-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 3px;
+  justify-items: center;
+  align-items: center;
+}
+.exam-calendar-empty-slot {
+  width: 36px;
+  height: 36px;
+}
+.exam-calendar-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 140ms ease;
+  user-select: none;
+}
+.exam-calendar-day:hover:not(:disabled):not(.is-selected) {
+  background: var(--surface-soft);
+}
+.exam-calendar-day.is-today:not(.is-selected) {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.exam-calendar-day.is-selected {
+  background: #392c82;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(57, 44, 130, 0.35);
+}
+html[data-theme="dark"] .exam-calendar-day.is-selected {
+  background: var(--accent);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(65, 105, 232, 0.45);
+}
+.exam-calendar-day:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.exam-calendar-month-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+.exam-calendar-year-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.exam-calendar-year-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+.exam-calendar-months-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.exam-calendar-month-item {
+  padding: 10px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+.exam-calendar-month-item:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-soft);
+}
+.exam-calendar-month-item.is-active {
+  background: #392c82;
+  border-color: #392c82;
+  color: #ffffff;
+  font-weight: 600;
+}
+html[data-theme="dark"] .exam-calendar-month-item.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.exam-calendar-month-item:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.exam-calendar-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.exam-calendar-clear-btn {
+  border: none;
+  background: transparent;
+  color: var(--red);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 140ms ease;
+}
+.exam-calendar-clear-btn:hover {
+  background: var(--red-soft);
+  text-decoration: underline;
+}
+
 
 
 /* ===== Redesign 261025: shared building blocks (design §3) ===== */

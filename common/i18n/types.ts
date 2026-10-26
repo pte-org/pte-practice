@@ -455,6 +455,11 @@ export interface LocaleDict {
     clearSuccess: string;
     saveError: string;
     loading: string;
+    chooseDate: string;
+    unselected: string;
+    prevMonth: string;
+    nextMonth: string;
+    toggleManualInput: string;
   };
   commandPalette: {
     placeholder: string;
