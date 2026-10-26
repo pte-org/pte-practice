@@ -146,19 +146,11 @@ function MicCheck({ onPass }: { onPass: () => void }) {
           <div className="mic-denied-steps">
             <div className="mic-step-item">
               <span className="mic-step-num">1</span>
-              <span>
-                {locale === "vi"
-                  ? "Bấm vào icon Cài đặt / Ổ khóa 🔒 ở bên trái thanh địa chỉ trình duyệt Chrome (cạnh URL)."
-                  : "Click the site settings / lock icon 🔒 on the left of the Chrome address bar."}
-              </span>
+              <span>{t("deviceCheck.micStep1")}</span>
             </div>
             <div className="mic-step-item">
               <span className="mic-step-num">2</span>
-              <span>
-                {locale === "vi"
-                  ? "Chuyển Microphone sang Cho phép (Allow), sau đó quay lại trang này."
-                  : "Switch Microphone to Allow, then return to this page."}
-              </span>
+              <span>{t("deviceCheck.micStep2")}</span>
             </div>
           </div>
         </div>

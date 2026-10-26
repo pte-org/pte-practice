@@ -1,12 +1,13 @@
 import type { TranslationKey } from "@/common/i18n";
+import { SCORE_TONE_THRESHOLDS, SKILL_SHORT_NAMES } from "./constants";
 
 /** Colour band of a 0-100 score: none while there is no score yet (shown as "—", never a red 0%). */
 export type ScoreTone = "none" | "low" | "mid" | "high";
 
 export function scoreTone(score: number | null): ScoreTone {
   if (score === null || !Number.isFinite(score)) return "none";
-  if (score < 40) return "low";
-  if (score < 70) return "mid";
+  if (score < SCORE_TONE_THRESHOLDS.LOW) return "low";
+  if (score < SCORE_TONE_THRESHOLDS.HIGH) return "mid";
   return "high";
 }
 
@@ -27,13 +28,11 @@ export function skillKey(code: string | null | undefined): TranslationKey | null
 }
 
 export function skillShortName(section: string | null | undefined, locale: string): string {
-  switch (section?.toUpperCase()) {
-    case "SPEAKING": return locale === "vi" ? "Nói" : "Speaking";
-    case "WRITING": return locale === "vi" ? "Viết" : "Writing";
-    case "READING": return locale === "vi" ? "Đọc" : "Reading";
-    case "LISTENING": return locale === "vi" ? "Nghe" : "Listening";
-    default: return locale === "vi" ? "Luyện tập" : "Practice";
-  }
+  const upper = section?.toUpperCase();
+  const entry = upper && upper in SKILL_SHORT_NAMES
+    ? SKILL_SHORT_NAMES[upper as keyof typeof SKILL_SHORT_NAMES]
+    : SKILL_SHORT_NAMES.DEFAULT;
+  return locale === "vi" ? entry.vi : entry.en;
 }
 
 export function skillIconName(section: string | null | undefined): "mic" | "writing" | "reading" | "listening" {

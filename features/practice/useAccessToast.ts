@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { accessStateForUi, usePractice } from "@/features/practice/PracticeProvider";
+import { PRACTICE_STORAGE_KEYS } from "./constants";
 
-const PRACTICE_UNLOCKED_TOAST_KEY = "pte.practice.unlocked_toast_shown";
+const PRACTICE_UNLOCKED_TOAST_KEY = PRACTICE_STORAGE_KEYS.unlockedToast;
 
 export function usePracticeAccessToast(): void {
   const { authStatus, entitlementStatus, entitlement, error } = usePractice();

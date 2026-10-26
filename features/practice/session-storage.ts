@@ -1,7 +1,8 @@
 import type { PracticeSessionTokens } from "./contracts";
+import { PRACTICE_STORAGE_KEYS } from "./constants";
 
-const SESSION_KEY = "pte.practice.session";
-const DRAFT_KEY_PREFIX = "pte.practice.draft.";
+const SESSION_KEY = PRACTICE_STORAGE_KEYS.session;
+const DRAFT_KEY_PREFIX = PRACTICE_STORAGE_KEYS.draftPrefix;
 
 export interface PracticeLocalDraft {
   payload: Record<string, unknown>;

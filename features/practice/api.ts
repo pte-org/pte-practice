@@ -1,4 +1,4 @@
-import { API_ERROR_TEXT, API_PATHS } from "./constants";
+import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL } from "./constants";
 import type {
   PracticeCatalog,
   PracticeEntitlement,
@@ -242,7 +242,7 @@ async function refreshSession(refreshToken: string): Promise<boolean> {
 }
 
 export function getApiBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, "");
 }
 
 async function parseJson(response: Response): Promise<unknown> {

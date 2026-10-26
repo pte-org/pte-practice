@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import { PRACTICE_STORAGE_KEYS } from "@/features/practice/constants";
 import { isCheckPassed, markCheckPassed, type DeviceCheckKind } from "./device-check";
 
 const KINDS: readonly DeviceCheckKind[] = ["mic", "speaker", "keyboard", "reading"];
-const CHANGE_EVENT = "pte.practice.device-check-changed";
+const CHANGE_EVENT = PRACTICE_STORAGE_KEYS.deviceCheckEvent;
 
 function subscribe(onChange: () => void): () => void {
   window.addEventListener(CHANGE_EVENT, onChange);

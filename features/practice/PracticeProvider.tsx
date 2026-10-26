@@ -15,6 +15,7 @@ import { createPracticeApiClient, PracticeApiError } from "./api";
 import type { EntitlementState, PracticeCatalog, PracticeEntitlement } from "./contracts";
 import { PREVIEW_CATALOG } from "./preview-catalog";
 import { clearPracticeDrafts, clearPracticeSession, getPracticeSession } from "./session-storage";
+import { ENTITLEMENT_STALE_THRESHOLD_MS } from "./constants";
 
 type AuthStatus = "loading" | "authenticated" | "signed-out";
 type DataStatus = "idle" | "loading" | "ready" | "error";
@@ -129,7 +130,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
     const refreshIfStale = () => {
       if (document.visibilityState !== "visible") return;
-      if (Date.now() - lastEntitlementRefresh.current < 10_000) return;
+      if (Date.now() - lastEntitlementRefresh.current < ENTITLEMENT_STALE_THRESHOLD_MS) return;
       void refreshEntitlement();
     };
 

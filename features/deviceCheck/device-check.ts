@@ -1,3 +1,5 @@
+import { PRACTICE_STORAGE_KEYS } from "@/features/practice/constants";
+
 /** The four device checks behind the Home skill tiles. */
 export type DeviceCheckKind = "mic" | "speaker" | "keyboard" | "reading";
 
@@ -9,9 +11,10 @@ export const SKILL_DEVICE_CHECK: Record<string, DeviceCheckKind> = {
 };
 
 /** A passed check counts for a week; after that the tile asks again (devices and settings change). */
-export const CHECK_VALID_MS = 7 * 24 * 60 * 60 * 1000;
-const KEY_PREFIX = "pte.practice.device-check.";
-export const READING_SIZE_KEY = "pte.practice.reading-size";
+export const CHECK_VALID_DAYS = 7;
+export const CHECK_VALID_MS = CHECK_VALID_DAYS * 24 * 60 * 60 * 1000;
+const KEY_PREFIX = PRACTICE_STORAGE_KEYS.deviceCheckPrefix;
+export const READING_SIZE_KEY = PRACTICE_STORAGE_KEYS.readingSize;
 
 export type ReadingSize = "md" | "lg" | "xl";
 export const READING_SIZES: readonly ReadingSize[] = ["md", "lg", "xl"];

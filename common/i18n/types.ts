@@ -251,6 +251,8 @@ export interface LocaleDict {
     mic_loud: string;
     mic_good: string;
     micDenied: string;
+    micStep1: string;
+    micStep2: string;
     micFailed: string;
     micStart: string;
     again: string;

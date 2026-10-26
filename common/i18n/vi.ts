@@ -251,6 +251,8 @@ export const vi: LocaleDict = {
     mic_loud: "Âm quá to, có thể bị rè. Đưa mic ra xa một chút.",
     mic_good: "Mức âm tốt. Nghe lại để chắc chắn giọng rõ ràng.",
     micDenied: "Trình duyệt đang chặn mic. Cho phép ở thanh địa chỉ rồi thử lại.",
+    micStep1: "Bấm vào icon Cài đặt / Ổ khóa 🔒 ở bên trái thanh địa chỉ trình duyệt Chrome (cạnh URL).",
+    micStep2: "Chuyển Microphone sang Cho phép (Allow), sau đó quay lại trang này.",
     micFailed: "Không bật được microphone.",
     micStart: "Ghi thử 5 giây",
     again: "Thử lại",

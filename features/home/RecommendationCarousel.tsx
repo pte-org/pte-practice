@@ -6,6 +6,13 @@ import { AppIcon, ProgressRing } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { formatEstimatedDuration } from "@/features/mockTests/mock-test-row";
 import type { Recommendation } from "./recommendations";
+import {
+  CAROUSEL_ANIMATION_DURATION_MS,
+  CAROUSEL_DEFAULT_CARD_WIDTH,
+  CAROUSEL_DRAG_THRESHOLD_PX,
+  CAROUSEL_GAP,
+  CAROUSEL_SNAP_RESTORE_DELAY_MS,
+} from "./constants";
 
 interface RecommendationCarouselProps {
   cards: Recommendation[];
@@ -95,11 +102,11 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
     setTimeout(() => {
       setActiveButton(null);
       setSlideDirection(null);
-    }, 450);
+    }, CAROUSEL_ANIMATION_DURATION_MS);
 
     const firstChild = el.firstElementChild as HTMLElement | null;
-    const cardWidth = firstChild ? firstChild.offsetWidth : 300;
-    const gap = 16;
+    const cardWidth = firstChild ? firstChild.offsetWidth : CAROUSEL_DEFAULT_CARD_WIDTH;
+    const gap = CAROUSEL_GAP;
     const step = cardWidth + gap;
 
     const targetLeft = direction === "left"
@@ -116,7 +123,7 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
     setTimeout(() => {
       if (el) el.style.scrollSnapType = "x mandatory";
       checkScrollability();
-    }, 400);
+    }, CAROUSEL_SNAP_RESTORE_DELAY_MS);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -137,7 +144,7 @@ export function RecommendationCarousel({ title, cards, onStartMock }: Recommenda
     const el = carouselRef.current;
     if (!el) return;
     const deltaX = e.pageX - startXRef.current;
-    if (Math.abs(deltaX) > 4) {
+    if (Math.abs(deltaX) > CAROUSEL_DRAG_THRESHOLD_PX) {
       hasMovedRef.current = true;
     }
     el.scrollLeft = startScrollLeftRef.current - deltaX;

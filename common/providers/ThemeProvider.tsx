@@ -1,9 +1,15 @@
 "use client";
 
 import { createContext, useContext, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
-import { DEFAULT_THEME, THEME_ATTRIBUTE, THEME_PROVIDER_REQUIRED, THEME_STORAGE_KEY } from "./constants";
-
-type Theme = "dark" | "light";
+import {
+  DEFAULT_THEME,
+  THEME_ATTRIBUTE,
+  THEME_PROVIDER_REQUIRED,
+  THEME_STORAGE_KEY,
+  THEME_TRANSITION_CONFIG,
+  THEMES,
+  type Theme,
+} from "./constants";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -20,7 +26,7 @@ interface ThemeProviderProps {
 const getServerTheme = (): Theme => DEFAULT_THEME;
 
 const getBrowserTheme = (): Theme =>
-  document.documentElement.getAttribute(THEME_ATTRIBUTE) === "light" ? "light" : "dark";
+  document.documentElement.getAttribute(THEME_ATTRIBUTE) === THEMES.LIGHT ? THEMES.LIGHT : THEMES.DARK;
 
 const subscribeTheme = (onChange: () => void): (() => void) => {
   const observer = new MutationObserver(onChange);
@@ -99,8 +105,8 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
               { clipPath: clipPath[1] },
             ],
             {
-              duration: 450,
-              easing: "cubic-bezier(0.2, 0.9, 0.3, 1)",
+              duration: THEME_TRANSITION_CONFIG.durationMs,
+              easing: THEME_TRANSITION_CONFIG.easing,
               pseudoElement: "::view-transition-new(root)",
             }
           );
@@ -118,7 +124,10 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
     ripple.style.top = `${y}px`;
     ripple.style.width = `${endRadius * 2}px`;
     ripple.style.height = `${endRadius * 2}px`;
-    ripple.style.backgroundColor = nextTheme === "dark" ? "#1e1e1e" : "#F7F7F7";
+    ripple.style.backgroundColor =
+      nextTheme === THEMES.DARK
+        ? THEME_TRANSITION_CONFIG.rippleColors.dark
+        : THEME_TRANSITION_CONFIG.rippleColors.light;
     document.body.appendChild(ripple);
 
     requestAnimationFrame(() => {
@@ -131,9 +140,9 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
         ripple.style.opacity = "0";
         setTimeout(() => {
           ripple.remove();
-        }, 300);
-      }, 100);
-    }, 350);
+        }, THEME_TRANSITION_CONFIG.removeDelayMs);
+      }, THEME_TRANSITION_CONFIG.fadeDelayMs);
+    }, THEME_TRANSITION_CONFIG.switchDelayMs);
   };
 
   return (

@@ -1,4 +1,5 @@
 import type { PracticeTimingMode } from "../session-contracts";
+import { DEFAULT_PRACTICE_QUESTION_COUNT, PRACTICE_STORAGE_KEYS } from "../constants";
 
 /** 50 is the server maximum and stands for "all the questions of this task type". */
 export const QUESTION_COUNT_OPTIONS = [5, 10, 50] as const;
@@ -10,7 +11,10 @@ export interface ModePreference {
   questionCount: QuestionCountOption;
 }
 
-export const DEFAULT_MODE_PREFERENCE: ModePreference = { timingMode: "UNTIMED", questionCount: 10 };
+export const DEFAULT_MODE_PREFERENCE: ModePreference = {
+  timingMode: "UNTIMED",
+  questionCount: DEFAULT_PRACTICE_QUESTION_COUNT,
+};
 
 /** The slice of `Storage` this module needs, so tests can pass a fake and the browser one can be missing. */
 export interface PreferenceStorage {
@@ -18,7 +22,7 @@ export interface PreferenceStorage {
   setItem(key: string, value: string): void;
 }
 
-const KEY_PREFIX = "pte.practice.mode.";
+const KEY_PREFIX = PRACTICE_STORAGE_KEYS.modePrefix;
 
 function key(taskCode: string): string {
   return `${KEY_PREFIX}${taskCode}`;

@@ -215,3 +215,30 @@ export const PREVIEW_TASKS = [
 export const PRACTICE_SECTION_ORDER = ["SPEAKING", "WRITING", "READING", "LISTENING"] as const;
 
 export const PRACTICE_TASK_ORDER = PREVIEW_TASKS.map((task) => task.code) as ReadonlyArray<string>;
+
+export const PRACTICE_STORAGE_KEYS = {
+  session: "pte.practice.session",
+  draftPrefix: "pte.practice.draft.",
+  unlockedToast: "pte.practice.unlocked_toast_shown",
+  modePrefix: "pte.practice.mode.",
+  deviceCheckPrefix: "pte.practice.device-check.",
+  readingSize: "pte.practice.reading-size",
+  deviceCheckEvent: "pte.practice.device-check-changed",
+} as const;
+
+export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
+export const DEFAULT_API_BASE_URL = "http://localhost:8080";
+export const ENTITLEMENT_STALE_THRESHOLD_MS = 10_000;
+
+export const SCORE_TONE_THRESHOLDS = {
+  LOW: 40,
+  HIGH: 70,
+} as const;
+
+export const SKILL_SHORT_NAMES = {
+  SPEAKING: { vi: "Nói", en: "Speaking" },
+  WRITING: { vi: "Viết", en: "Writing" },
+  READING: { vi: "Đọc", en: "Reading" },
+  LISTENING: { vi: "Nghe", en: "Listening" },
+  DEFAULT: { vi: "Luyện tập", en: "Practice" },
+} as const;
