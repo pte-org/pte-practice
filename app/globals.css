@@ -1019,13 +1019,13 @@ body.modal-open { overflow: hidden; }
 .countdown-timer { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
 .countdown-warning { color: var(--red); font-size: 0.72rem; font-weight: 700; }
 .recording-waveform { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); }
-.audio-waveform { display: flex; align-items: center; width: 100%; height: 38px; user-select: none; }
+.audio-waveform-wrapper { display: flex; align-items: center; width: 100%; height: 44px; min-width: 0; }
+.audio-waveform { display: block; width: 100%; height: 44px; user-select: none; }
 .audio-waveform-seekable { cursor: pointer; }
-.audio-waveform-bars { display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; height: 100%; }
-.audio-waveform-bar { flex: 1 1 0; max-width: 3px; min-width: 1.5px; border-radius: 999px; background-color: #94a3b8; opacity: 0.42; transition: background-color 0.12s ease, opacity 0.12s ease; fill: #94a3b8; }
-html[data-theme="dark"] .audio-waveform-bar { background-color: #64748b; opacity: 0.45; fill: #64748b; }
-.audio-waveform-bar-played { background-color: var(--accent); opacity: 1; fill: var(--accent); }
-.audio-waveform-seekable:hover .audio-waveform-bar:not(.audio-waveform-bar-played) { opacity: 0.65; }
+.audio-waveform-bar { fill: #94a3b8; opacity: 0.45; transition: fill 0.15s ease, opacity 0.15s ease; }
+html[data-theme="dark"] .audio-waveform-bar { fill: #64748b; opacity: 0.5; }
+.audio-waveform-bar-played { fill: var(--accent) !important; opacity: 1 !important; }
+.audio-waveform-seekable:hover .audio-waveform-bar:not(.audio-waveform-bar-played) { opacity: 0.75; }
 .task-recording-actions .button { display: inline-flex; align-items: center; gap: 6px; }
 .mode-option { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
 .mode-option:hover:not(:disabled) { border-color: var(--line-strong); }
@@ -1788,14 +1788,14 @@ html[data-theme="dark"] .media-player {
 
 .prompt-player-button[data-state="play"] svg,
 .media-player-button[data-state="play"] svg {
-  transform: translateX(1px);
+  transform: translateX(1.5px);
 }
 
 .prompt-player-wave,
 .media-player-wave {
   min-width: 0;
   flex: 1;
-  height: 42px;
+  height: 44px;
   display: flex;
   align-items: center;
 }
