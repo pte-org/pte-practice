@@ -383,6 +383,19 @@ export interface LocaleDict {
     taskBriefingAIGraded: string;
     taskBriefingTipsHeader: string;
     startPracticeNow: string;
+    statSkill: string;
+    statAnswers: string;
+    statProgress: string;
+    statScore: string;
+    recommendedForYou: string;
+    quickPracticeTitle: string;
+    quickPracticeSubtitle: string;
+    startSessionAction: string;
+    resumeSessionAction: string;
+    startNewSetAction: string;
+    startFreshLink: string;
+    reviewSessionAction: string;
+    reviewSessionSubtitle: string;
   };
   timed: {
     stepperLabel: string;

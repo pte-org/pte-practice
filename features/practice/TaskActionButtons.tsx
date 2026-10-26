@@ -7,7 +7,7 @@ import { useTranslation } from "@/common/i18n";
 import { PRACTICE_ROUTES } from "./constants";
 import type { PracticeCatalogTask } from "./contracts";
 import { iconForTaskType } from "./icon-mapping";
-import { formatScore, scoreTone, skillKey, taskDisplayName } from "./presentation";
+import { formatScore, skillIconName, skillShortName, taskDisplayName } from "./presentation";
 import { getTaskBriefing } from "./task-briefing";
 
 export interface TaskActionButtonsProps {
@@ -31,10 +31,7 @@ export interface TaskActionButtonsProps {
 /**
  * Reusable action button for practice tasks.
  * Displays a single clean chevron right (>) button on the row.
- * Clicking opens a dedicated modal based on the task's current state:
- *   1. Active session in-progress: Resume or start fresh.
- *   2. 100% completed: Start fresh or review previous results.
- *   3. First-time / never started: Task briefing with format specs, tips, and start button.
+ * Clicking opens a modern, Duolingo-style task briefing and session launcher modal.
  */
 export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtonsProps>(
   function TaskActionButtons(
@@ -58,11 +55,26 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
 
     const isCompleted = !activeSession && (Boolean(completedSession) || task.answeredQuestionCount > 0);
     const briefing = getTaskBriefing(task.code);
-    const skillTranslationKey = skillKey(task.section);
 
     const answered = activeSession?.answeredItemCount ?? 0;
     const total = activeSession?.totalItemCount ?? 0;
     const completedScore = completedSession?.score ?? task.averageScore;
+
+    // Stat 2: Progress / Latest Score / Answers
+    let statLabel = t("progress.statAnswers");
+    let statValue = "0";
+    if (activeSession) {
+      statLabel = t("progress.statProgress");
+      statValue = `${answered}/${total}`;
+    } else if (isCompleted) {
+      if (completedScore !== null && Number.isFinite(completedScore)) {
+        statLabel = t("progress.statScore");
+        statValue = formatScore(completedScore);
+      } else {
+        statLabel = t("progress.statAnswers");
+        statValue = `${task.answeredQuestionCount || completedSession?.answeredItemCount || 10}`;
+      }
+    }
 
     return (
       <div className={`skill-task-actions ${className ?? ""}`.trim()}>
@@ -83,171 +95,169 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
             open={showModal}
             onClose={() => setShowModal(false)}
             title={taskDisplayName(task.code, task.displayName, t)}
-            titleIcon={<AppIcon name={iconForTaskType(task.code)} size={22} />}
             closeLabel={t("mode.close")}
             size="sm"
-            className="session-choice-dialog"
-            footer={
-              <button
-                type="button"
-                className="session-choice-cancel-btn"
+            className="pte-session-modal"
+          >
+            {/* Header: Centered task icon, title, and 1-line subtitle */}
+            <div className="pte-modal-top">
+              <div className="pte-modal-icon-badge" aria-hidden="true">
+                <AppIcon name={iconForTaskType(task.code)} size={28} />
+              </div>
+              <h2 className="pte-modal-title">{taskDisplayName(task.code, task.displayName, t)}</h2>
+              <p className="pte-modal-subtitle">
+                {locale === "vi" ? briefing.summaryVi : briefing.summaryEn}
+              </p>
+            </div>
+
+            {/* Quick Stat Cards: Skill and Answers / Progress */}
+            <div className="pte-stats-row">
+              <div className="pte-stat-card">
+                <span className="pte-stat-icon">
+                  <AppIcon name={skillIconName(task.section)} size={20} />
+                </span>
+                <span className="pte-stat-label">{t("progress.statSkill")}</span>
+                <strong className="pte-stat-value">{skillShortName(task.section, locale)}</strong>
+              </div>
+              <div className="pte-stat-card">
+                <span className="pte-stat-icon">
+                  <AppIcon name={isCompleted && completedScore !== null ? "star" : "responses"} size={20} />
+                </span>
+                <span className="pte-stat-label">{statLabel}</span>
+                <strong className="pte-stat-value">{statValue}</strong>
+              </div>
+            </div>
+
+            {/* Section: Recommended for you */}
+            <h3 className="pte-section-label">{t("progress.recommendedForYou")}</h3>
+
+            {/* Recommended Featured Card */}
+            {activeSession ? (
+              <Link
+                className="pte-featured-card"
+                href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
                 onClick={() => setShowModal(false)}
               >
-                {t("mode.close")}
-              </button>
-            }
-          >
+                <span className="pte-featured-icon">
+                  <AppIcon name="play" size={20} />
+                </span>
+                <div className="pte-featured-copy">
+                  <strong className="pte-featured-title">{t("progress.resumeOptionTitle")}</strong>
+                  <p className="pte-featured-subtitle">
+                    {t("progress.resumeOptionDescription")}
+                  </p>
+                </div>
+                <div className="pte-featured-badges">
+                  <span className="pte-featured-chip">
+                    <AppIcon name="timer" size={14} />
+                    {locale === "vi" ? briefing.durationVi : briefing.durationEn}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <div
+                className="pte-featured-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  setShowModal(false);
+                  onStart(task);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setShowModal(false);
+                    onStart(task);
+                  }
+                }}
+              >
+                <span className="pte-featured-icon">
+                  <AppIcon name={isCompleted ? "retake" : "bookOpen"} size={20} />
+                </span>
+                <div className="pte-featured-copy">
+                  <strong className="pte-featured-title">
+                    {isCompleted ? t("progress.newOptionTitle") : t("progress.quickPracticeTitle")}
+                  </strong>
+                  <p className="pte-featured-subtitle">
+                    {isCompleted ? t("progress.newOptionDescription") : t("progress.quickPracticeSubtitle")}
+                  </p>
+                </div>
+                <div className="pte-featured-badges">
+                  <span className="pte-featured-chip">
+                    <AppIcon name="bookOpen" size={14} />
+                    {locale === "vi" ? briefing.formatVi : briefing.formatEn}
+                  </span>
+                  <span className="pte-featured-chip">
+                    <AppIcon name="timer" size={14} />
+                    {locale === "vi" ? briefing.durationVi : briefing.durationEn}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* If completed, optional Review previous session card */}
+            {isCompleted ? (
+              <Link
+                className="pte-secondary-card"
+                href={
+                  completedSession?.sessionPublicId
+                    ? `${PRACTICE_ROUTES.practiceReview}?sessionId=${completedSession.sessionPublicId}`
+                    : PRACTICE_ROUTES.progress
+                }
+                onClick={() => setShowModal(false)}
+              >
+                <span className="pte-secondary-icon">
+                  <AppIcon name="responses" size={20} />
+                </span>
+                <div className="pte-secondary-copy">
+                  <strong className="pte-secondary-title">{t("progress.reviewSessionAction")}</strong>
+                  <p className="pte-secondary-subtitle">{t("progress.reviewSessionSubtitle")}</p>
+                </div>
+                <AppIcon name="chevronRight" size={18} className="pte-secondary-arrow" />
+              </Link>
+            ) : null}
+
+            {/* Practical Study Tip Box */}
+            <div className="pte-tip-box">
+              <span className="pte-tip-icon">
+                <AppIcon name="info" size={18} />
+              </span>
+              <p className="pte-tip-text">{locale === "vi" ? briefing.tipVi : briefing.tipEn}</p>
+            </div>
+
+            {/* Bottom Primary CTA */}
             {activeSession ? (
-              /* State 1: Active In-Progress Session */
-              <div className="session-choice-options">
+              <>
                 <Link
-                  className="session-choice-card session-choice-card-resume"
+                  className="pte-primary-cta"
                   href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
                   onClick={() => setShowModal(false)}
                 >
-                  <span className="session-choice-icon" aria-hidden="true">
-                    <AppIcon name="play" size={20} />
-                  </span>
-                  <div className="session-choice-content">
-                    <div className="session-choice-heading">
-                      <span className="session-choice-title">{t("progress.resumeOptionTitle")}</span>
-                      <span className="session-choice-badge">
-                        {t("progress.resumeOptionBadge")
-                          .replace("{answered}", String(answered))
-                          .replace("{total}", String(total))}
-                      </span>
-                    </div>
-                    <p className="session-choice-desc">{t("progress.resumeOptionDescription")}</p>
-                  </div>
-                  <span className="session-choice-arrow" aria-hidden="true">
-                    <AppIcon name="chevronRight" size={18} />
-                  </span>
+                  <AppIcon name="play" size={18} />
+                  <span>{t("progress.resumeSessionAction")}</span>
                 </Link>
-
                 <button
                   type="button"
-                  className="session-choice-card session-choice-card-new"
+                  className="pte-alt-link"
                   onClick={() => {
                     setShowModal(false);
                     onStart(task);
                   }}
                 >
-                  <span className="session-choice-icon" aria-hidden="true">
-                    <AppIcon name="retake" size={20} />
-                  </span>
-                  <div className="session-choice-content">
-                    <div className="session-choice-heading">
-                      <span className="session-choice-title">{t("progress.newOptionTitle")}</span>
-                    </div>
-                    <p className="session-choice-desc">{t("progress.newOptionDescription")}</p>
-                  </div>
-                  <span className="session-choice-arrow" aria-hidden="true">
-                    <AppIcon name="chevronRight" size={18} />
-                  </span>
+                  {t("progress.startFreshLink")}
                 </button>
-              </div>
-            ) : isCompleted ? (
-              /* State 2: Completed / 100% Session */
-              <div className="session-choice-options">
-                <div className="session-completed-summary">
-                  <span className="session-completed-tag">
-                    <AppIcon name="checkCircle" size={16} />
-                    {t("progress.completedBadge").replace(
-                      "{count}",
-                      String(task.answeredQuestionCount || completedSession?.answeredItemCount || 10)
-                    )}
-                  </span>
-                  {completedScore !== null && Number.isFinite(completedScore) ? (
-                    <span className={`score-badge score-badge-${scoreTone(completedScore)}`}>
-                      {formatScore(completedScore)}
-                    </span>
-                  ) : null}
-                </div>
-
-                <button
-                  type="button"
-                  className="session-choice-card session-choice-card-new"
-                  onClick={() => {
-                    setShowModal(false);
-                    onStart(task);
-                  }}
-                >
-                  <span className="session-choice-icon" aria-hidden="true">
-                    <AppIcon name="retake" size={20} />
-                  </span>
-                  <div className="session-choice-content">
-                    <div className="session-choice-heading">
-                      <span className="session-choice-title">{t("progress.newOptionTitle")}</span>
-                    </div>
-                    <p className="session-choice-desc">{t("progress.newOptionDescription")}</p>
-                  </div>
-                  <span className="session-choice-arrow" aria-hidden="true">
-                    <AppIcon name="chevronRight" size={18} />
-                  </span>
-                </button>
-
-                <Link
-                  className="session-choice-card"
-                  href={
-                    completedSession?.sessionPublicId
-                      ? `${PRACTICE_ROUTES.practiceReview}?sessionId=${completedSession.sessionPublicId}`
-                      : PRACTICE_ROUTES.progress
-                  }
-                  onClick={() => setShowModal(false)}
-                >
-                  <span className="session-choice-icon session-choice-icon-review" aria-hidden="true">
-                    <AppIcon name="star" size={20} />
-                  </span>
-                  <div className="session-choice-content">
-                    <div className="session-choice-heading">
-                      <span className="session-choice-title">{t("progress.reviewOptionTitle")}</span>
-                    </div>
-                    <p className="session-choice-desc">{t("progress.reviewOptionDescription")}</p>
-                  </div>
-                  <span className="session-choice-arrow" aria-hidden="true">
-                    <AppIcon name="chevronRight" size={18} />
-                  </span>
-                </Link>
-              </div>
+              </>
             ) : (
-              /* State 3: First Time / Never Started Briefing */
-              <div className="session-briefing-wrap">
-                <div className="session-briefing-badges">
-                  {skillTranslationKey ? (
-                    <span className="session-briefing-chip session-briefing-chip-skill">
-                      {t(skillTranslationKey)}
-                    </span>
-                  ) : null}
-                  <span className="session-briefing-chip">
-                    {locale === "vi" ? briefing.formatVi : briefing.formatEn}
-                  </span>
-                  <span className="session-briefing-chip">
-                    {t("progress.taskBriefingAIGraded")}
-                  </span>
-                </div>
-
-                <div className="session-briefing-box">
-                  <div className="session-briefing-box-header">
-                    <AppIcon name="sparkle" size={16} />
-                    <span>{t("progress.taskBriefingTipsHeader")}</span>
-                  </div>
-                  <p>{locale === "vi" ? briefing.tipVi : briefing.tipEn}</p>
-                </div>
-
-                <div className="session-briefing-action">
-                  <button
-                    type="button"
-                    className="button button-primary button-pill session-briefing-start-btn"
-                    onClick={() => {
-                      setShowModal(false);
-                      onStart(task);
-                    }}
-                  >
-                    <AppIcon name="play" size={18} />
-                    <span>{t("progress.startPracticeNow")}</span>
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                className="pte-primary-cta"
+                onClick={() => {
+                  setShowModal(false);
+                  onStart(task);
+                }}
+              >
+                <AppIcon name="play" size={18} />
+                <span>{isCompleted ? t("progress.startNewSetAction") : t("progress.startSessionAction")}</span>
+              </button>
             )}
           </Modal>
         ) : null}

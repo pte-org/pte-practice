@@ -26,6 +26,26 @@ export function skillKey(code: string | null | undefined): TranslationKey | null
   return code ? SKILL_KEYS[code.toUpperCase()] ?? null : null;
 }
 
+export function skillShortName(section: string | null | undefined, locale: string): string {
+  switch (section?.toUpperCase()) {
+    case "SPEAKING": return locale === "vi" ? "Nói" : "Speaking";
+    case "WRITING": return locale === "vi" ? "Viết" : "Writing";
+    case "READING": return locale === "vi" ? "Đọc" : "Reading";
+    case "LISTENING": return locale === "vi" ? "Nghe" : "Listening";
+    default: return locale === "vi" ? "Luyện tập" : "Practice";
+  }
+}
+
+export function skillIconName(section: string | null | undefined): "mic" | "writing" | "reading" | "listening" {
+  switch (section?.toUpperCase()) {
+    case "SPEAKING": return "mic";
+    case "WRITING": return "writing";
+    case "READING": return "reading";
+    case "LISTENING": return "listening";
+    default: return "reading";
+  }
+}
+
 /** Localized display name of a PTE task code with fallback to the catalog title. */
 export function taskDisplayName(
   code: string | null | undefined,
