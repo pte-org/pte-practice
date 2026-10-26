@@ -6,13 +6,14 @@ import type { TranslationKey } from "@/common/i18n";
 import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { studySkillRows, totalPracticeQuestions } from "./study-pack-rows";
 
 export function StudyPackView() {
   const { catalog, isPracticeUnlocked } = usePractice();
   const { openForSkill, dialog } = usePracticeStart();
   const { t } = useTranslation();
-  const rows = studySkillRows(catalog.sections, isPracticeUnlocked);
+  const rows = studySkillRows(orderCatalogSections(catalog.sections), isPracticeUnlocked);
   const total = totalPracticeQuestions(rows);
 
   return (
