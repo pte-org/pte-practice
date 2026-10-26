@@ -118,7 +118,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps): ReactElement =>
     ripple.style.top = `${y}px`;
     ripple.style.width = `${endRadius * 2}px`;
     ripple.style.height = `${endRadius * 2}px`;
-    ripple.style.backgroundColor = nextTheme === "dark" ? "#1e1e1e" : "#f2f6fa";
+    ripple.style.backgroundColor = nextTheme === "dark" ? "#1e1e1e" : "#F7F7F7";
     document.body.appendChild(ripple);
 
     requestAnimationFrame(() => {
