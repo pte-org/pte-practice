@@ -131,7 +131,9 @@ export function ProgressView() {
                     <strong>{sessionDisplayName(entry, taskName, t)}</strong>
                     <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
                   </Link>
-                  <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
+                  {entry.score !== null && Number.isFinite(entry.score) ? (
+                    <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
+                  ) : null}
                   <Link className="button button-outline button-pill" href={targetUrl}>
                     {inProgress ? t("progress.resume") : t("progress.review")}
                   </Link>

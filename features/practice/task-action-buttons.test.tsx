@@ -105,4 +105,16 @@ describe("SkillTaskRow", () => {
 
     expect(html).toContain("state-badge-locked");
   });
+
+  it("hides score-badge when task has no score yet (null)", () => {
+    const html = renderWithLocale(
+      <SkillTaskRow
+        task={{ ...sampleTask, averageScore: null }}
+        isPracticeUnlocked={true}
+        onStart={vi.fn()}
+      />
+    );
+
+    expect(html).not.toContain("score-badge");
+  });
 });

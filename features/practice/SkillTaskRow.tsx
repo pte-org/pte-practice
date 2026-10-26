@@ -50,13 +50,13 @@ export function SkillTaskRow({
           ) : null}
         </span>
       </span>
-      {canStart ? (
+      {!canStart ? (
+        <LockBadge locked label={blockedLabel} />
+      ) : task.averageScore !== null && Number.isFinite(task.averageScore) ? (
         <span className={`score-badge score-badge-${scoreTone(task.averageScore)}`}>
           {formatScore(task.averageScore)}
         </span>
-      ) : (
-        <LockBadge locked label={blockedLabel} />
-      )}
+      ) : null}
       <TaskActionButtons
         task={task}
         activeSession={activeSession}
