@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactElement, type ReactNode, useEffect, useId, useRef } from "react";
+import { type ReactElement, type ReactNode, useEffect, useId, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl";
 
@@ -22,6 +23,7 @@ export interface ModalProps {
 }
 
 const BODY_LOCK_CLASS = "modal-open";
+const emptySubscribe = () => () => {};
 
 export function Modal({
   open,
@@ -36,6 +38,7 @@ export function Modal({
   isDismissDisabled = false,
   closeLabel,
 }: ModalProps): ReactElement | null {
+  const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusTo = useRef<HTMLElement | null>(null);
@@ -65,9 +68,9 @@ export function Modal({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, isDismissDisabled]);
 
-  if (!open) return null;
+  if (!open || !isMounted || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop"
       onMouseDown={(event) => {
@@ -95,6 +98,7 @@ export function Modal({
         <div className="modal-body">{children}</div>
         {footer ? <footer className="modal-footer">{footer}</footer> : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
