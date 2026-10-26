@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AppIcon } from "@/common/components";
 import { useLocale } from "../../../common/i18n/LocaleProvider";
 import type { PracticeTaskFixture } from "../fixtures";
 import { PromptAudioPlayer } from "../media/PromptAudioPlayer";
@@ -23,11 +24,28 @@ export function PromptMedia({ fixture, timed }: PromptMediaProps) {
   return (
     <div className="task-prompt-media">
       {fixture.imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL; not optimizable
-        <img className="task-prompt-image" src={fixture.imageUrl} alt={t("score.imagePrompt")} />
+        <div className="task-prompt-image-wrapper">
+          {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL; not optimizable */}
+          <img className="task-prompt-image" src={fixture.imageUrl} alt={t("score.imagePrompt")} />
+        </div>
       ) : null}
-      {fixture.audioUrl && timed ? <OncePrompt url={fixture.audioUrl} timed={timed} label={t("score.audioPrompt")} /> : null}
-      {fixture.audioUrl && !timed ? <FreePrompt url={fixture.audioUrl} label={t("score.audioPrompt")} /> : null}
+      {fixture.audioUrl ? (
+        <div className="prompt-audio-panel">
+          <div className="prompt-audio-header">
+            <div className="prompt-audio-title-group">
+              <span className="prompt-audio-icon" aria-hidden="true">
+                <AppIcon name="listening" size={18} />
+              </span>
+              <strong className="prompt-audio-title">{t("score.audioPrompt")}</strong>
+            </div>
+          </div>
+          {timed ? (
+            <OncePrompt url={fixture.audioUrl} timed={timed} label={t("score.audioPrompt")} />
+          ) : (
+            <FreePrompt url={fixture.audioUrl} label={t("score.audioPrompt")} />
+          )}
+        </div>
+      ) : null}
       {audioMissing || imageMissing ? (
         <p className="task-recording-message" role="alert">{t("score.mediaUnavailable")}</p>
       ) : null}

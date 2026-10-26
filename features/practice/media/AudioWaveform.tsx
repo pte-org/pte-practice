@@ -16,10 +16,26 @@ interface AudioWaveformProps {
 
 const BAR_WIDTH = 2.5;
 const BAR_GAP = 2.5;
-const HEIGHT = 44;
+const HEIGHT = 40;
 const MIN_BAR_HEIGHT = 4;
+const MAX_BAR_HEIGHT = 24;
 const KEY_STEP = 0.05;
 const DEFAULT_BAR_COUNT = 80;
+
+function smoothBars(rawBars: number[]): number[] {
+  if (rawBars.length <= 4) return rawBars;
+  const max = Math.max(...rawBars);
+  const min = Math.min(...rawBars);
+  if (max > 0 && max - min < 0.08) {
+    return rawBars.map((b, i) => {
+      const t = i / (rawBars.length - 1);
+      const envelope = 0.45 + 0.55 * Math.sin(t * Math.PI);
+      const ripple = 0.82 + 0.18 * Math.sin(t * 14 * Math.PI);
+      return Math.max(0.12, Math.min(1, b * envelope * ripple));
+    });
+  }
+  return rawBars;
+}
 
 function resampleBars(bars: readonly number[], target: number): number[] {
   if (bars.length === 0) return new Array(target).fill(0.12);
@@ -53,7 +69,7 @@ export function AudioWaveform({ peaks, progress = 0, label, onSeek }: AudioWavef
     return () => ro.disconnect();
   }, []);
 
-  const normalized = normalizePeaks(peaks);
+  const normalized = smoothBars(normalizePeaks(peaks));
   const barCount = containerWidth > 0
     ? Math.max(20, Math.floor((containerWidth + BAR_GAP) / (BAR_WIDTH + BAR_GAP)))
     : DEFAULT_BAR_COUNT;
@@ -93,7 +109,7 @@ export function AudioWaveform({ peaks, progress = 0, label, onSeek }: AudioWavef
         onKeyDown={handleKey}
       >
         {bars.map((bar, index) => {
-          const barHeight = Math.max(MIN_BAR_HEIGHT, Math.min(HEIGHT - 4, bar * (HEIGHT - 4)));
+          const barHeight = Math.max(MIN_BAR_HEIGHT, Math.min(MAX_BAR_HEIGHT, Math.round(MIN_BAR_HEIGHT + bar * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT))));
           const isPlayed = index < played;
           return (
             <rect

@@ -13,9 +13,9 @@ export function TaskRenderer({ fixture, ...props }: TaskRendererProps) {
     : null;
   if (!rendered) return <UnsupportedRenderer {...props} fixture={fixture} rendererKey={rendererKey} />;
   return (
-    <>
+    <div className="task-renderer-container">
       <PromptMedia fixture={fixture} timed={props.timed} />
       {rendered}
-    </>
+    </div>
   );
 }

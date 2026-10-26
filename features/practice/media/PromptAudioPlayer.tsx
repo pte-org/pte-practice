@@ -3,7 +3,7 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { AppIcon } from "@/common/components";
 import { AudioWaveform } from "./AudioWaveform";
-import { loadPromptPeaks } from "./prompt-peaks";
+import { fallbackPeaks, loadPromptPeaks } from "./prompt-peaks";
 
 function formatTime(seconds: number): string {
   const whole = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
@@ -43,7 +43,7 @@ export function PromptAudioPlayer({
   const [loadedPeaks, setLoadedPeaks] = useState<number[] | null>(null);
   const [position, setPosition] = useState({ current: 0, duration: 0, playing: false });
 
-  const peaks = initialPeaks ?? loadedPeaks;
+  const peaks = initialPeaks ?? loadedPeaks ?? fallbackPeaks(url);
 
   useEffect(() => {
     if (initialPeaks) return;
