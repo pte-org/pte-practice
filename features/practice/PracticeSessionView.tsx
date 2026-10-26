@@ -63,7 +63,7 @@ export function PracticeSessionView() {
   const { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer } = useSessionDraft();
   const { showToast } = useToast();
   const online = useOnlineStatus();
-  const { markPassed } = useDeviceChecks();
+  const { markPassed, markFailed } = useDeviceChecks();
   const [recorderBusy, setRecorderBusy] = useState(false);
   const [confirm, setConfirm] = useState<null | "pause" | { words: number; min: number | null; max: number | null }>(null);
   /** Device checks done since this session was opened; starting or resuming a session asks again. */
@@ -571,7 +571,7 @@ export function PracticeSessionView() {
           onClose={closeConfirm} onConfirm={() => { closeConfirm(); void submit(true); }} />
       ) : null}
       <AudioPlaybackCheckDialog open={showAudioCheck} onConfirm={() => { markPassed("speaker"); finishCheck("speaker"); }} />
-      <DeviceCheckDialog kind={showMicCheck ? "mic" : null} onClose={() => finishCheck("mic")} onPassed={markPassed} />
+      <DeviceCheckDialog kind={showMicCheck ? "mic" : null} onClose={() => finishCheck("mic")} onPassed={markPassed} onFailed={markFailed} />
     </>
   );
 }

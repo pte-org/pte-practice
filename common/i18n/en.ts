@@ -236,6 +236,7 @@ export const en: LocaleDict = {
   deviceCheck: {
     checked: "Checked",
     notChecked: "Check now",
+    failed: "Failed",
     micTile: "Microphone",
     speakerTile: "Speakers",
     keyboardTile: "Keyboard",

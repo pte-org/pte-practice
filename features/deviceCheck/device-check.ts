@@ -22,6 +22,7 @@ export const READING_SIZES: readonly ReadingSize[] = ["md", "lg", "xl"];
 export interface CheckStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 function browserStorage(): CheckStorage | null {
@@ -32,13 +33,25 @@ function browserStorage(): CheckStorage | null {
   }
 }
 
-export function isCheckPassed(kind: DeviceCheckKind, now = Date.now(), storage = browserStorage()): boolean {
+export type DeviceCheckStatus = "passed" | "failed" | "not-checked";
+export const CHECK_STATUS_FAILED = "failed";
+
+export function getCheckStatus(kind: DeviceCheckKind, now = Date.now(), storage = browserStorage()): DeviceCheckStatus {
   try {
-    const passedAt = Number(storage?.getItem(KEY_PREFIX + kind));
-    return Number.isFinite(passedAt) && passedAt > 0 && now - passedAt < CHECK_VALID_MS;
+    const raw = storage?.getItem(KEY_PREFIX + kind);
+    if (raw === CHECK_STATUS_FAILED) return "failed";
+    const passedAt = Number(raw);
+    if (Number.isFinite(passedAt) && passedAt > 0 && now - passedAt < CHECK_VALID_MS) {
+      return "passed";
+    }
+    return "not-checked";
   } catch {
-    return false;
+    return "not-checked";
   }
+}
+
+export function isCheckPassed(kind: DeviceCheckKind, now = Date.now(), storage = browserStorage()): boolean {
+  return getCheckStatus(kind, now, storage) === "passed";
 }
 
 export function markCheckPassed(kind: DeviceCheckKind, now = Date.now(), storage = browserStorage()): void {
@@ -46,6 +59,22 @@ export function markCheckPassed(kind: DeviceCheckKind, now = Date.now(), storage
     storage?.setItem(KEY_PREFIX + kind, String(now));
   } catch {
     // A convenience only: a blocked store just means the tile asks again next time.
+  }
+}
+
+export function markCheckFailed(kind: DeviceCheckKind, storage = browserStorage()): void {
+  try {
+    storage?.setItem(KEY_PREFIX + kind, CHECK_STATUS_FAILED);
+  } catch {
+    // best-effort
+  }
+}
+
+export function clearCheckStatus(kind: DeviceCheckKind, storage = browserStorage()): void {
+  try {
+    storage?.removeItem(KEY_PREFIX + kind);
+  } catch {
+    // best-effort
   }
 }
 

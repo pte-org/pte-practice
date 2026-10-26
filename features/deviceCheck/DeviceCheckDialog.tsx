@@ -27,24 +27,27 @@ interface DeviceCheckDialogProps {
   onClose: () => void;
   /** The student confirmed the device works; the tile shows it as checked. */
   onPassed: (kind: DeviceCheckKind) => void;
+  /** The check failed (e.g. permission blocked, silence, or hardware error); the tile shows it as failed. */
+  onFailed?: (kind: DeviceCheckKind) => void;
 }
 
 /** One device check in a dialog. Nothing is uploaded: the test recording stays in this browser tab. */
-export function DeviceCheckDialog({ kind, onClose, onPassed }: DeviceCheckDialogProps) {
+export function DeviceCheckDialog({ kind, onClose, onPassed, onFailed }: DeviceCheckDialogProps) {
   const { t } = useTranslation();
   if (!kind) return null;
   const pass = () => { onPassed(kind); onClose(); };
+  const fail = () => { onFailed?.(kind); };
   return (
     <Modal open onClose={onClose} title={t(TITLES[kind])} titleIcon={<AppIcon name="info" size={22} />} closeLabel={t("mode.close")}>
-      {kind === "mic" ? <MicCheck onPass={pass} /> : null}
-      {kind === "speaker" ? <SpeakerCheck onPass={pass} /> : null}
+      {kind === "mic" ? <MicCheck onPass={pass} onFail={fail} /> : null}
+      {kind === "speaker" ? <SpeakerCheck onPass={pass} onFail={fail} /> : null}
       {kind === "keyboard" ? <KeyboardCheck onPass={pass} /> : null}
       {kind === "reading" ? <ReadingCheck onPass={pass} /> : null}
     </Modal>
   );
 }
 
-function MicCheck({ onPass }: { onPass: () => void }) {
+function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void }) {
   const { t, locale } = useTranslation();
   const [phase, setPhase] = useState<"idle" | "recording" | "done" | "error">("idle");
   const [levels, setLevels] = useState<number[]>([]);
@@ -71,6 +74,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
           if (permissionStatus.state === "denied") {
             setIsPermissionDenied(true);
             setError(t("deviceCheck.micDenied"));
+            onFail?.();
           } else if (permissionStatus.state === "granted") {
             setIsPermissionDenied(false);
             setError(null);
@@ -83,6 +87,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
             } else if (permissionStatus.state === "denied") {
               setIsPermissionDenied(true);
               setError(t("deviceCheck.micDenied"));
+              onFail?.();
             }
           };
         })
@@ -95,7 +100,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
       active = false;
       window.removeEventListener("focus", check);
     };
-  }, [t]);
+  }, [onFail, t]);
 
   const record = async () => {
     setError(null);
@@ -117,7 +122,11 @@ function MicCheck({ onPass }: { onPass: () => void }) {
         const recording = await active.stop();
         setPeaks(recording.peaks);
         setUrl(URL.createObjectURL(recording.blob));
-        setVerdict(micVerdict(maxLevel.current));
+        const v = micVerdict(maxLevel.current);
+        setVerdict(v);
+        if (v === "silent") {
+          onFail?.();
+        }
         setPhase("done");
       }, TEST_SECONDS * 1000);
     } catch (reason) {
@@ -125,6 +134,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
       const isDenied = reason instanceof RecorderError && reason.code === "PERMISSION_DENIED";
       setIsPermissionDenied(isDenied);
       setError(isDenied ? t("deviceCheck.micDenied") : t("deviceCheck.micFailed"));
+      onFail?.();
     }
   };
 
@@ -184,7 +194,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
   );
 }
 
-function SpeakerCheck({ onPass }: { onPass: () => void }) {
+function SpeakerCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void }) {
   const { t } = useTranslation();
   const [cantHear, setCantHear] = useState(false);
 
@@ -221,7 +231,7 @@ function SpeakerCheck({ onPass }: { onPass: () => void }) {
       </div>
       {cantHear ? <p role="status" className="device-verdict device-verdict-quiet">{t("deviceCheck.speakerTips")}</p> : null}
       <div className="device-actions">
-        <button className="button button-pill button-outline-danger" type="button" onClick={() => setCantHear(true)}>{t("deviceCheck.speakerCantHear")}</button>
+        <button className="button button-pill button-outline-danger" type="button" onClick={() => { setCantHear(true); onFail?.(); }}>{t("deviceCheck.speakerCantHear")}</button>
         <button className="button button-outline button-pill" type="button" onClick={onPass}>{t("deviceCheck.speakerHeard")}</button>
       </div>
     </div>

@@ -236,6 +236,7 @@ export const vi: LocaleDict = {
   deviceCheck: {
     checked: "Đã kiểm tra",
     notChecked: "Kiểm tra ngay",
+    failed: "Không đạt",
     micTile: "Kiểm tra mic",
     speakerTile: "Kiểm tra loa",
     keyboardTile: "Kiểm tra bàn phím",

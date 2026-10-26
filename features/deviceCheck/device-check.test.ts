@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
-  CHECK_VALID_MS, hasVietnameseInput, isCheckPassed, markCheckPassed, micVerdict, readReadingSize, wordsPerMinute,
+  CHECK_VALID_MS,
+  clearCheckStatus,
+  getCheckStatus,
+  hasVietnameseInput,
+  isCheckPassed,
+  markCheckFailed,
+  markCheckPassed,
+  micVerdict,
+  readReadingSize,
+  wordsPerMinute,
   writeReadingSize,
 } from "./device-check";
 
 function memoryStorage() {
   const values = new Map<string, string>();
-  return { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value) };
+  return { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key) };
 }
 
 describe("check status", () => {
@@ -17,6 +26,28 @@ describe("check status", () => {
     expect(isCheckPassed("mic", 1_000 + CHECK_VALID_MS - 1, storage)).toBe(true);
     expect(isCheckPassed("mic", 1_000 + CHECK_VALID_MS, storage)).toBe(false);
     expect(isCheckPassed("speaker", 1_000, storage)).toBe(false);
+  });
+
+  it("handles failed and not-checked states correctly", () => {
+    const storage = memoryStorage();
+    expect(getCheckStatus("mic", 1_000, storage)).toBe("not-checked");
+    markCheckFailed("mic", storage);
+    expect(getCheckStatus("mic", 1_000, storage)).toBe("failed");
+    expect(isCheckPassed("mic", 1_000, storage)).toBe(false);
+
+    // Passing overrides failure
+    markCheckPassed("mic", 1_000, storage);
+    expect(getCheckStatus("mic", 1_000, storage)).toBe("passed");
+    expect(isCheckPassed("mic", 1_000, storage)).toBe(true);
+
+    // Failing overrides passing (e.g. permission revoked)
+    markCheckFailed("mic", storage);
+    expect(getCheckStatus("mic", 1_000, storage)).toBe("failed");
+    expect(isCheckPassed("mic", 1_000, storage)).toBe(false);
+
+    // Clear restores not-checked
+    clearCheckStatus("mic", storage);
+    expect(getCheckStatus("mic", 1_000, storage)).toBe("not-checked");
   });
 });
 

@@ -1128,6 +1128,8 @@ html[data-theme="dark"] .audio-waveform-bar { fill: #64748b; opacity: 0.45; }
 .skill-tile-check { border: 0; font: inherit; color: inherit; cursor: pointer; }
 .skill-tile-check:hover { background: var(--surface-raised); }
 .device-status-ok { color: var(--green); font-size: 0.72rem; font-weight: 600; }
+.device-status-failed,
+.device-status-error { color: var(--red); font-size: 0.72rem; font-weight: 600; }
 .device-status-todo { color: var(--muted); font-size: 0.72rem; }
 .device-check { display: grid; gap: 14px; }
 .device-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }

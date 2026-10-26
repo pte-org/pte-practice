@@ -33,7 +33,7 @@ export function HomeView() {
   const { openFor, openForMock, dialog: modeDialog } = usePracticeStart();
   const { catalog, entitlement, isPracticeUnlocked, authStatus } = usePractice();
   const { t } = useTranslation();
-  const { passed, markPassed } = useDeviceChecks();
+  const { status, markPassed, markFailed } = useDeviceChecks();
   const [check, setCheck] = useState<DeviceCheckKind | null>(null);
   const [mockTests, setMockTests] = useState<MockTest[]>([]);
   const [entries, setEntries] = useState<PracticeProgressEntry[]>([]);
@@ -75,13 +75,15 @@ export function HomeView() {
           <div className="device-grid">
             {SKILL_TILES.map((skill) => {
               const kind = SKILL_DEVICE_CHECK[skill.code];
-              const checked = passed(kind);
+              const checkStatus = status(kind);
+              const isOk = checkStatus === "passed";
+              const isFailed = checkStatus === "failed";
               return (
                 <button className="device-tile" type="button" key={skill.code} onClick={() => setCheck(kind)}>
                   <AppIcon name={skill.icon} size={22} />
                   <span>{t(skill.label)}</span>
-                  <strong className={checked ? "device-status-ok" : "device-status-todo"}>
-                    {checked ? `✓ ${t("deviceCheck.checked")}` : t("deviceCheck.notChecked")}
+                  <strong className={isOk ? "device-status-ok" : isFailed ? "device-status-failed" : "device-status-todo"}>
+                    {isOk ? `✓ ${t("deviceCheck.checked")}` : isFailed ? `✗ ${t("deviceCheck.failed")}` : t("deviceCheck.notChecked")}
                   </strong>
                 </button>
               );
@@ -130,7 +132,7 @@ export function HomeView() {
       {entitlement?.organizationContext ? (
         <p className="quiet-note">{t("home.workspace")} {entitlement.organizationContext.displayName}</p>
       ) : null}
-      <DeviceCheckDialog kind={check} onClose={() => setCheck(null)} onPassed={markPassed} />
+      <DeviceCheckDialog kind={check} onClose={() => setCheck(null)} onPassed={markPassed} onFailed={markFailed} />
       {modeDialog}
     </div>
   );

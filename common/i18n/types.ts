@@ -236,6 +236,7 @@ export interface LocaleDict {
   deviceCheck: {
     checked: string;
     notChecked: string;
+    failed: string;
     micTile: string;
     speakerTile: string;
     keyboardTile: string;

@@ -24,7 +24,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { authStatus, signOut } = usePractice();
   const { theme, toggleTheme } = useTheme();
   const { t, locale, setLocale } = useTranslation();
-  const { markPassed } = useDeviceChecks();
+  const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -158,6 +158,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
         kind={deviceCheckKind}
         onClose={() => setDeviceCheckKind(null)}
         onPassed={markPassed}
+        onFailed={markFailed}
       />
       {practiceModeDialog}
     </div>
