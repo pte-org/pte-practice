@@ -391,7 +391,7 @@ export const en: LocaleDict = {
   nav: {
     home: "Home",
     practiceTests: "Practice tests",
-    studyPack: "Study-Pack",
+    studyPack: "Skill practice",
     progress: "Progress",
   },
   shell: {

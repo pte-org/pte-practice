@@ -391,7 +391,7 @@ export const vi: LocaleDict = {
   nav: {
     home: "Trang chủ",
     practiceTests: "Luyện đề",
-    studyPack: "Gói học tập",
+    studyPack: "Luyện kỹ năng",
     progress: "Tiến trình",
   },
   shell: {
