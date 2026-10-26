@@ -396,6 +396,8 @@ export interface LocaleDict {
     startFreshLink: string;
     reviewSessionAction: string;
     reviewSessionSubtitle: string;
+    practiceOptionsLabel: string;
+    startNowAction: string;
   };
   timed: {
     stepperLabel: string;

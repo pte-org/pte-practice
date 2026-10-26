@@ -396,6 +396,8 @@ export const en: LocaleDict = {
     startFreshLink: "or Start fresh with new questions",
     reviewSessionAction: "Review recent results",
     reviewSessionSubtitle: "Review your answers, score breakdown and detailed feedback",
+    practiceOptionsLabel: "Practice options",
+    startNowAction: "Start now",
   },
   timed: {
     stepperLabel: "Question steps",

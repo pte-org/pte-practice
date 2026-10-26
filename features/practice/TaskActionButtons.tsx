@@ -28,10 +28,13 @@ export interface TaskActionButtonsProps {
   className?: string;
 }
 
+type LaunchMode = "resume" | "fresh" | "review";
+
 /**
  * Reusable action button for practice tasks.
  * Displays a single clean chevron right (>) button on the row.
- * Clicking opens a modern, Duolingo-style task briefing and session launcher modal.
+ * Clicking opens a modern, Duolingo/Quizlet-style task briefing and session launcher modal
+ * with Radio Choice options and a single "Bắt đầu ngay" launch action.
  */
 export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtonsProps>(
   function TaskActionButtons(
@@ -47,9 +50,13 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
   ) {
     const { t, locale } = useTranslation();
     const [showModal, setShowModal] = useState(false);
+    const [selectedMode, setSelectedMode] = useState<LaunchMode>(
+      activeSession ? "resume" : "fresh"
+    );
 
     const handleActionClick = () => {
       if (!canStart) return;
+      setSelectedMode(activeSession ? "resume" : "fresh");
       setShowModal(true);
     };
 
@@ -128,93 +135,153 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
               </div>
             </div>
 
-            {/* Section: Recommended for you */}
-            <h3 className="pte-section-label">{t("progress.recommendedForYou")}</h3>
+            {/* Section: Radio Choices */}
+            <h3 className="pte-section-label">{t("progress.practiceOptionsLabel")}</h3>
 
-            {/* Recommended Featured Card */}
-            {activeSession ? (
-              <Link
-                className="pte-featured-card"
-                href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
-                onClick={() => setShowModal(false)}
-              >
-                <span className="pte-featured-icon">
-                  <AppIcon name="play" size={20} />
-                </span>
-                <div className="pte-featured-copy">
-                  <strong className="pte-featured-title">{t("progress.resumeOptionTitle")}</strong>
-                  <p className="pte-featured-subtitle">
-                    {t("progress.resumeOptionDescription")}
-                  </p>
-                </div>
-                <div className="pte-featured-badges">
-                  <span className="pte-featured-chip">
-                    <AppIcon name="timer" size={14} />
-                    {locale === "vi" ? briefing.durationVi : briefing.durationEn}
-                  </span>
-                </div>
-              </Link>
-            ) : (
-              <div
-                className="pte-featured-card"
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  setShowModal(false);
-                  onStart(task);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    setShowModal(false);
-                    onStart(task);
-                  }
-                }}
-              >
-                <span className="pte-featured-icon">
-                  <AppIcon name={isCompleted ? "retake" : "bookOpen"} size={20} />
-                </span>
-                <div className="pte-featured-copy">
-                  <strong className="pte-featured-title">
-                    {isCompleted ? t("progress.newOptionTitle") : t("progress.quickPracticeTitle")}
-                  </strong>
-                  <p className="pte-featured-subtitle">
-                    {isCompleted ? t("progress.newOptionDescription") : t("progress.quickPracticeSubtitle")}
-                  </p>
-                </div>
-                <div className="pte-featured-badges">
-                  <span className="pte-featured-chip">
-                    <AppIcon name="bookOpen" size={14} />
-                    {locale === "vi" ? briefing.formatVi : briefing.formatEn}
-                  </span>
-                  <span className="pte-featured-chip">
-                    <AppIcon name="timer" size={14} />
-                    {locale === "vi" ? briefing.durationVi : briefing.durationEn}
-                  </span>
-                </div>
-              </div>
-            )}
+            <div className="pte-options-group" role="radiogroup" aria-label={t("progress.practiceOptionsLabel")}>
+              {activeSession ? (
+                <>
+                  <div
+                    className={`pte-option-card${selectedMode === "resume" ? " selected" : ""}`}
+                    role="radio"
+                    aria-checked={selectedMode === "resume"}
+                    tabIndex={0}
+                    onClick={() => setSelectedMode("resume")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setSelectedMode("resume");
+                    }}
+                  >
+                    <span className={`pte-radio-circle${selectedMode === "resume" ? " checked" : ""}`}>
+                      {selectedMode === "resume" ? <span className="pte-radio-dot" /> : null}
+                    </span>
+                    <span className="pte-option-icon">
+                      <AppIcon name="play" size={18} />
+                    </span>
+                    <div className="pte-option-copy">
+                      <strong className="pte-option-title">{t("progress.resumeOptionTitle")}</strong>
+                      <p className="pte-option-subtitle">{t("progress.resumeOptionDescription")}</p>
+                    </div>
+                    <div className="pte-option-badges">
+                      <span className="pte-option-chip">
+                        <AppIcon name="timer" size={13} />
+                        {locale === "vi" ? briefing.durationVi : briefing.durationEn}
+                      </span>
+                    </div>
+                  </div>
 
-            {/* If completed, optional Review previous session card */}
-            {isCompleted ? (
-              <Link
-                className="pte-secondary-card"
-                href={
-                  completedSession?.sessionPublicId
-                    ? `${PRACTICE_ROUTES.practiceReview}?sessionId=${completedSession.sessionPublicId}`
-                    : PRACTICE_ROUTES.progress
-                }
-                onClick={() => setShowModal(false)}
-              >
-                <span className="pte-secondary-icon">
-                  <AppIcon name="responses" size={20} />
-                </span>
-                <div className="pte-secondary-copy">
-                  <strong className="pte-secondary-title">{t("progress.reviewSessionAction")}</strong>
-                  <p className="pte-secondary-subtitle">{t("progress.reviewSessionSubtitle")}</p>
+                  <div
+                    className={`pte-option-card${selectedMode === "fresh" ? " selected" : ""}`}
+                    role="radio"
+                    aria-checked={selectedMode === "fresh"}
+                    tabIndex={0}
+                    onClick={() => setSelectedMode("fresh")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setSelectedMode("fresh");
+                    }}
+                  >
+                    <span className={`pte-radio-circle${selectedMode === "fresh" ? " checked" : ""}`}>
+                      {selectedMode === "fresh" ? <span className="pte-radio-dot" /> : null}
+                    </span>
+                    <span className="pte-option-icon">
+                      <AppIcon name="retake" size={18} />
+                    </span>
+                    <div className="pte-option-copy">
+                      <strong className="pte-option-title">{t("progress.newOptionTitle")}</strong>
+                      <p className="pte-option-subtitle">{t("progress.newOptionDescription")}</p>
+                    </div>
+                    <div className="pte-option-badges">
+                      <span className="pte-option-chip">
+                        <AppIcon name="responses" size={13} />
+                        10 {t("presentation.questions")}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : isCompleted ? (
+                <>
+                  <div
+                    className={`pte-option-card${selectedMode === "fresh" ? " selected" : ""}`}
+                    role="radio"
+                    aria-checked={selectedMode === "fresh"}
+                    tabIndex={0}
+                    onClick={() => setSelectedMode("fresh")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setSelectedMode("fresh");
+                    }}
+                  >
+                    <span className={`pte-radio-circle${selectedMode === "fresh" ? " checked" : ""}`}>
+                      {selectedMode === "fresh" ? <span className="pte-radio-dot" /> : null}
+                    </span>
+                    <span className="pte-option-icon">
+                      <AppIcon name="retake" size={18} />
+                    </span>
+                    <div className="pte-option-copy">
+                      <strong className="pte-option-title">{t("progress.newOptionTitle")}</strong>
+                      <p className="pte-option-subtitle">{t("progress.newOptionDescription")}</p>
+                    </div>
+                    <div className="pte-option-badges">
+                      <span className="pte-option-chip">
+                        <AppIcon name="responses" size={13} />
+                        10 {t("presentation.questions")}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`pte-option-card${selectedMode === "review" ? " selected" : ""}`}
+                    role="radio"
+                    aria-checked={selectedMode === "review"}
+                    tabIndex={0}
+                    onClick={() => setSelectedMode("review")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setSelectedMode("review");
+                    }}
+                  >
+                    <span className={`pte-radio-circle${selectedMode === "review" ? " checked" : ""}`}>
+                      {selectedMode === "review" ? <span className="pte-radio-dot" /> : null}
+                    </span>
+                    <span className="pte-option-icon">
+                      <AppIcon name="responses" size={18} />
+                    </span>
+                    <div className="pte-option-copy">
+                      <strong className="pte-option-title">{t("progress.reviewOptionTitle")}</strong>
+                      <p className="pte-option-subtitle">{t("progress.reviewOptionDescription")}</p>
+                    </div>
+                    {completedScore !== null && Number.isFinite(completedScore) ? (
+                      <div className="pte-option-badges">
+                        <span className="pte-option-chip">
+                          {formatScore(completedScore)}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <div
+                  className="pte-option-card selected"
+                  role="radio"
+                  aria-checked={true}
+                  tabIndex={0}
+                >
+                  <span className="pte-radio-circle checked">
+                    <span className="pte-radio-dot" />
+                  </span>
+                  <span className="pte-option-icon">
+                    <AppIcon name="bookOpen" size={18} />
+                  </span>
+                  <div className="pte-option-copy">
+                    <strong className="pte-option-title">{t("progress.quickPracticeTitle")}</strong>
+                    <p className="pte-option-subtitle">{t("progress.quickPracticeSubtitle")}</p>
+                  </div>
+                  <div className="pte-option-badges">
+                    <span className="pte-option-chip">
+                      <AppIcon name="timer" size={13} />
+                      {locale === "vi" ? briefing.durationVi : briefing.durationEn}
+                    </span>
+                  </div>
                 </div>
-                <AppIcon name="chevronRight" size={18} className="pte-secondary-arrow" />
-              </Link>
-            ) : null}
+              )}
+            </div>
 
             {/* Practical Study Tip Box */}
             <div className="pte-tip-box">
@@ -224,28 +291,25 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
               <p className="pte-tip-text">{locale === "vi" ? briefing.tipVi : briefing.tipEn}</p>
             </div>
 
-            {/* Bottom Primary CTA */}
-            {activeSession ? (
-              <>
-                <Link
-                  className="pte-primary-cta"
-                  href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
-                  onClick={() => setShowModal(false)}
-                >
-                  <AppIcon name="play" size={18} />
-                  <span>{t("progress.resumeSessionAction")}</span>
-                </Link>
-                <button
-                  type="button"
-                  className="pte-alt-link"
-                  onClick={() => {
-                    setShowModal(false);
-                    onStart(task);
-                  }}
-                >
-                  {t("progress.startFreshLink")}
-                </button>
-              </>
+            {/* Bottom Single Primary CTA: Chốt Bắt đầu */}
+            {selectedMode === "resume" && activeSession ? (
+              <Link
+                className="pte-primary-cta"
+                href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
+                onClick={() => setShowModal(false)}
+              >
+                <AppIcon name="play" size={18} />
+                <span>{t("progress.startNowAction")}</span>
+              </Link>
+            ) : selectedMode === "review" && completedSession ? (
+              <Link
+                className="pte-primary-cta"
+                href={`${PRACTICE_ROUTES.practiceReview}?sessionId=${completedSession.sessionPublicId}`}
+                onClick={() => setShowModal(false)}
+              >
+                <AppIcon name="responses" size={18} />
+                <span>{t("progress.review")}</span>
+              </Link>
             ) : (
               <button
                 type="button"
@@ -256,7 +320,7 @@ export const TaskActionButtons = forwardRef<HTMLButtonElement, TaskActionButtons
                 }}
               >
                 <AppIcon name="play" size={18} />
-                <span>{isCompleted ? t("progress.startNewSetAction") : t("progress.startSessionAction")}</span>
+                <span>{t("progress.startNowAction")}</span>
               </button>
             )}
           </Modal>

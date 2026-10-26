@@ -2134,95 +2134,71 @@ div.skill-task-row { cursor: default; }
   text-align: left;
 }
 
-.pte-featured-card {
+.pte-options-group {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border: 1.5px solid #6366f1;
-  border-radius: 16px;
-  background: color-mix(in srgb, #6366f1 8%, var(--surface));
-  color: var(--text);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  outline: none;
-  width: 100%;
-  box-sizing: border-box;
-}
-.pte-featured-card:hover {
-  border-color: #818cf8;
-  background: color-mix(in srgb, #6366f1 14%, var(--surface));
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.18);
-}
-.pte-featured-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: color-mix(in srgb, #6366f1 18%, transparent);
-  color: #818cf8;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.pte-featured-copy {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-}
-.pte-featured-title {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 2px;
-}
-.pte-featured-subtitle {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--muted);
-  line-height: 1.35;
-}
-.pte-featured-badges {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.pte-featured-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: color-mix(in srgb, #6366f1 15%, transparent);
-  color: var(--text);
-  font-size: 0.76rem;
-  font-weight: 600;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
-.pte-secondary-card {
+.pte-option-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
+  gap: 12px;
+  padding: 13px 15px;
   border-radius: 14px;
+  border: 1.5px solid var(--line);
   background: var(--surface);
-  color: var(--text);
-  text-decoration: none;
-  margin-top: 10px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  user-select: none;
+  outline: none;
   box-sizing: border-box;
 }
-.pte-secondary-card:hover {
-  border-color: var(--line-strong);
+
+.pte-option-card:hover {
+  border-color: color-mix(in srgb, #6366f1 55%, var(--line));
   background: var(--surface-soft);
   transform: translateY(-1px);
 }
-.pte-secondary-icon {
+
+.pte-option-card.selected {
+  border-color: #6366f1;
+  background: color-mix(in srgb, #6366f1 8%, var(--surface));
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+.pte-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+  background: var(--surface);
+}
+
+.pte-option-card.selected .pte-radio-circle {
+  border-color: #6366f1;
+}
+
+.pte-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6366f1;
+  animation: pteRadioPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pteRadioPop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pte-option-icon {
   width: 38px;
   height: 38px;
   border-radius: 10px;
@@ -2231,26 +2207,56 @@ div.skill-task-row { cursor: default; }
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  transition: all 0.18s ease;
 }
-.pte-secondary-copy {
+
+.pte-option-card.selected .pte-option-icon {
+  background: color-mix(in srgb, #6366f1 18%, transparent);
+  color: #6366f1;
+}
+
+.pte-option-copy {
   flex: 1;
   min-width: 0;
-  text-align: left;
 }
-.pte-secondary-title {
+
+.pte-option-title {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   color: var(--text);
-  margin: 0 0 2px;
+  margin-bottom: 2px;
 }
-.pte-secondary-subtitle {
+
+.pte-option-subtitle {
   margin: 0;
   font-size: 0.78rem;
   color: var(--muted);
+  line-height: 1.35;
 }
-.pte-secondary-arrow {
-  color: var(--muted);
+
+.pte-option-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pte-option-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.pte-option-card.selected .pte-option-chip {
+  background: color-mix(in srgb, #6366f1 15%, transparent);
+  color: #6366f1;
 }
 
 .pte-tip-box {

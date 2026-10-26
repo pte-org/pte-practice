@@ -396,6 +396,8 @@ export const vi: LocaleDict = {
     startFreshLink: "hoặc Làm lại từ đầu với bộ câu hỏi mới",
     reviewSessionAction: "Xem lại kết quả gần nhất",
     reviewSessionSubtitle: "Xem lại câu trả lời, bảng điểm và nhận xét chi tiết",
+    practiceOptionsLabel: "Lựa chọn làm bài",
+    startNowAction: "Bắt đầu ngay",
   },
   timed: {
     stepperLabel: "Các bước của câu hỏi",
