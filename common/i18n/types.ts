@@ -254,6 +254,7 @@ export interface LocaleDict {
     micFailed: string;
     micStart: string;
     again: string;
+    grantPermission: string;
     works: string;
     speakerIntro: string;
     speakerPlay: string;

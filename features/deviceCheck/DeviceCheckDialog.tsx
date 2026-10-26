@@ -52,11 +52,35 @@ function MicCheck({ onPass }: { onPass: () => void }) {
   const [verdict, setVerdict] = useState<MicVerdict | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPermissionDenied, setIsPermissionDenied] = useState(false);
   const recorder = useRef<WavRecorderHandle | null>(null);
   const maxLevel = useRef(0);
 
   useEffect(() => () => { recorder.current?.cancel(); }, []);
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: "microphone" as PermissionName })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "denied") {
+            setIsPermissionDenied(true);
+            setError(t("deviceCheck.micDenied"));
+          }
+          permissionStatus.onchange = () => {
+            if (permissionStatus.state === "granted") {
+              setIsPermissionDenied(false);
+              setError(null);
+            } else if (permissionStatus.state === "denied") {
+              setIsPermissionDenied(true);
+              setError(t("deviceCheck.micDenied"));
+            }
+          };
+        })
+        .catch(() => undefined);
+    }
+  }, [t]);
 
   const record = async () => {
     setError(null);
@@ -69,6 +93,7 @@ function MicCheck({ onPass }: { onPass: () => void }) {
           setLevels((previous) => [...previous, Math.min(1, level * 3)].slice(-WAVEFORM_BAR_COUNT));
         },
       });
+      setIsPermissionDenied(false);
       setPhase("recording");
       window.setTimeout(async () => {
         const active = recorder.current;
@@ -82,8 +107,9 @@ function MicCheck({ onPass }: { onPass: () => void }) {
       }, TEST_SECONDS * 1000);
     } catch (reason) {
       setPhase("error");
-      setError(reason instanceof RecorderError && reason.code === "PERMISSION_DENIED"
-        ? t("deviceCheck.micDenied") : t("deviceCheck.micFailed"));
+      const isDenied = reason instanceof RecorderError && reason.code === "PERMISSION_DENIED";
+      setIsPermissionDenied(isDenied);
+      setError(isDenied ? t("deviceCheck.micDenied") : t("deviceCheck.micFailed"));
     }
   };
 
@@ -104,8 +130,18 @@ function MicCheck({ onPass }: { onPass: () => void }) {
         </div>
       ) : null}
       <div className="device-actions">
-        <button className="button button-pill button-outline" type="button" disabled={phase === "recording"} onClick={() => void record()}>
-          <AppIcon name="record" size={16} /> {phase === "idle" ? t("deviceCheck.micStart") : t("deviceCheck.again")}
+        <button
+          className="button button-pill button-outline"
+          type="button"
+          disabled={phase === "recording"}
+          onClick={() => void record()}
+        >
+          <AppIcon name={isPermissionDenied ? "mic" : "record"} size={16} />{" "}
+          {isPermissionDenied
+            ? t("deviceCheck.grantPermission")
+            : phase === "idle"
+            ? t("deviceCheck.micStart")
+            : t("deviceCheck.again")}
         </button>
         <button className="button button-outline button-pill" type="button" disabled={phase !== "done"} onClick={onPass}>
           {t("deviceCheck.works")}

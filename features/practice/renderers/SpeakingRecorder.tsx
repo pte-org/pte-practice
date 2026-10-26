@@ -36,6 +36,7 @@ export function SpeakingRecorder({
   const [state, setState] = useState<RecordingState>(hasRecording(value) ? "recorded" : "idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
+  const [isPermissionDenied, setIsPermissionDenied] = useState(false);
   const [liveLevels, setLiveLevels] = useState<number[]>([]);
   const [peaks, setPeaks] = useState<number[] | null>(null);
   const [localUrl, setLocalUrl] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export function SpeakingRecorder({
     setState(hasRecording(value) ? "recorded" : "idle");
     setElapsedSeconds(durationFromValue(value, 0));
     setMessage(null);
+    setIsPermissionDenied(false);
     setLiveLevels([]);
     setPeaks(null);
     setLocalUrl(null);
@@ -79,10 +81,29 @@ export function SpeakingRecorder({
   }, [onActivityChange, state]);
   useEffect(() => () => { if (localUrl) URL.revokeObjectURL(localUrl); }, [localUrl]);
 
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: "microphone" as PermissionName })
+        .then((permissionStatus) => {
+          permissionStatus.onchange = () => {
+            if (permissionStatus.state === "granted") {
+              setIsPermissionDenied(false);
+              setMessage(null);
+            } else if (permissionStatus.state === "denied") {
+              setIsPermissionDenied(true);
+            }
+          };
+        })
+        .catch(() => undefined);
+    }
+  }, []);
+
   const startRecording = useCallback(async () => {
     setMessage(null);
     setLiveLevels([]);
     setIssue(null);
+    setIsPermissionDenied(false);
     maxLevel.current = 0;
     try {
       recorder.current = await startWavRecording({
@@ -97,6 +118,8 @@ export function SpeakingRecorder({
       timed?.onRecordStarted();
     } catch (error) {
       setState("error");
+      const isDenied = error instanceof RecorderError && error.code === "PERMISSION_DENIED";
+      setIsPermissionDenied(isDenied);
       setMessage(recordingErrorMessage(error));
       timed?.onMicError();
     }
@@ -166,6 +189,7 @@ export function SpeakingRecorder({
     onChange({});
     setElapsedSeconds(0);
     setMessage(null);
+    setIsPermissionDenied(false);
     setPeaks(null);
     setLocalUrl(null);
     setServerPlaybackUrl(null);
@@ -261,7 +285,12 @@ export function SpeakingRecorder({
             )
           ) : timed ? null : (
             <button className="button button-outline button-pill" type="button" disabled={disabled} onClick={() => void startRecording()}>
-              <AppIcon name="record" size={18} /> {state === "error" ? RECORDING_TEXT.retry : RECORDING_TEXT.start}
+              <AppIcon name={isPermissionDenied ? "mic" : "record"} size={18} />{" "}
+              {isPermissionDenied
+                ? t("deviceCheck.grantPermission")
+                : state === "error"
+                ? RECORDING_TEXT.retry
+                : RECORDING_TEXT.start}
             </button>
           )}
         </div>

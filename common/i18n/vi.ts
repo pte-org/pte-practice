@@ -254,6 +254,7 @@ export const vi: LocaleDict = {
     micFailed: "Không bật được microphone.",
     micStart: "Ghi thử 5 giây",
     again: "Thử lại",
+    grantPermission: "Cấp quyền truy cập micro",
     works: "Đã ổn",
     speakerIntro: "Phát câu mẫu, rồi âm bên trái và bên phải, để kiểm tra loa hoặc tai nghe.",
     speakerPlay: "Phát câu mẫu",

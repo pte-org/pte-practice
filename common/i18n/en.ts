@@ -254,6 +254,7 @@ export const en: LocaleDict = {
     micFailed: "The microphone could not be started.",
     micStart: "Record 5 seconds",
     again: "Try again",
+    grantPermission: "Allow microphone access",
     works: "It works",
     speakerIntro: "Play the sample sentence, then the left and right tones, to check your speakers or headphones.",
     speakerPlay: "Play sample",
