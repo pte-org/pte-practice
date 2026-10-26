@@ -98,13 +98,20 @@ export function HomeView() {
       </section>
 
       <section aria-labelledby="recommended-title" className="home-section">
-        <div className="section-heading-row">
-          <h2 id="recommended-title" className="section-title">{t("presentation.recommended")}</h2>
-          <Link className="text-link" href={PRACTICE_ROUTES.practiceTests}>{t("presentation.viewAll")}</Link>
-        </div>
-        {cards.length > 0
-          ? <RecommendationCarousel cards={cards} onStartMock={(publicId, title) => openForMock(mockTarget(publicId, title))} />
-          : <p className="catalog-note">{t("home.noPracticeTaskAvailable")}</p>}
+        {cards.length > 0 ? (
+          <RecommendationCarousel
+            title={<h2 id="recommended-title" className="section-title">{t("presentation.recommended")}</h2>}
+            cards={cards}
+            onStartMock={(publicId, title) => openForMock(mockTarget(publicId, title))}
+          />
+        ) : (
+          <>
+            <div className="section-heading-row">
+              <h2 id="recommended-title" className="section-title">{t("presentation.recommended")}</h2>
+            </div>
+            <p className="catalog-note">{t("home.noPracticeTaskAvailable")}</p>
+          </>
+        )}
       </section>
 
       <section aria-labelledby="skills-title" className="home-section">
