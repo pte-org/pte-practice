@@ -368,6 +368,12 @@ export const vi: LocaleDict = {
     inProgress: "Đang làm",
     completed: "Đã xong",
     loadError: "Không tải được tiến trình.",
+    sessionChoiceTitle: "Lựa chọn vào làm bài",
+    resumeOptionTitle: "Tiếp tục bài đang làm",
+    resumeOptionDescription: "Đang làm dở ({answered}/{total} câu) · Quay lại đúng câu bạn đang dừng lại",
+    newOptionTitle: "Luyện bài mới",
+    newOptionDescription: "Bắt đầu lượt mới từ đầu với bộ câu hỏi mới cho dạng bài này",
+    startSession: "Vào làm bài",
   },
   timed: {
     stepperLabel: "Các bước của câu hỏi",

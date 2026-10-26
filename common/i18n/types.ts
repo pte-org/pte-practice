@@ -368,6 +368,12 @@ export interface LocaleDict {
     inProgress: string;
     completed: string;
     loadError: string;
+    sessionChoiceTitle: string;
+    resumeOptionTitle: string;
+    resumeOptionDescription: string;
+    newOptionTitle: string;
+    newOptionDescription: string;
+    startSession: string;
   };
   timed: {
     stepperLabel: string;

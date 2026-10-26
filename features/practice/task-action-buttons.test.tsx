@@ -20,7 +20,7 @@ const renderWithLocale = (element: React.ReactElement) =>
   renderToStaticMarkup(<LocaleProvider>{element}</LocaleProvider>);
 
 describe("TaskActionButtons", () => {
-  it("renders both resume link (outline) and practise again (ghost) when activeSession exists", () => {
+  it("renders single action button (outline) when activeSession exists", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
@@ -31,9 +31,8 @@ describe("TaskActionButtons", () => {
     );
 
     expect(html).toContain("button-outline");
-    expect(html).toContain("button-ghost");
+    expect(html).not.toContain("button-ghost");
     expect(html).toContain("button-pill");
-    expect(html).toContain("sessionId=sess-123");
   });
 
   it("renders single practise button (outline) when no activeSession exists", () => {
