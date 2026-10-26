@@ -90,16 +90,39 @@ export function MockTestListView() {
                       ? <span className="chip">{t("mockTests.estimatedScore")} {attempt.estimatedOverall}</span> : null}
                   </span>
                 </span>
-                {action === "CONTINUE"
-                  ? <button className="text-button" type="button" disabled={!isPracticeUnlocked}
-                      onClick={() => setConfirmRestart(test)}>{t("mockTests.startOver")}</button> : null}
-                <button className="button button-primary button-pill" type="button" disabled={!isPracticeUnlocked}
-                  onClick={() => (action === "CONTINUE"
-                    ? router.push(practiceMockTestUrl(test.publicId))
-                    : openForMock(mockTarget(test.publicId, test.title)))}>
-                  <AppIcon name={action === "RETAKE" ? "retake" : "play"} size={16} />
-                  {" "}{t(action === "CONTINUE" ? "mockTests.continue" : action === "RETAKE" ? "mockTests.retake" : "mockTests.start")}
-                </button>
+                <div className="skill-task-actions">
+                  {action === "CONTINUE" ? (
+                    <>
+                      <button
+                        className="button button-outline button-pill"
+                        type="button"
+                        disabled={!isPracticeUnlocked}
+                        onClick={() => router.push(practiceMockTestUrl(test.publicId))}
+                      >
+                        <AppIcon name="play" size={16} />
+                        {" "}{t("mockTests.continue")}
+                      </button>
+                      <button
+                        className="button button-ghost button-pill"
+                        type="button"
+                        disabled={!isPracticeUnlocked}
+                        onClick={() => setConfirmRestart(test)}
+                      >
+                        {t("mockTests.startOver")}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="button button-outline button-pill"
+                      type="button"
+                      disabled={!isPracticeUnlocked}
+                      onClick={() => openForMock(mockTarget(test.publicId, test.title))}
+                    >
+                      <AppIcon name={action === "RETAKE" ? "retake" : "play"} size={16} />
+                      {" "}{t(action === "RETAKE" ? "mockTests.retake" : "mockTests.start")}
+                    </button>
+                  )}
+                </div>
               </li>
             );
           })}

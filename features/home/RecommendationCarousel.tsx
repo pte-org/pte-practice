@@ -39,7 +39,7 @@ export function RecommendationCarousel({ cards, onStartMock }: RecommendationCar
                 <AppIcon name="play" size={15} /> {t("presentation.continue")}
               </Link>
             ) : (
-              <button className="button button-primary button-pill" type="button"
+              <button className="button button-outline button-pill" type="button"
                 onClick={() => card.target.type === "mock" && onStartMock(card.target.publicId, card.target.title)}>
                 <AppIcon name="play" size={15} /> {t("presentation.startTest")}
               </button>

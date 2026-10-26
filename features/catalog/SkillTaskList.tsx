@@ -1,20 +1,22 @@
 "use client";
 
-import { AppIcon, LockBadge, ProgressRing } from "@/common/components";
+import { AppIcon, ProgressRing } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import { canStartPractice, type PracticeCatalogSection, type PracticeCatalogTask } from "@/features/practice/contracts";
-import { iconForSection, iconForTaskType } from "@/features/practice/icon-mapping";
-import { formatScore, scoreTone, skillKey } from "@/features/practice/presentation";
+import type { PracticeCatalogSection, PracticeCatalogTask, PracticeProgressEntry } from "@/features/practice/contracts";
+import { iconForSection } from "@/features/practice/icon-mapping";
+import { skillKey } from "@/features/practice/presentation";
+import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
 
 interface SkillTaskListProps {
   sections: PracticeCatalogSection[];
   isPracticeUnlocked: boolean;
   onStartIntent: (task: PracticeCatalogTask) => void;
+  progressEntries?: PracticeProgressEntry[];
 }
 
 /** One card per skill: a heading with the answered count and ring, then each task type with its average score. */
-export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent }: SkillTaskListProps) {
+export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent, progressEntries }: SkillTaskListProps) {
   const { t } = useTranslation();
 
   return (
@@ -37,22 +39,20 @@ export function SkillTaskList({ sections, isPracticeUnlocked, onStartIntent }: S
               </ProgressRing>
             </div>
             {section.taskTypes.map((task) => {
-              const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
-              const blockedLabel = isPracticeUnlocked ? t("common.unavailableAction") : t("common.lockedAction");
+              const activeSession = progressEntries?.find(
+                (entry) =>
+                  entry.taskCode === task.code &&
+                  (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
+              );
               return (
-                <button className="skill-task-row card-divider" type="button" key={task.code} disabled={!canStart}
-                  aria-label={canStart ? task.displayName : `${task.displayName}: ${blockedLabel}`}
-                  onClick={() => onStartIntent(task)}>
-                  <span className="skill-task-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={20} /></span>
-                  <span className="skill-task-copy">
-                    <strong>{task.displayName}</strong>
-                    <span>{task.answeredQuestionCount} {t("presentation.answers")}</span>
-                  </span>
-                  {canStart
-                    ? <span className={`score-badge score-badge-${scoreTone(task.averageScore)}`}>{formatScore(task.averageScore)}</span>
-                    : <LockBadge locked label={blockedLabel} />}
-                  <span className="skill-list-action" aria-hidden="true"><AppIcon name={canStart ? "chevronRight" : "lock"} size={18} /></span>
-                </button>
+                <SkillTaskRow
+                  key={task.code}
+                  className="card-divider"
+                  task={task}
+                  isPracticeUnlocked={isPracticeUnlocked}
+                  activeSession={activeSession}
+                  onStart={onStartIntent}
+                />
               );
             })}
           </section>

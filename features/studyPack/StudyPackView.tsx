@@ -43,7 +43,7 @@ export function StudyPackView() {
                 </span>
               </span>
               {!isPracticeUnlocked ? <LockBadge locked label={t("common.lockedAction")} /> : (
-                <button className="button button-primary button-pill" type="button" disabled={!row.canStart}
+                <button className="button button-outline button-pill" type="button" disabled={!row.canStart}
                   aria-label={`${t("studyPackView.practice")} ${name}`}
                   onClick={() => openForSkill(row.section, name)}>
                   <AppIcon name="play" size={16} /> {t("studyPackView.practice")}

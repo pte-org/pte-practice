@@ -108,7 +108,12 @@ export function HomeView() {
           <h2 id="skills-title" className="section-title">{t("presentation.skills")}</h2>
           <Link className="text-link" href={PRACTICE_ROUTES.studyPack}>{t("presentation.viewAll")}</Link>
         </div>
-        <SkillTaskList sections={catalog.sections} isPracticeUnlocked={isPracticeUnlocked} onStartIntent={openFor} />
+        <SkillTaskList
+          sections={catalog.sections}
+          isPracticeUnlocked={isPracticeUnlocked}
+          onStartIntent={openFor}
+          progressEntries={entries}
+        />
       </section>
 
       {entitlement?.organizationContext ? (

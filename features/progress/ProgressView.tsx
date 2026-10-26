@@ -8,11 +8,12 @@ import { useTranslation } from "@/common/i18n";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
-import { canStartPractice, type PracticeProgress } from "@/features/practice/contracts";
-import { iconForSection, iconForTaskType } from "@/features/practice/icon-mapping";
+import type { PracticeProgress } from "@/features/practice/contracts";
+import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { formatScore, scoreTone, sessionDisplayName, skillKey } from "@/features/practice/presentation";
+import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
 import { progressMetrics } from "./progress-summary";
 
 type LoadState = "loading" | "ready" | "error";
@@ -91,44 +92,19 @@ export function ProgressView() {
           {current ? (
             <TabPanel id={`progress-${current.code}`} active>
               {current.taskTypes.map((task) => {
-                const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
                 const activeSession = progress.entries.find(
-                  (entry) => (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS") && entry.taskCode === task.code
+                  (entry) =>
+                    entry.taskCode === task.code &&
+                    (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
                 );
                 return (
-                  <div className="skill-task-row" key={task.code}>
-                    <span className="skill-task-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={20} /></span>
-                    <span className="skill-task-copy">
-                      <strong>{task.displayName}</strong>
-                      <span>
-                        {task.answeredQuestionCount} {t("presentation.answers")}
-                        {activeSession ? (
-                          <span className="active-session-indicator">
-                            {" "}· {t("progress.inProgress")} ({activeSession.answeredItemCount}/{activeSession.totalItemCount})
-                          </span>
-                        ) : null}
-                      </span>
-                    </span>
-                    <span className={`score-badge score-badge-${scoreTone(task.averageScore)}`}>{formatScore(task.averageScore)}</span>
-                    <div className="skill-task-actions">
-                      {activeSession ? (
-                        <Link
-                          className="button button-outline button-pill"
-                          href={`${PRACTICE_ROUTES.practiceSession}?sessionId=${activeSession.sessionPublicId}`}
-                        >
-                          {t("progress.resume")}
-                        </Link>
-                      ) : null}
-                      <button
-                        className={`button ${activeSession ? "button-ghost" : "button-outline"} button-pill`}
-                        type="button"
-                        disabled={!canStart}
-                        onClick={() => openFor(task)}
-                      >
-                        {activeSession ? t("review.practiseAgain") : t("progress.practise")}
-                      </button>
-                    </div>
-                  </div>
+                  <SkillTaskRow
+                    key={task.code}
+                    task={task}
+                    isPracticeUnlocked={isPracticeUnlocked}
+                    activeSession={activeSession}
+                    onStart={openFor}
+                  />
                 );
               })}
             </TabPanel>
