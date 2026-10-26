@@ -461,6 +461,7 @@ export interface LocaleDict {
     prevMonth: string;
     nextMonth: string;
     toggleManualInput: string;
+    inputLabel: string;
   };
   commandPalette: {
     placeholder: string;

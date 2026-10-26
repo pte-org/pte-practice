@@ -461,6 +461,7 @@ export const vi: LocaleDict = {
     prevMonth: "Tháng trước",
     nextMonth: "Tháng sau",
     toggleManualInput: "Chuyển chế độ nhập",
+    inputLabel: "Chọn ngày thi (DD/MM/YYYY)",
   },
   commandPalette: {
     placeholder: "Nhập lệnh hoặc tìm kiếm",

@@ -30,7 +30,8 @@ export function ExamDateLine() {
   const [viewYear, setViewYear] = useState<number>(() => new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState<number>(() => new Date().getMonth());
   const [manualInput, setManualInput] = useState<boolean>(false);
-  const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
+  const [showYearPicker, setShowYearPicker] = useState<boolean>(false);
+  const [manualDateText, setManualDateText] = useState<string>("");
 
   useEffect(() => {
     let active = true;
@@ -54,15 +55,59 @@ export function ExamDateLine() {
   const [minYear, minMonth] = bounds.min.split("-").map(Number);
   const [maxYear, maxMonth] = bounds.max.split("-").map(Number);
 
+  const baseYear = Math.min(new Date().getFullYear(), minYear);
+  const endYear = Math.max(baseYear + 14, 2040);
+  const years = Array.from({ length: endYear - baseYear + 1 }, (_, i) => baseYear + i);
+
   const handleOpen = () => {
     const initial = examDate || bounds.todayStr;
     setSelectedDate(examDate ?? "");
-    const [y, m] = initial.split("-").map(Number);
+    const [y, m] = (initial ?? "").split("-").map(Number);
     setViewYear(y || new Date().getFullYear());
     setViewMonth(m ? m - 1 : new Date().getMonth());
+    if (examDate && /^\d{4}-\d{2}-\d{2}$/.test(examDate)) {
+      const [ey, em, ed] = examDate.split("-");
+      setManualDateText(`${ed}/${em}/${ey}`);
+    } else {
+      setManualDateText("");
+    }
     setManualInput(false);
-    setShowMonthPicker(false);
+    setShowYearPicker(false);
     setOpen(true);
+  };
+
+  const toggleManualInput = () => {
+    if (!manualInput) {
+      if (selectedDate && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+        const [y, m, d] = selectedDate.split("-");
+        setManualDateText(`${d}/${m}/${y}`);
+      }
+      setManualInput(true);
+      setShowYearPicker(false);
+    } else {
+      setManualInput(false);
+    }
+  };
+
+  const handleManualDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setManualDateText(val);
+
+    const match = val.trim().match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+    if (match) {
+      const d = Number(match[1]);
+      const m = Number(match[2]);
+      const y = Number(match[3]);
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 2000 && y <= 2100) {
+        const daysInMonth = new Date(y, m, 0).getDate();
+        if (d <= daysInMonth) {
+          const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          setSelectedDate(iso);
+          setViewYear(y);
+          setViewMonth(m - 1);
+        }
+      }
+    }
   };
 
   const handleClose = () => {
@@ -128,6 +173,22 @@ export function ExamDateLine() {
 
   const handleSelectDay = (dateStr: string) => {
     setSelectedDate(dateStr);
+    const [y, m, d] = dateStr.split("-");
+    setManualDateText(`${d}/${m}/${y}`);
+  };
+
+  const handleSelectYear = (year: number) => {
+    setViewYear(year);
+    setShowYearPicker(false);
+    if (selectedDate && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+      const [, m, d] = selectedDate.split("-");
+      const daysInMonth = new Date(year, Number(m), 0).getDate();
+      if (Number(d) <= daysInMonth) {
+        const iso = `${year}-${m}-${d}`;
+        setSelectedDate(iso);
+        setManualDateText(`${d}/${m}/${year}`);
+      }
+    }
   };
 
   const formattedDate = formatExamDate(examDate, locale);
@@ -193,169 +254,131 @@ export function ExamDateLine() {
             </button>
           </div>
 
-          {/* Selected Date Headline with Edit Pencil */}
+          {/* Selected Date Headline with Edit Pencil / Calendar toggle */}
           <div className="exam-calendar-display">
             <div className="exam-calendar-label">{t("examDate.chooseDate")}</div>
             <div className="exam-calendar-display-row">
               <span className="exam-calendar-big-date">{shortHeadline}</span>
               <button
                 type="button"
-                className={`exam-calendar-pencil-btn${manualInput ? " is-active" : ""}`}
-                onClick={() => setManualInput((v) => !v)}
+                className="exam-calendar-toggle-btn"
+                onClick={toggleManualInput}
                 aria-label={t("examDate.toggleManualInput")}
                 title={t("examDate.toggleManualInput")}
               >
-                <AppIcon name="edit" size={18} />
+                <AppIcon name={manualInput ? "calendar" : "edit"} size={20} />
               </button>
             </div>
+          </div>
 
-            {manualInput ? (
-              <div className="exam-calendar-manual-entry">
+          {manualInput ? (
+            /* Mode 1: Manual Input (Screenshot 1) */
+            <div className="exam-calendar-manual-container">
+              <div className="exam-calendar-outlined-field">
+                <label htmlFor="exam-date-text-input" className="exam-calendar-floating-label">
+                  {t("examDate.inputLabel")}
+                </label>
                 <input
-                  id="exam-date-manual-input"
-                  type="date"
-                  min={bounds.min}
-                  max={bounds.max}
-                  value={selectedDate}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setSelectedDate(val);
-                    if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-                      const [y, m] = val.split("-").map(Number);
-                      if (y && m) {
-                        setViewYear(y);
-                        setViewMonth(m - 1);
-                      }
-                    }
-                  }}
-                  className="exam-date-input"
+                  id="exam-date-text-input"
+                  type="text"
+                  inputMode="numeric"
+                  className="exam-calendar-outlined-input"
+                  placeholder="DD/MM/YYYY"
+                  value={manualDateText}
+                  onChange={handleManualDateChange}
                   autoFocus
                 />
-              </div>
-            ) : null}
-          </div>
-
-          {/* Month & Year Navigation Row */}
-          <div className="exam-calendar-nav">
-            <button
-              type="button"
-              className="exam-calendar-nav-title"
-              onClick={() => setShowMonthPicker((v) => !v)}
-              aria-expanded={showMonthPicker}
-            >
-              <span>{formatMonthYearHeader(viewYear, viewMonth, locale)}</span>
-              <AppIcon name="chevronDown" size={16} />
-            </button>
-            <div className="exam-calendar-nav-arrows">
-              <button
-                type="button"
-                className="exam-calendar-nav-btn"
-                disabled={isPrevDisabled}
-                onClick={handlePrevMonth}
-                aria-label={t("examDate.prevMonth")}
-              >
-                <AppIcon name="chevronLeft" size={18} />
-              </button>
-              <button
-                type="button"
-                className="exam-calendar-nav-btn"
-                disabled={isNextDisabled}
-                onClick={handleNextMonth}
-                aria-label={t("examDate.nextMonth")}
-              >
-                <AppIcon name="chevronRight" size={18} />
-              </button>
-            </div>
-          </div>
-
-          {/* Month / Year Quick Picker (when toggled) */}
-          {showMonthPicker ? (
-            <div className="exam-calendar-month-selector">
-              <div className="exam-calendar-year-row">
-                <button
-                  type="button"
-                  className="exam-calendar-nav-btn"
-                  disabled={viewYear <= minYear}
-                  onClick={() => setViewYear((y) => y - 1)}
-                  aria-label="Previous Year"
-                >
-                  <AppIcon name="chevronLeft" size={16} />
-                </button>
-                <span className="exam-calendar-year-title">{viewYear}</span>
-                <button
-                  type="button"
-                  className="exam-calendar-nav-btn"
-                  disabled={viewYear >= maxYear}
-                  onClick={() => setViewYear((y) => y + 1)}
-                  aria-label="Next Year"
-                >
-                  <AppIcon name="chevronRight" size={16} />
-                </button>
-              </div>
-              <div className="exam-calendar-months-grid">
-                {Array.from({ length: 12 }, (_, i) => {
-                  const mStr = `${viewYear}-${String(i + 1).padStart(2, "0")}`;
-                  const isBefore = mStr < bounds.min.slice(0, 7);
-                  const isAfter = mStr > bounds.max.slice(0, 7);
-                  const isCurrentMonth = i === viewMonth;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      disabled={isBefore || isAfter}
-                      className={`exam-calendar-month-item${isCurrentMonth ? " is-active" : ""}`}
-                      onClick={() => {
-                        setViewMonth(i);
-                        setShowMonthPicker(false);
-                      }}
-                    >
-                      {locale.startsWith("vi")
-                        ? `Tháng ${i + 1}`
-                        : new Intl.DateTimeFormat(locale, { month: "short" }).format(
-                            new Date(viewYear, i, 1),
-                          )}
-                    </button>
-                  );
-                })}
               </div>
             </div>
           ) : (
             <>
-              {/* Day of Week Headers */}
-              <div className="exam-calendar-weekdays" aria-hidden="true">
-                {weekdays.map((dayLabel, idx) => (
-                  <span key={idx} className="exam-calendar-weekday">
-                    {dayLabel}
-                  </span>
-                ))}
+              {/* Month & Year Navigation Row (Screenshot 2 & 3) */}
+              <div className="exam-calendar-nav">
+                <button
+                  type="button"
+                  className="exam-calendar-nav-title"
+                  onClick={() => setShowYearPicker((v) => !v)}
+                  aria-expanded={showYearPicker}
+                >
+                  <span>{formatMonthYearHeader(viewYear, viewMonth, locale)}</span>
+                  <span className="exam-calendar-triangle">{showYearPicker ? "▲" : "▼"}</span>
+                </button>
+                <div className="exam-calendar-nav-arrows">
+                  <button
+                    type="button"
+                    className="exam-calendar-nav-btn"
+                    disabled={isPrevDisabled}
+                    onClick={handlePrevMonth}
+                    aria-label={t("examDate.prevMonth")}
+                  >
+                    <AppIcon name="chevronLeft" size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    className="exam-calendar-nav-btn"
+                    disabled={isNextDisabled}
+                    onClick={handleNextMonth}
+                    aria-label={t("examDate.nextMonth")}
+                  >
+                    <AppIcon name="chevronRight" size={18} />
+                  </button>
+                </div>
               </div>
 
-              {/* 7-column Calendar Days Grid */}
-              <div className="exam-calendar-grid" role="grid">
-                {Array.from({ length: calendarData.leadingBlankCount }).map((_, i) => (
-                  <span key={`blank-${i}`} className="exam-calendar-empty-slot" aria-hidden="true" />
-                ))}
-                {calendarData.days.map((cell) => (
-                  <button
-                    key={cell.dateStr}
-                    type="button"
-                    disabled={cell.isDisabled}
-                    onClick={() => handleSelectDay(cell.dateStr)}
-                    className={`exam-calendar-day${cell.isSelected ? " is-selected" : ""}${
-                      cell.isToday && !cell.isSelected ? " is-today" : ""
-                    }`}
-                    aria-label={cell.dateStr}
-                    aria-pressed={cell.isSelected}
-                  >
-                    {cell.day}
-                  </button>
-                ))}
-              </div>
+              {showYearPicker ? (
+                /* Mode 2: Year Selector Grid (Screenshot 2) */
+                <div className="exam-calendar-years-container">
+                  <div className="exam-calendar-years-grid">
+                    {years.map((y) => (
+                      <button
+                        key={y}
+                        type="button"
+                        className={`exam-calendar-year-pill${y === viewYear ? " is-active" : ""}`}
+                        onClick={() => handleSelectYear(y)}
+                      >
+                        {y}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Mode 3: Calendar Days View (Screenshot 3) */
+                <>
+                  <div className="exam-calendar-weekdays" aria-hidden="true">
+                    {weekdays.map((dayLabel, idx) => (
+                      <span key={idx} className="exam-calendar-weekday">
+                        {dayLabel}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="exam-calendar-grid" role="grid">
+                    {Array.from({ length: calendarData.leadingBlankCount }).map((_, i) => (
+                      <span key={`blank-${i}`} className="exam-calendar-empty-slot" aria-hidden="true" />
+                    ))}
+                    {calendarData.days.map((cell) => (
+                      <button
+                        key={cell.dateStr}
+                        type="button"
+                        disabled={cell.isDisabled}
+                        onClick={() => handleSelectDay(cell.dateStr)}
+                        className={`exam-calendar-day${cell.isSelected ? " is-selected" : ""}${
+                          cell.isToday && !cell.isSelected ? " is-today" : ""
+                        }`}
+                        aria-label={cell.dateStr}
+                        aria-pressed={cell.isSelected}
+                      >
+                        {cell.day}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
 
           {/* Clear Exam Date action (if date already set) */}
-          {examDate ? (
+          {examDate && !manualInput && !showYearPicker ? (
             <div className="exam-calendar-footer">
               <button
                 type="button"

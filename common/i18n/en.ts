@@ -461,6 +461,7 @@ export const en: LocaleDict = {
     prevMonth: "Previous month",
     nextMonth: "Next month",
     toggleManualInput: "Switch input mode",
+    inputLabel: "Choose exam date (DD/MM/YYYY)",
   },
   commandPalette: {
     placeholder: "Type a command or search",
