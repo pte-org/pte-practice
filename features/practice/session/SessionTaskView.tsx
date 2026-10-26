@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useToast } from "@/common/components";
+import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "../contracts";
@@ -10,6 +10,7 @@ import { skillKey } from "../presentation";
 import { isClientRuntimeSupported } from "../renderer-allowlist";
 import { TaskRenderer } from "../renderers/TaskRenderer";
 import type { TaskRendererProps, TimedRendererControl } from "../renderers/RendererTypes";
+import { getCanonicalTaskInstruction } from "../task-instructions";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
 import { FieldWarning } from "./FieldWarning";
@@ -94,8 +95,8 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   }, [notice, showToast]);
 
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
-  // Read-aloud, written-text, blank and highlight renderers draw the passage themselves; showing it here too doubles it.
-  const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens);
+  // Read-aloud, written-text, blank, highlight, and describe-image renderers draw the passage/media themselves; showing it here too doubles it.
+  const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens || (task.taskCode === "DESCRIBE_IMAGE" && fixture?.imageUrl));
   const promptText = fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
   const timing = task.timing;
   const isSpeaking = task.section === "SPEAKING";
@@ -103,6 +104,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   const timedFrame = shouldMountTimedFrame(session) && timing && fixture && !unsupported && !isSubmitted ? timing : null;
   const skill = skillKey(task.section);
   const locked = busy || offline;
+  const instruction = fixture?.instruction || getCanonicalTaskInstruction(task.taskCode, timing) || t("ui.sessionAnswerTaskBelow");
 
   const renderBody = (timed?: TimedRendererControl, timedLocked = false, attempt = 0) => fixture ? (
     <TaskRenderer key={`${task.publicId}:${attempt}`} fixture={fixture} rendererKey={task.rendererKey} value={value}
@@ -129,7 +131,14 @@ export function SessionTaskView(props: SessionTaskViewProps) {
       <div className="exam-body">
         <div className="exam-task-heading">
           <h2>{task.displayName}</h2>
-          <p>{fixture?.instruction ?? t("ui.sessionAnswerTaskBelow")}</p>
+        </div>
+        <div className="exam-instruction-card" role="region" aria-label={t("ui.sessionAnswerTaskBelow")}>
+          <span className="exam-instruction-icon" aria-hidden="true">
+            <AppIcon name="info" size={20} />
+          </span>
+          <div className="exam-instruction-text">
+            {instruction}
+          </div>
         </div>
         <div ref={answerCardRef} className={`exam-task-card${missing === "answer" ? " field-missing" : ""}`}>
           {promptText ? <p className="session-task-prompt">{promptText}</p> : null}

@@ -701,9 +701,21 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .session-task-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
 .session-task-header h1 { margin-top: 5px; font-size: clamp(1.55rem, 3vw, 2.15rem); }
 .session-task-header p { margin-top: 8px; color: var(--muted); }
-.session-task-card, .confidence-panel, .session-state-card { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.session-task-card, .confidence-panel, .session-state-card { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); box-shadow: var(--shadow); }
 .session-task-card { display: grid; gap: 20px; padding: 24px; }
-.session-task-prompt { color: var(--muted-strong); font-size: 0.96rem; max-width: 75ch; }
+.session-task-prompt, .task-source-text, .task-blank-text {
+  width: 100%;
+  padding: 20px 24px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  font-weight: 400;
+  margin: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
 .task-choice-list { display: grid; gap: 10px; }
 .task-choice { display: flex; min-height: 54px; align-items: center; gap: 12px; padding: 12px 15px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-raised); color: var(--muted-strong); text-align: left; cursor: pointer; }
 .task-choice:hover { border-color: var(--line-strong); }
@@ -716,8 +728,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .task-order-text { min-width: 0; flex: 1; color: var(--muted-strong); }
 .task-order-actions { display: flex; gap: 5px; }
 .task-order-actions .icon-button { width: 30px; height: 30px; }
-.task-blank-panel, .task-text-panel { display: grid; gap: 16px; }
-.task-blank-text, .task-source-text { padding: 16px; border-radius: 10px; background: var(--surface-raised); color: var(--muted-strong); line-height: 1.7; max-width: 75ch; }
+.task-blank-panel, .task-text-panel { display: grid; gap: 16px; width: 100%; }
 .task-answer-textarea { min-height: 48px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--input-bg); color: var(--text); }
 .task-drop-slot { min-height: 54px; border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--surface-raised); color: var(--muted); cursor: pointer; }
 .task-drop-slot-filled { border-style: solid; border-color: var(--accent); color: var(--text); }
@@ -1821,47 +1832,72 @@ html[data-theme="light"] .session-pause-btn {
 .exam-body {
   display: grid;
   align-content: start;
-  gap: 28px;
-  width: min(100%, 920px);
+  gap: 16px;
+  width: min(100%, 960px);
   margin-inline: auto;
-  padding: 36px 24px 64px;
+  padding: 24px 24px 64px;
 }
 .exam-task-heading {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 .exam-task-heading h2 {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
-}
-.exam-task-heading p {
   margin: 0;
-  font-size: 0.96rem;
+}
+.exam-instruction-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 4px;
+  background: var(--exam-banner);
+  border: 1px solid var(--line);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+html[data-theme="dark"] .exam-instruction-card {
+  background: #23324a;
+  border-color: #2e3d52;
+}
+.exam-instruction-icon {
+  display: inline-flex;
+  color: #0b5fae;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+html[data-theme="dark"] .exam-instruction-icon {
+  color: #60a5fa;
+}
+.exam-instruction-text {
+  font-size: 0.95rem;
+  font-weight: 600;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--text);
 }
 .exam-task-card {
   display: grid;
-  gap: 24px;
-  padding: 32px 36px;
-  border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-html[data-theme="dark"] .exam-task-card {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  gap: 16px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
 }
 .exam-task-card.field-missing {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(228, 94, 104, 0.15);
+  outline: 2px solid var(--red);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 .task-renderer-container {
   display: grid;
-  gap: 28px;
+  gap: 16px;
   width: 100%;
 }
 .task-prompt-media {
@@ -1874,19 +1910,20 @@ html[data-theme="dark"] .exam-task-card {
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 12px;
-  background: var(--surface-raised);
-  border-radius: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 4px;
   border: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .prompt-audio-panel {
   display: grid;
   gap: 16px;
-  padding: 22px 24px;
-  border-radius: 16px;
+  padding: 20px 24px;
+  border-radius: 4px;
   background: var(--surface);
-  border: 1.5px solid var(--line);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
 }
 html[data-theme="dark"] .prompt-audio-panel {
@@ -2118,7 +2155,7 @@ html[data-theme="dark"] .media-player {
   margin: 12px 0 8px;
 }
 .task-prompt-audio-hidden { display: none; }
-.editor-frame { border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.editor-frame { border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; background: var(--surface); }
 .editor-toolbar { display: flex; border-bottom: 1px solid var(--line); }
 .editor-toolbar button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 0; border-right: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
 .editor-toolbar button:hover:not(:disabled) { background: var(--surface-raised); }
@@ -2126,12 +2163,22 @@ html[data-theme="dark"] .media-player {
 .record-card {
   display: grid;
   gap: 18px;
-  padding: 22px 24px;
-  border-radius: 16px;
+  padding: 20px 24px;
+  border-radius: 4px;
   background: var(--surface);
-  border: 1.5px solid var(--line);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
+}
+.task-recording-panel {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+.task-recording-panel .record-card {
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .record-card-recording {
