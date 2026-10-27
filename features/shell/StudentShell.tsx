@@ -2,23 +2,47 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
-import { COMMON_TEXT } from "@/common/constants";
+import { useEffect, useState, type ReactNode } from "react";
 import { AppIcon, ProductMark } from "@/common/components";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { usePracticeAccessToast } from "@/features/practice/useAccessToast";
+import { readReadingSize, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
+import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
+import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { CommandPalette } from "./CommandPalette";
+import { NavIcon, type NavIconName } from "./NavIcon";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 
 export function StudentShell({ children }: { children: ReactNode }) {
+  usePracticeAccessToast();
   const pathname = usePathname();
   const router = useRouter();
   const { authStatus, signOut } = usePractice();
   const { theme, toggleTheme } = useTheme();
   const { t, locale, setLocale } = useTranslation();
-  
+  const { markPassed, markFailed } = useDeviceChecks();
+  const { openFor, dialog: practiceModeDialog } = usePracticeStart();
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [deviceCheckKind, setDeviceCheckKind] = useState<DeviceCheckKind | null>(null);
+
   const toggleLocale = () => setLocale(locale === "en" ? "vi" : "en");
+
+  // Global shortcut: ⌘K / Ctrl+K toggles the command palette
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   
   const activeNavItem = NAV_ITEMS.find((item) => item.href === PRACTICE_ROUTES.home
     ? pathname === item.href
@@ -28,10 +52,20 @@ export function StudentShell({ children }: { children: ReactNode }) {
     if (authStatus === "signed-out") router.replace(PRACTICE_ROUTES.signIn);
   }, [authStatus, router]);
 
+  // The text size the student picked in the reading check applies to every practice page.
+  useEffect(() => {
+    document.documentElement.dataset.readingSize = readReadingSize();
+  }, []);
+
   if (authStatus === "loading") return <ShellLoading t={t} />;
 
   if (authStatus === "signed-out") {
     return <ShellLoading t={t} />;
+  }
+
+  // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
+  if (pathname === PRACTICE_ROUTES.practiceSession) {
+    return <main className="session-page">{children}</main>;
   }
 
   return (
@@ -60,7 +94,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span className="nav-icon" aria-hidden="true"><AppIcon name={item.icon} size={21} /></span>
+                <span className="nav-icon" aria-hidden="true"><NavIcon name={item.icon as NavIconName} /></span>
                 <span>{t(`nav.${item.icon === "practice" ? "practiceTests" : item.icon}` as TranslationKey)}</span>
               </Link>
             );
@@ -94,18 +128,39 @@ export function StudentShell({ children }: { children: ReactNode }) {
           </div>
           <span className="top-page-title">{activeNavItem ? t(`nav.${activeNavItem.icon === "practice" ? "practiceTests" : activeNavItem.icon}` as TranslationKey) : t("nav.home")}</span>
           <div className="top-bar-spacer" />
-          <div className="search-pill" aria-label="Search is not available in this release">
+          <button
+            type="button"
+            className="search-pill"
+            onClick={() => setSearchOpen(true)}
+            aria-label={t("commandPalette.placeholder")}
+          >
             <AppIcon name="search" size={20} />
             <span>{t("shell.search")}</span>
             <kbd>⌘ K</kbd>
-          </div>
+          </button>
           <div className="top-context" aria-label="Current practice product">
             <span>{t("shell.pearsonPTECore")}</span>
             <AppIcon name="chevronDown" size={17} />
           </div>
         </header>
-        <main className="main-content">{children}</main>
+        <main className="main-content" key={pathname}>{children}</main>
       </div>
+
+      {searchOpen ? (
+        <CommandPalette
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onStartTask={openFor}
+          onOpenDeviceCheck={(kind) => setDeviceCheckKind(kind)}
+        />
+      ) : null}
+      <DeviceCheckDialog
+        kind={deviceCheckKind}
+        onClose={() => setDeviceCheckKind(null)}
+        onPassed={markPassed}
+        onFailed={markFailed}
+      />
+      {practiceModeDialog}
     </div>
   );
 }

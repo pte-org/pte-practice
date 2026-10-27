@@ -1,3 +1,5 @@
+import { computePeaks, rmsLevel } from "./waveform";
+
 export type RecorderErrorCode = "UNSUPPORTED" | "PERMISSION_DENIED" | "NO_DEVICE" | "BUSY" | "FAILED";
 
 export class RecorderError extends Error {
@@ -12,12 +14,23 @@ interface AudioContextWindow {
   webkitAudioContext?: typeof AudioContext;
 }
 
+export interface WavRecording {
+  blob: Blob;
+  peaks: number[];
+  durationSeconds: number;
+}
+
 export interface WavRecorderHandle {
-  stop: () => Promise<Blob>;
+  stop: () => Promise<WavRecording>;
   cancel: () => void;
 }
 
-export async function startWavRecording(): Promise<WavRecorderHandle> {
+export interface WavRecorderOptions {
+  /** Called for every audio buffer with its level (0..1), to drive the live meter. */
+  onLevel?: (level: number) => void;
+}
+
+export async function startWavRecording(options: WavRecorderOptions = {}): Promise<WavRecorderHandle> {
   if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
     throw new RecorderError("UNSUPPORTED");
   }
@@ -49,9 +62,12 @@ export async function startWavRecording(): Promise<WavRecorderHandle> {
   const processor = context.createScriptProcessor(4096, 1, 1);
   const chunks: Float32Array[] = [];
   let stopped = false;
-  let finalBlob: Blob | null = null;
+  let finalRecording: WavRecording | null = null;
   processor.onaudioprocess = (event) => {
-    if (!stopped) chunks.push(new Float32Array(event.inputBuffer.getChannelData(0)));
+    if (stopped) return;
+    const samples = new Float32Array(event.inputBuffer.getChannelData(0));
+    chunks.push(samples);
+    options.onLevel?.(rmsLevel(samples));
   };
   source.connect(processor);
   processor.connect(context.destination);
@@ -67,11 +83,16 @@ export async function startWavRecording(): Promise<WavRecorderHandle> {
 
   return {
     stop: async () => {
-      if (!finalBlob) {
+      if (!finalRecording) {
         dispose();
-        finalBlob = encodeWav(chunks, context.sampleRate);
+        const sampleCount = chunks.reduce((total, chunk) => total + chunk.length, 0);
+        finalRecording = {
+          blob: encodeWav(chunks, context.sampleRate),
+          peaks: computePeaks(chunks),
+          durationSeconds: sampleCount / context.sampleRate,
+        };
       }
-      return finalBlob;
+      return finalRecording;
     },
     cancel: dispose,
   };

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/common/providers/ThemeProvider";
 import { THEME_INIT_SCRIPT } from "@/common/providers/theme-init";
 import { LocaleProvider } from "@/common/i18n";
+import { ToastProvider } from "@/common/components";
 
 export const metadata: Metadata = {
   title: {
@@ -10,6 +11,15 @@ export const metadata: Metadata = {
     template: "%s · PTE Practice",
   },
   description: "Student practice workspace for PTE preparation.",
+  icons: {
+    icon: [
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-ppte.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>
-          <LocaleProvider>{children}</LocaleProvider>
+          <LocaleProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,15 +1,17 @@
-import { API_ERROR_TEXT, API_PATHS } from "./constants";
+import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL } from "./constants";
 import type {
   PracticeCatalog,
-  PracticeChallenge,
   PracticeEntitlement,
   PracticeItemResult,
   PracticeReview,
   PracticeProgress,
+  PracticeRecordingPlayback,
+  StartSessionRequest,
   PracticeSession,
   PracticeSessionTokens,
-  PracticeTaskContentOption,
 } from "./contracts";
+import { normalizeMockTests, type MockTest } from "../mockTests/mock-test-contracts";
+import { normalizeReview } from "./review-contracts";
 import type { PracticeAudioUploadGrant } from "./media/contracts";
 import {
   normalizeCatalogResponse,
@@ -17,8 +19,10 @@ import {
   normalizePracticeItemResult,
   normalizePracticeProgressResponse,
   normalizePracticeSessionResponse,
+  normalizeRecordingPlayback,
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
+import { refreshOnce } from "./token-refresh";
 
 export class PracticeApiError extends Error {
   constructor(
@@ -36,19 +40,19 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   allowRefresh?: boolean;
 }
 
+const request = practiceRequest;
+
 export function createPracticeApiClient() {
   return {
-    requestChallenge: (email: string) => request<PracticeChallenge>(API_PATHS.requestChallenge, {
-      method: "POST",
-      body: { email },
-      allowRefresh: false,
-    }),
-    verifyChallenge: (body: { challengeId: string; email: string; code: string }) =>
-      request<PracticeSessionTokens>(API_PATHS.verifyChallenge, {
+    // The roster account an organization issued; no session exists yet, so a 401 is a bad password, not a stale token.
+    login: (body: { username: string; password: string }) =>
+      request<PracticeSessionTokens>(API_PATHS.login, {
         method: "POST",
         body,
         allowRefresh: false,
       }),
+    changePassword: (body: { currentPassword: string; newPassword: string }): Promise<void> =>
+      request<void>(API_PATHS.changePassword, { method: "POST", body }).then(() => undefined),
     getEntitlement: async (): Promise<PracticeEntitlement> => {
       const response = await request<unknown>(API_PATHS.entitlement);
       return normalizeEntitlementResponse(response);
@@ -59,16 +63,12 @@ export function createPracticeApiClient() {
       if (!catalog) throw new PracticeApiError(API_ERROR_TEXT.invalidCatalog, 502, "INVALID_CATALOG");
       return catalog;
     },
+    listMockTests: async (): Promise<MockTest[]> => normalizeMockTests(await request<unknown>(API_PATHS.mockTests)),
     getProgress: async (): Promise<PracticeProgress> => {
       const response = await request<unknown>(API_PATHS.progress);
       return normalizePracticeProgressResponse(response);
     },
-    startSession: async (body: {
-      productCode: string;
-      organizationId: string;
-      taskTypeCodes: string[];
-      capabilities: { supportedCapabilities: string[]; appVersion: string };
-    }, idempotencyKey = createPracticeIdempotencyKey("start")): Promise<PracticeSession> =>
+    startSession: async (body: StartSessionRequest, idempotencyKey = createPracticeIdempotencyKey("start")): Promise<PracticeSession> =>
       sessionMutation(API_PATHS.practiceSessions, "POST", body, idempotencyKey),
     getSession: async (publicId: string): Promise<PracticeSession> => {
       const response = await request<unknown>(`${API_PATHS.practiceSessions}/${publicId}`);
@@ -83,9 +83,24 @@ export function createPracticeApiClient() {
     answer: async (publicId: string, itemPublicId: string, body: {
       clientVersion: number;
       payload: string;
-      confidence: "LOW" | "MEDIUM" | "HIGH";
+      /** Practice no longer asks for confidence; always null. */
+      confidence: null;
     }, idempotencyKey = createPracticeIdempotencyKey("answer")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/answer`, "POST", body, idempotencyKey),
+    /** Saves the current item without leaving the session (a finished or re-done recording). */
+    saveDraft: async (publicId: string, itemPublicId: string, body: {
+      clientVersion: number;
+      payload: string;
+      confidence: "LOW" | "MEDIUM" | "HIGH" | null;
+    }, idempotencyKey = createPracticeIdempotencyKey("draft")): Promise<PracticeSession> =>
+      sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/draft`, "POST", body, idempotencyKey),
+    /** Short-lived link to the student's own saved recording, for replay and waveform after a reload. */
+    getRecordingPlayback: async (publicId: string, itemPublicId: string): Promise<PracticeRecordingPlayback> => {
+      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/recording`);
+      const playback = normalizeRecordingPlayback(response);
+      if (!playback) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_PLAYBACK");
+      return playback;
+    },
     skip: async (publicId: string, itemPublicId: string, clientVersion: number,
       idempotencyKey = createPracticeIdempotencyKey("skip")): Promise<PracticeSession> =>
       sessionMutation(`${API_PATHS.practiceSessions}/${publicId}/items/${itemPublicId}/skip`, "POST", { clientVersion }, idempotencyKey),
@@ -107,24 +122,8 @@ export function createPracticeApiClient() {
       requireItemResult(await request<unknown>(
         `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/scoring/retry`,
         { method: "POST", headers: { "Idempotency-Key": idempotencyKey } })),
-    getReview: async (sessionPublicId: string): Promise<PracticeReview> => {
-      const response = await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`);
-      const record = typeof response === "object" && response !== null ? response as Record<string, unknown> : {};
-      const items = Array.isArray(record.items) ? record.items.flatMap((value) => {
-        if (typeof value !== "object" || value === null) return [];
-        const item = value as Record<string, unknown>;
-        if (typeof item.publicId !== "string" || typeof item.taskCode !== "string") return [];
-        const status: "ANSWERED" | "SKIPPED" | "PENDING" = item.status === "ANSWERED" || item.status === "SKIPPED" ? item.status : "PENDING";
-        return [{ publicId: item.publicId, orderIndex: typeof item.orderIndex === "number" ? item.orderIndex : 0,
-          taskCode: item.taskCode, displayName: typeof item.displayName === "string" ? item.displayName : item.taskCode,
-          section: typeof item.section === "string" ? item.section : "UNKNOWN", status,
-          promptText: typeof item.promptText === "string" ? item.promptText : null,
-          savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
-          rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
-          options: reviewOptions(item.options) }];
-      }) : [];
-      return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items };
-    },
+    getReview: async (sessionPublicId: string): Promise<PracticeReview> =>
+      normalizeReview(await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`), sessionPublicId),
     requestResponseAudio: (body: {
       contentType: "audio/wav";
       assetKind: "STUDENT_RESPONSE_AUDIO";
@@ -171,14 +170,6 @@ function requireItemResult(value: unknown): PracticeItemResult {
   return result;
 }
 
-function reviewOptions(value: unknown): PracticeTaskContentOption[] {
-  return Array.isArray(value) ? value.flatMap((entry) => {
-    const option = asRecord(entry);
-    if (typeof option.text !== "string" || typeof option.orderIndex !== "number") return [];
-    return [{ text: option.text, orderIndex: option.orderIndex, blankIndex: typeof option.blankIndex === "number" ? option.blankIndex : null }];
-  }) : [];
-}
-
 function requireSession(value: unknown): PracticeSession {
   const session = normalizePracticeSessionResponse(value);
   if (!session) throw new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, "INVALID_SESSION");
@@ -192,7 +183,7 @@ export function createPracticeIdempotencyKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function practiceRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { allowRefresh = true, body, headers: customHeaders, ...requestInit } = options;
   const session = getPracticeSession();
   const headers = new Headers(customHeaders);
@@ -211,7 +202,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (response.status === 401 && allowRefresh && session?.refreshToken) {
-    const refreshed = await refreshSession(session.refreshToken);
+    // Another request may already have refreshed while this one was in flight: retry with the new token.
+    if (getPracticeSession()?.accessToken !== session.accessToken) return request<T>(path, { ...options, allowRefresh: false });
+    const refreshed = await refreshOnce(session.refreshToken, refreshSession);
     if (refreshed) return request<T>(path, { ...options, allowRefresh: false });
     clearPracticeSession();
   }
@@ -249,7 +242,7 @@ async function refreshSession(refreshToken: string): Promise<boolean> {
 }
 
 export function getApiBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, "");
 }
 
 async function parseJson(response: Response): Promise<unknown> {

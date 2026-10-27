@@ -24,6 +24,11 @@ const session = (status: PracticeSession["status"]): PracticeSession => ({
   sections: [],
   currentTask: null,
   itemResult: null,
+  timingMode: "UNTIMED",
+  questionCount: null,
+  kind: null,
+  skillCode: null,
+  taskCode: null,
 });
 
 describe("practiceSessionReducer", () => {

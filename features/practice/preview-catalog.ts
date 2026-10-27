@@ -24,6 +24,12 @@ export const PREVIEW_CATALOG: PracticeCatalog = {
       requiredClientCapabilities: [],
       contentStatus: "SHELL_PREVIEW",
       provenance: "LOCAL_SHELL_PREVIEW",
+      timedAvailable: false,
+      timedUnavailableReason: null,
+      answeredQuestionCount: 0,
+      averageScore: null,
     })),
+    practiceQuestionCount: 0,
+    answeredQuestionCount: 0,
   })).filter((section) => section.taskTypes.length > 0),
 };
