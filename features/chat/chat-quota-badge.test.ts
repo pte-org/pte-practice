@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isQuotaResetDue, quotaBadge } from "./chat-quota";
+import { isQuotaFresh, isQuotaResetDue, quotaBadge } from "./chat-quota";
 import type { ChatQuota } from "./contracts";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
@@ -21,6 +21,29 @@ describe("quotaBadge", () => {
 
   it("never shows a negative count", () => {
     expect(quotaBadge({ ...quota(0), remaining: -2 })).toEqual({ text: "0", low: true });
+  });
+});
+
+describe("isQuotaFresh", () => {
+  it("is false when nothing was fetched yet", () => {
+    expect(isQuotaFresh(null, 1_000, 30_000)).toBe(false);
+  });
+
+  it("is true while the last fetch is younger than the allowed age", () => {
+    expect(isQuotaFresh(1_000, 20_000, 30_000)).toBe(true);
+  });
+
+  it("is false once the allowed age has passed", () => {
+    expect(isQuotaFresh(1_000, 31_000, 30_000)).toBe(false);
+    expect(isQuotaFresh(1_000, 40_000, 30_000)).toBe(false);
+  });
+
+  it("is never fresh when no age is allowed, so a forced refresh always fetches", () => {
+    expect(isQuotaFresh(1_000, 1_000, 0)).toBe(false);
+  });
+
+  it("is false if the clock went backwards", () => {
+    expect(isQuotaFresh(5_000, 1_000, 30_000)).toBe(false);
   });
 });
 

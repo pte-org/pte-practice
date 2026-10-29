@@ -24,6 +24,13 @@ export function quotaBadge(quota: ChatQuota | null): { text: string; low: boolea
   return { text: String(remaining), low: remaining <= CHAT_WARNING_THRESHOLD };
 }
 
+/** Whether a quota read at `fetchedAtMs` is recent enough to reuse; a `maxAgeMs` of 0 always asks the server. */
+export function isQuotaFresh(fetchedAtMs: number | null, nowMs: number, maxAgeMs: number): boolean {
+  if (fetchedAtMs === null || maxAgeMs <= 0) return false;
+  const age = nowMs - fetchedAtMs;
+  return age >= 0 && age < maxAgeMs;
+}
+
 /** True once the clock passes the reset time, whether or not the server has caught up with a fresh quota. */
 export function isQuotaResetDue(quota: ChatQuota | null, now: Date): boolean {
   if (!quota) return false;
