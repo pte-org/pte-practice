@@ -189,7 +189,7 @@ describe("consent copy", () => {
   type Tree = Record<string, unknown>;
   const consent = (dictionary: unknown) => (dictionary as { chat: { consent: Tree } }).chat.consent;
 
-  it.each(["title", "point1", "point2", "point3", "ageLabel", "accept", "retry"])("defines chat.consent.%s in en and vi", (key) => {
+  it.each(["title", "point1", "point2", "point3", "policyLink", "ageLabel", "accept", "retry"])("defines chat.consent.%s in en and vi", (key) => {
     for (const dictionary of [en, viDictionary]) {
       expect(consent(dictionary)[key]).toBeTypeOf("string");
       expect((consent(dictionary)[key] as string).trim()).not.toBe("");

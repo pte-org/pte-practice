@@ -153,6 +153,7 @@
 }
 .chat-consent-title { margin: 0; font-size: 1rem; font-weight: 800; }
 .chat-consent-points { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; line-height: 1.5; font-size: 0.875rem; }
+.chat-consent-link { color: var(--accent); font-size: 0.875rem; font-weight: 600; text-decoration: underline; }
 .chat-consent-age { display: flex; align-items: flex-start; gap: 8px; font-size: 0.875rem; line-height: 1.45; cursor: pointer; }
 .chat-consent-age input { margin-top: 3px; }
 .chat-suggestions-title { margin: 0; color: var(--muted); font-size: 0.75rem; font-weight: 700; text-align: center; }

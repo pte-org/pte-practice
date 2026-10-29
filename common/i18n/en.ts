@@ -550,6 +550,7 @@ export const en: LocaleDict = {
       point1: "Your questions and the assistant's answers are saved with your account for up to 12 months to check service quality.",
       point2: "The text of your questions is sent to Google to generate answers, and may be processed outside Vietnam. Your name and email are not sent.",
       point3: "Do not type personal information into the chat. What you type is sent to Google, and we cannot take it back from them once it is sent.",
+      policyLink: "Read the full privacy policy",
       ageLabel: "I am at least 16 years old, or my parent or guardian agrees, and I agree to the above.",
       accept: "Agree and start",
       retry: "Try again",

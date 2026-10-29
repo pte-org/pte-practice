@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/common/i18n";
+import { PRIVACY_PATH } from "@/features/privacy/privacy-content";
 import { canAcceptConsent, type ChatConsentState } from "./chat-consent";
 
 interface ChatConsentGateProps {
@@ -36,6 +37,9 @@ export function ChatConsentGate({ state, onAgeChange, onAccept, onRetry }: ChatC
         <li>{t("chat.consent.point2")}</li>
         <li>{t("chat.consent.point3")}</li>
       </ul>
+      <a className="chat-consent-link" href={PRIVACY_PATH} target="_blank" rel="noopener noreferrer">
+        {t("chat.consent.policyLink")}
+      </a>
       <label className="chat-consent-age">
         <input
           type="checkbox"

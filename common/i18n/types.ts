@@ -550,6 +550,7 @@ export interface LocaleDict {
       point1: string;
       point2: string;
       point3: string;
+      policyLink: string;
       ageLabel: string;
       accept: string;
       retry: string;

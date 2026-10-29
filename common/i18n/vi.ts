@@ -550,6 +550,7 @@ export const vi: LocaleDict = {
       point1: "Câu hỏi và câu trả lời của trợ lý được lưu cùng tài khoản của bạn tối đa 12 tháng để kiểm tra chất lượng dịch vụ.",
       point2: "Nội dung câu hỏi được gửi tới Google để tạo câu trả lời và có thể được xử lý ngoài Việt Nam. Tên và email của bạn không được gửi.",
       point3: "Đừng nhập thông tin cá nhân vào hộp chat. Nội dung bạn nhập được gửi tới Google và chúng tôi không thể thu hồi lại sau khi đã gửi.",
+      policyLink: "Đọc chính sách bảo mật đầy đủ",
       ageLabel: "Tôi từ đủ 16 tuổi, hoặc cha mẹ/người giám hộ của tôi đồng ý, và tôi đồng ý với nội dung trên.",
       accept: "Đồng ý và bắt đầu",
       retry: "Thử lại",
