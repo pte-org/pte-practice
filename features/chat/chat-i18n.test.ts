@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { en, vi } from "@/common/i18n";
 
-const VI_DISCLAIMER = "Đoạn chat được lưu lại để kiểm tra chất lượng dịch vụ và cải thiện AI. Đừng chia sẻ thông tin cá nhân.";
+// Changed 2026-10-29 on the PM's decision: the data is stored but not used to train or improve any model yet.
+const VI_DISCLAIMER = "Đoạn chat được lưu lại để kiểm tra chất lượng dịch vụ. Đừng chia sẻ thông tin cá nhân.";
 
 const REQUIRED_KEYS = [
   "title",

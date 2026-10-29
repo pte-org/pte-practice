@@ -6,6 +6,17 @@ export const CHAT_PATHS = {
   latestSession: `${CHAT_API_BASE}/sessions/latest`,
 } as const;
 
+/** Kept apart from `CHAT_PATHS` and `CHAT_ERROR_CODES` so those two stay exactly the first release's contract. */
+export const CHAT_CONSENT_PATH = `${CHAT_API_BASE}/consent`;
+export const CHAT_CONSENT_ERROR_CODE = "CHAT_CONSENT_REQUIRED";
+
+/**
+ * The privacy notice the student accepts before chatting. It must equal the server's
+ * `ChatConstants.CONSENT_POLICY_VERSION`: a mismatch is refused, and changing the notice means changing both,
+ * which asks every student again.
+ */
+export const CHAT_CONSENT_POLICY_VERSION = "2026-10-29";
+
 /** Mirrors the server limit (`chat.ai.max-input-chars`); the server stays the authority. */
 export const CHAT_MAX_INPUT_CHARS = 1000;
 

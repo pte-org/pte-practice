@@ -83,6 +83,20 @@ function normalizeHistoryItem(value: unknown): ChatHistoryItem | null {
   return { question, answer, status, createdAt };
 }
 
+export interface ChatConsent {
+  policyVersion: string;
+  consented: boolean;
+  consentedAt: string | null;
+}
+
+export function normalizeChatConsent(value: unknown): ChatConsent | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  const { policyVersion, consented, consentedAt } = record;
+  if (typeof policyVersion !== "string" || policyVersion === "" || typeof consented !== "boolean") return null;
+  return { policyVersion, consented, consentedAt: isDateString(consentedAt) ? consentedAt : null };
+}
+
 export function normalizeLatestSession(value: unknown): ChatLatestSession | null {
   const record = asRecord(value);
   if (!record) return null;
