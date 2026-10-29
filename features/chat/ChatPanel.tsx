@@ -7,40 +7,39 @@ import type { ChatApi } from "./api";
 import { ChatComposer } from "./ChatComposer";
 import { ChatConsentGate } from "./ChatConsentGate";
 import { ChatMessageList } from "./ChatMessageList";
+import { ChatPrivacyActions } from "./ChatPrivacyActions";
 import { ChatQuotaNotice } from "./ChatQuotaNotice";
 import { consentBlocksChat } from "./chat-consent";
-import { trapTarget } from "./chat-focus-trap";
 import { isQuotaExhausted } from "./chat-quota";
 import type { ChatQuota } from "./contracts";
 import { useChatConsent } from "./useChatConsent";
 import { useChatSession } from "./useChatSession";
 
-const FOCUSABLE = 'button:not(:disabled), textarea:not(:disabled), a[href], input:not(:disabled), [tabindex]:not([tabindex="-1"])';
+const QUOTA_REUSE_MS = 10_000;
 
 interface ChatPanelProps {
   api: ChatApi;
   quota: ChatQuota | null;
   setQuota: (quota: ChatQuota) => void;
-  refreshQuota: () => Promise<void>;
+  refreshQuota: (maxAgeMs?: number) => Promise<void>;
   open: boolean;
-  /** On a narrow screen the panel covers the page, so it behaves as a dialog: focus stays inside and the page cannot scroll. */
-  modal: boolean;
   /** Task being practised, already checked against the server whitelist; null when unknown. */
   taskType: string | null;
+  /** Text of the exercise on screen, sent as context with each question; null when there is none. */
+  exercisePrompt: string | null;
   onClose: () => void;
 }
 
-export function ChatPanel({ api, quota, setQuota, refreshQuota, open, modal, taskType, onClose }: ChatPanelProps) {
+export function ChatPanel({ api, quota, setQuota, refreshQuota, open, taskType, exercisePrompt, onClose }: ChatPanelProps) {
   const { t, locale } = useTranslation();
-  const panelRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { state, load, send, setDraft, startNewChat, dismissError } = useChatSession({
     api,
     taskType,
+    exercisePrompt,
     language: locale,
     onQuota: setQuota,
   });
-  const isDialog = modal && open;
   const consent = useChatConsent(api);
   const { load: loadConsent, markRequired } = consent;
   const blocked = consentBlocksChat(consent.state.status);
@@ -50,7 +49,8 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, modal, tas
     void load();
   }, [load]);
   useEffect(() => {
-    if (open) void refreshQuota();
+    // The layout read the quota when the page opened; do not ask again for a few seconds after that.
+    if (open) void refreshQuota(QUOTA_REUSE_MS);
   }, [open, refreshQuota]);
   useEffect(() => {
     void loadConsent();
@@ -68,15 +68,6 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, modal, tas
     if (open && state.loaded && !state.pending) inputRef.current?.focus();
   }, [open, state.loaded, state.pending]);
 
-  useEffect(() => {
-    if (!isDialog) return undefined;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isDialog]);
-
   const retryLoad = () => {
     dismissError();
     void load();
@@ -87,31 +78,15 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, modal, tas
     inputRef.current?.focus();
   };
 
+  // The box floats over the exercise and is not a dialog: the page stays usable, so Tab may leave it. Esc closes it.
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === "Escape") {
-      onClose();
-      return;
-    }
-    if (event.key !== "Tab" || !isDialog || !panelRef.current) return;
-    const controls = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-    const target = trapTarget({
-      activeIndex: controls.indexOf(document.activeElement as HTMLElement),
-      count: controls.length,
-      shiftKey: event.shiftKey,
-    });
-    if (target !== null) {
-      event.preventDefault();
-      controls[target].focus();
-    }
+    if (event.key === "Escape") onClose();
   };
 
   return (
     <aside
-      ref={panelRef}
       className="chat-panel"
       hidden={!open}
-      role={isDialog ? "dialog" : undefined}
-      aria-modal={isDialog ? true : undefined}
       aria-label={t("chat.title")}
       onKeyDown={handleKeyDown}
     >
@@ -161,6 +136,7 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, modal, tas
         </>
       )}
       <p className="chat-disclaimer">{t("chat.disclaimer")}</p>
+      {blocked ? null : <ChatPrivacyActions api={api} onWithdrawn={markRequired} onDeleted={startNewChat} />}
     </aside>
   );
 }

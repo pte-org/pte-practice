@@ -8,68 +8,69 @@
 @plugin "@tailwindcss/typography";
 @source inline("prose prose-sm max-w-none");
 
-/* Layout: the panel pushes the exercise aside on wide screens and covers it on narrow ones. */
+/*
+ * Pop-up: a round button sits bottom right and opens a small chat window over the page, like a messenger bubble.
+ * The exercise keeps its full width and never moves; the window floats above it and the sticky footer
+ * (Previous, Skip, Next) stays free because everything sits above --chat-toggle-bottom.
+ */
 .chat-layout {
   display: block;
-  /* Clears the sticky exercise footer on narrow screens, where the toggle floats above it. */
+  /* Keeps the button and the window above the sticky exercise footer. */
   --chat-toggle-bottom: 96px;
-}
-.chat-layout[data-open="true"] {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 16px;
-  align-items: start;
 }
 .chat-layout-main { min-width: 0; }
 
 .chat-panel {
-  position: sticky;
-  top: 16px;
+  position: fixed;
+  right: 24px;
+  bottom: var(--chat-toggle-bottom);
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 32px);
+  width: min(380px, calc(100vw - 48px));
+  height: min(520px, calc(100vh - 128px));
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--surface);
   color: var(--text);
   font-family: var(--font-sans);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  transform-origin: bottom right;
+  animation: chat-pop 160ms ease-out;
 }
 
 .chat-panel[hidden] { display: none; }
 
+@keyframes chat-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (max-width: 960px) {
-  .chat-layout[data-open="true"] { display: block; }
   .chat-panel {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    height: auto;
-    border: 0;
-    border-radius: 0;
+    right: 12px;
+    width: calc(100vw - 24px);
+    height: min(340px, 45vh);
   }
 }
 
-/* A tab on the right edge, mid-height: the exercise footer holds Previous, Skip and Next at the bottom right. */
+/* The bubble button, bottom right, above the exercise footer. */
 .chat-toggle {
   position: fixed;
-  right: 0;
-  top: 50%;
+  right: 24px;
+  bottom: var(--chat-toggle-bottom);
   z-index: 60;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 14px 8px;
+  padding: 12px 16px;
   border: 1px solid var(--accent-strong);
-  border-right: 0;
-  border-radius: 12px 0 0 12px;
+  border-radius: 999px;
   background: var(--accent);
   color: #fff;
   font-weight: 700;
-  writing-mode: vertical-rl;
-  transform: translateY(-50%);
   box-shadow: var(--shadow);
   cursor: pointer;
 }
@@ -84,26 +85,15 @@
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
-  writing-mode: horizontal-tb;
 }
 .chat-toggle-badge[data-low="true"] { background: var(--amber); color: #1f1f1f; }
 .chat-toggle[data-open="true"] { display: none; }
-/* Keep a gutter for the tab while the panel is closed so it never covers the exercise or its footer buttons. */
-.chat-layout[data-open="false"] .chat-layout-main { margin-right: 44px; }
 
 @media (max-width: 960px) {
-  /* A floating button above the sticky footer; a gutter would waste too much of a narrow screen. */
-  .chat-layout[data-open="false"] .chat-layout-main { margin-right: 0; }
-  .chat-toggle {
-    top: auto;
-    right: 12px;
-    bottom: var(--chat-toggle-bottom);
-    flex-direction: row;
-    padding: 10px 14px;
-    border: 1px solid var(--accent-strong);
-    border-radius: 999px;
-    writing-mode: horizontal-tb;
-    transform: none;
+  .chat-toggle { right: 12px; }
+  /* A narrow screen has no room beside the window, so the exercise scrolls clear above it instead. */
+  .chat-layout[data-open="true"] .chat-layout-main {
+    padding-bottom: calc(var(--chat-toggle-bottom) + min(340px, 45vh));
   }
 }
 
@@ -220,6 +210,7 @@
 @media (prefers-reduced-motion: reduce) {
   .chat-typing-dot { animation: none; opacity: 0.6; }
   .chat-bubble { animation: none; }
+  .chat-panel { animation: none; }
 }
 
 .chat-copy {
@@ -279,6 +270,13 @@
 .chat-counter { margin-top: 4px; color: var(--muted); font-size: 0.75rem; text-align: right; }
 .chat-counter[data-over="true"] { color: var(--red); }
 .chat-disclaimer { padding: 0 14px 12px; color: var(--muted); font-size: 0.6875rem; line-height: 1.4; }
+
+.chat-privacy { padding: 0 14px 12px; font-size: 0.75rem; line-height: 1.45; }
+.chat-privacy p { margin: 0 0 6px; }
+.chat-privacy-links { display: flex; gap: 12px; }
+.chat-privacy-link { padding: 0; border: 0; background: none; color: var(--muted); font-size: 0.75rem; text-decoration: underline; cursor: pointer; }
+.chat-privacy-link:hover { color: var(--text); }
+.chat-privacy-buttons { display: flex; gap: 8px; }
 
 /* Markdown. Colours come from the app tokens so both themes work. */
 .chat-markdown {

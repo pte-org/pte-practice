@@ -9,6 +9,7 @@ export const CHAT_PATHS = {
 /** Kept apart from `CHAT_PATHS` and `CHAT_ERROR_CODES` so those two stay exactly the first release's contract. */
 export const CHAT_CONSENT_PATH = `${CHAT_API_BASE}/consent`;
 export const CHAT_CONSENT_ERROR_CODE = "CHAT_CONSENT_REQUIRED";
+export const CHAT_HISTORY_PATH = `${CHAT_API_BASE}/history`;
 
 /**
  * The privacy notice the student accepts before chatting. It must equal the server's
@@ -16,6 +17,8 @@ export const CHAT_CONSENT_ERROR_CODE = "CHAT_CONSENT_REQUIRED";
  * which asks every student again.
  */
 export const CHAT_CONSENT_POLICY_VERSION = "2026-10-29";
+/** Longest exercise text sent with a question; the server cuts at the same length (shared contract file). */
+export const CHAT_EXERCISE_MAX_CHARS = 1500;
 
 /** Mirrors the server limit (`chat.ai.max-input-chars`); the server stays the authority. */
 export const CHAT_MAX_INPUT_CHARS = 1000;
@@ -26,8 +29,6 @@ export const CHAT_WARNING_THRESHOLD = 3;
 /** Remembers, per browser tab, that the panel was open when the student moved to the next question. */
 export const CHAT_OPEN_STORAGE_KEY = "pte-practice:chat-open";
 
-/** At and below this width the panel covers the page and behaves as a dialog; keep in step with chat.css. */
-export const CHAT_NARROW_QUERY = "(max-width: 960px)";
 
 export const CHAT_ERROR_CODES = {
   quotaExceeded: "CHAT_QUOTA_EXCEEDED",
