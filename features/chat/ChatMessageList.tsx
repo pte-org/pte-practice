@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { ChatCopyButton } from "./ChatCopyButton";
 import { ChatMarkdown } from "./ChatMarkdown";
@@ -51,7 +52,12 @@ export function ChatMessageList({ messages, pendingQuestion, suggestionsEnabled,
             ref={index === lastIndex ? lastAnswerRef : undefined}
             className={`chat-bubble chat-bubble-assistant${message.refused ? " chat-bubble-refused" : ""}`}
           >
-            {message.refused ? <span className="chat-refused-label">{t("chat.refusedLabel")}</span> : null}
+            {message.refused ? (
+              <span className="chat-refused-label">
+                <AppIcon name="info" size={14} />
+                {t("chat.refusedLabel")}
+              </span>
+            ) : null}
             {message.refused ? <p>{message.text}</p> : <ChatMarkdown markdown={message.text} />}
             {message.refused ? null : <ChatCopyButton text={message.text} />}
           </div>

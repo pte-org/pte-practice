@@ -521,6 +521,8 @@ export const vi: LocaleDict = {
     toggleOpen: "Mở trợ lý AI",
     toggleClose: "Đóng trợ lý AI",
     newChat: "Đoạn chat mới",
+    subtitle: "Có thể sai, hãy kiểm tra lại",
+    dataSettings: "Cài đặt dữ liệu",
     placeholder: "Hỏi về tiếng Anh hoặc cách làm bài PTE...",
     send: "Gửi",
     thinking: "Đang trả lời",

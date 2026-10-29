@@ -14,7 +14,7 @@ interface ChatPrivacyActionsProps {
   onDeleted: () => void;
 }
 
-/** Two small links under the disclaimer; each asks once more before it acts, because neither can be undone. */
+/** A small "data settings" menu under the disclaimer holding two actions; each asks once more before it acts, because neither can be undone. */
 export function ChatPrivacyActions({ api, onWithdrawn, onDeleted }: ChatPrivacyActionsProps) {
   const { t } = useTranslation();
   const [state, dispatch] = useReducer(chatPrivacyReducer, INITIAL_PRIVACY_STATE);
@@ -51,13 +51,18 @@ export function ChatPrivacyActions({ api, onWithdrawn, onDeleted }: ChatPrivacyA
   }
 
   return (
-    <div className="chat-privacy chat-privacy-links">
-      <button type="button" className="chat-privacy-link" onClick={() => dispatch({ type: "ask", action: "withdraw" })}>
-        {t("chat.privacy.withdraw")}
-      </button>
-      <button type="button" className="chat-privacy-link" onClick={() => dispatch({ type: "ask", action: "delete" })}>
-        {t("chat.privacy.delete")}
-      </button>
+    <div className="chat-footer">
+      <details className="chat-menu">
+        <summary>{t("chat.dataSettings")}</summary>
+        <div className="chat-menu-list">
+          <button type="button" className="chat-privacy-link" onClick={() => dispatch({ type: "ask", action: "withdraw" })}>
+            {t("chat.privacy.withdraw")}
+          </button>
+          <button type="button" className="chat-privacy-link" onClick={() => dispatch({ type: "ask", action: "delete" })}>
+            {t("chat.privacy.delete")}
+          </button>
+        </div>
+      </details>
     </div>
   );
 }

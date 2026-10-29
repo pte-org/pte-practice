@@ -521,6 +521,8 @@ export interface LocaleDict {
     toggleOpen: string;
     toggleClose: string;
     newChat: string;
+    subtitle: string;
+    dataSettings: string;
     placeholder: string;
     send: string;
     thinking: string;

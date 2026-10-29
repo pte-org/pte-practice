@@ -32,7 +32,7 @@ export function ChatToggleButton({ open, quota, buttonRef, onClick }: ChatToggle
       onClick={onClick}
     >
       <AppIcon name="sparkle" size={18} />
-      {t("chat.title")}
+      <span className="chat-toggle-label">{t("chat.title")}</span>
       {badge ? <span className="chat-toggle-badge" data-low={badge.low} aria-hidden="true">{badge.text}</span> : null}
     </button>
   );

@@ -38,7 +38,7 @@ export function ChatComposer({ draft, pending, ready, quota, inputRef, onDraftCh
         <textarea
           ref={inputRef}
           className="chat-input"
-          rows={2}
+          rows={1}
           value={draft}
           placeholder={t("chat.placeholder")}
           aria-label={t("chat.placeholder")}
@@ -46,8 +46,10 @@ export function ChatComposer({ draft, pending, ready, quota, inputRef, onDraftCh
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button type="button" className="chat-send" disabled={disabled || !ready} onClick={onSubmit}>
-          {t("chat.send")}
+        <button type="button" className="chat-send" disabled={disabled || !ready} onClick={onSubmit} aria-label={t("chat.send")} title={t("chat.send")}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
         </button>
       </div>
       <p className="chat-counter" data-over={overLimit}>

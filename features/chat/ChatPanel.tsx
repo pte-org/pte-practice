@@ -91,13 +91,23 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, taskType, 
       onKeyDown={handleKeyDown}
     >
       <header className="chat-header">
-        <h2 className="chat-title">{t("chat.title")}</h2>
-        <button type="button" className="chat-header-button" onClick={startNewChat} disabled={state.pending || !state.loaded}>
-          <AppIcon name="edit" size={16} />
-          {t("chat.newChat")}
+        <span className="chat-avatar" aria-hidden="true"><AppIcon name="sparkle" size={18} /></span>
+        <div className="chat-heading">
+          <h2 className="chat-title">{t("chat.title")}</h2>
+          <p className="chat-subtitle">{t("chat.subtitle")}</p>
+        </div>
+        <button
+          type="button"
+          className="chat-icon-button"
+          onClick={startNewChat}
+          disabled={state.pending || !state.loaded}
+          aria-label={t("chat.newChat")}
+          title={t("chat.newChat")}
+        >
+          <AppIcon name="edit" size={18} />
         </button>
-        <button type="button" className="chat-header-button" onClick={onClose} aria-label={t("chat.toggleClose")}>
-          <AppIcon name="close" size={16} />
+        <button type="button" className="chat-icon-button" onClick={onClose} aria-label={t("chat.toggleClose")} title={t("chat.toggleClose")}>
+          <AppIcon name="close" size={18} />
         </button>
       </header>
       {blocked ? (

@@ -521,6 +521,8 @@ export const en: LocaleDict = {
     toggleOpen: "Open AI assistant",
     toggleClose: "Close AI assistant",
     newChat: "New chat",
+    subtitle: "Can make mistakes, please double-check",
+    dataSettings: "Data settings",
     placeholder: "Ask about English or how to approach a PTE task...",
     send: "Send",
     thinking: "Answering",

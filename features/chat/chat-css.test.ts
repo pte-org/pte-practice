@@ -157,6 +157,57 @@ describe("chat.css", () => {
   });
 });
 
+describe("chat.css compact and light style", () => {
+  const css = () => readCss();
+
+  it("styles the header avatar, subtitle and data menu", () => {
+    for (const selector of [".chat-avatar", ".chat-subtitle", ".chat-menu", ".chat-menu-list"]) {
+      expect(ruleBodies(css(), selector).length, selector).toBeGreaterThan(0);
+    }
+  });
+
+  it("shows the student's message as a solid accent bubble with white text", () => {
+    const body = ruleBodies(css(), ".chat-bubble-user").join("");
+    expect(body).toMatch(/background\s*:\s*var\(--accent\)/);
+    expect(body).toMatch(/color\s*:\s*#fff/);
+  });
+
+  it("replaces the heavy default focus ring with an accent ring on the input", () => {
+    const body = ruleBodies(css(), ".chat-input:focus-visible").join("");
+    expect(body).toMatch(/var\(--accent\)/);
+    expect(body).toMatch(/outline\s*:\s*none/);
+  });
+
+  it("makes the send button a round accent button that is dimmed, not dead grey, when disabled", () => {
+    expect(ruleBodies(css(), ".chat-send").join("")).toMatch(/border-radius\s*:\s*50%/);
+    const disabled = ruleBodies(css(), ".chat-send:disabled").join("");
+    expect(disabled).toMatch(/opacity/);
+    expect(disabled).not.toMatch(/background/);
+  });
+
+  it("marks an out-of-scope answer with a soft amber tint and an amber label, not a dashed box", () => {
+    const body = ruleBodies(css(), ".chat-bubble-refused").join("");
+    expect(body).toMatch(/background\s*:\s*color-mix\([^)]*var\(--amber\)/);
+    expect(body).not.toMatch(/dashed/);
+    expect(ruleBodies(css(), ".chat-refused-label").join("")).toMatch(/color\s*:\s*var\(--amber\)/);
+  });
+
+  it("keeps the message list scrollbar thin", () => {
+    expect(ruleBodies(css(), ".chat-messages").join("")).toMatch(/scrollbar-width\s*:\s*thin/);
+  });
+
+  it("keeps headings inside answers small", () => {
+    for (const heading of ["h1", "h2", "h3"]) {
+      expect(ruleBodies(css(), `.chat-markdown ${heading}`).join(""), heading).toMatch(/font-size\s*:\s*(0\.|1\.0|1rem|1\.0625)/);
+    }
+  });
+
+  it("shrinks the bubble button to an icon on a narrow screen", () => {
+    const narrow = css().slice(css().indexOf("@media (max-width: 960px)", css().indexOf(".chat-toggle[data-open")));
+    expect(narrow).toMatch(/\.chat-toggle-label\s*\{[^}]*display\s*:\s*none/);
+  });
+});
+
 describe("chat feature source safety", () => {
   const sources = listFiles(CHAT_DIR).filter(
     (file) => !/\.test\.[tj]sx?$/.test(file) && /\.(ts|tsx|js|jsx|css)$/.test(file),
