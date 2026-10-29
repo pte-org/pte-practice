@@ -76,6 +76,55 @@ describe("chat.css", () => {
     expect(reduced.join(" ")).toMatch(/\.chat-bubble\s*\{[^}]*animation\s*:\s*none/);
   });
 
+  it("floats a small box over the exercise instead of pushing the exercise aside", () => {
+    const css = stripComments(readCss());
+    expect(css).not.toMatch(/grid-template-columns/);
+    const panel = ruleBodies(css, ".chat-panel").join(" ");
+    expect(panel).toMatch(/position\s*:\s*fixed/);
+    expect(panel).toMatch(/width\s*:\s*min\(\s*\d+px/);
+    expect(panel).toMatch(/height\s*:\s*min\(\s*\d+px/);
+  });
+
+  it("keeps the floating box clear of the exercise's sticky footer", () => {
+    const panel = ruleBodies(stripComments(readCss()), ".chat-panel").join(" ");
+    expect(panel).toMatch(/bottom\s*:\s*var\(--chat-toggle-bottom\)/);
+  });
+
+  it("never covers the whole screen, even on a narrow one", () => {
+    const css = stripComments(readCss());
+    expect(css).not.toMatch(/inset\s*:\s*0/);
+    const narrow = css.match(/@media\s*\(max-width:\s*960px\)\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+    expect(narrow).toMatch(/\.chat-panel\s*\{[^}]*width\s*:\s*calc\(100vw/);
+    expect(narrow).toMatch(/\.chat-panel\s*\{[^}]*height\s*:\s*min\(\s*\d+px/);
+    expect(narrow).not.toMatch(/border-radius\s*:\s*0/);
+  });
+
+  it("never moves the exercise sideways, open or closed: the window pops up over it", () => {
+    const css = stripComments(readCss());
+    expect(ruleBodies(css, ".chat-layout-main").join(" ")).not.toMatch(/margin-right|padding-right/);
+    expect(css).not.toMatch(/margin-right\s*:\s*calc\(\s*380px/);
+  });
+
+  it("scrolls the exercise clear above the window on a narrow screen", () => {
+    const css = stripComments(readCss());
+    const narrow = (css.match(/@media\s*\(max-width:\s*960px\)\s*\{[\s\S]*?\n\}/g) ?? []).join("\n");
+    expect(narrow).toMatch(/data-open="true"\]\s*\.chat-layout-main\s*\{[^}]*padding-bottom/);
+  });
+
+  it("opens from a round bubble button at the bottom right, not a tab on the edge", () => {
+    const toggle = ruleBodies(stripComments(readCss()), ".chat-toggle").join(" ");
+    expect(toggle).toMatch(/position\s*:\s*fixed/);
+    expect(toggle).toMatch(/right\s*:\s*24px/);
+    expect(toggle).toMatch(/border-radius\s*:\s*999px/);
+    expect(toggle).not.toMatch(/writing-mode/);
+  });
+
+  it("pops the window in with a short animation", () => {
+    const css = stripComments(readCss());
+    expect(ruleBodies(css, ".chat-panel").join(" ")).toMatch(/animation\s*:\s*chat-pop/);
+    expect(css).toMatch(/@keyframes\s+chat-pop/);
+  });
+
   it("names the floating button offset instead of repeating a bare number", () => {
     const css = stripComments(readCss());
     expect(css).toMatch(/--chat-toggle-bottom\s*:\s*96px/);
