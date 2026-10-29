@@ -3,6 +3,7 @@
 import { useCallback, useReducer } from "react";
 import type { ChatApi } from "./api";
 import { chatErrorKey } from "./chat-errors";
+import { buildSendInput } from "./chat-exercise";
 import { validateChatInput } from "./chat-input";
 import { quotaFromError } from "./chat-quota";
 import { createChatSessionId } from "./chat-session-id";
@@ -12,6 +13,8 @@ import type { ChatQuota } from "./contracts";
 interface UseChatSessionOptions {
   api: ChatApi;
   taskType: string | null;
+  /** Text of the exercise on screen (already cut to the allowed length), or null. */
+  exercisePrompt: string | null;
   language: "en" | "vi";
   onQuota: (quota: ChatQuota) => void;
 }
@@ -20,7 +23,7 @@ interface UseChatSessionOptions {
  * One conversation. The server decides which session is the latest on load; this only mints a session id
  * for a student who has none yet, and again when they press "New chat".
  */
-export function useChatSession({ api, taskType, language, onQuota }: UseChatSessionOptions) {
+export function useChatSession({ api, taskType, exercisePrompt, language, onQuota }: UseChatSessionOptions) {
   const [state, dispatch] = useReducer(chatReducer, INITIAL_CHAT_STATE);
 
   const load = useCallback(async () => {
@@ -40,7 +43,9 @@ export function useChatSession({ api, taskType, language, onQuota }: UseChatSess
     if (!input.ok || state.pending || !state.sessionId) return;
     dispatch({ type: "sendStarted", question: input.text });
     try {
-      const reply = await api.sendMessage({ sessionId: state.sessionId, message: input.text, taskType, language });
+      const reply = await api.sendMessage(
+        buildSendInput({ sessionId: state.sessionId, message: input.text, taskType, language, exercisePrompt }),
+      );
       dispatch({ type: "sendSucceeded", question: input.text, reply });
       onQuota({
         used: reply.limit - reply.remaining,
@@ -53,7 +58,7 @@ export function useChatSession({ api, taskType, language, onQuota }: UseChatSess
       if (exhausted) onQuota(exhausted);
       dispatch({ type: "requestFailed", errorKey: chatErrorKey(error) });
     }
-  }, [api, language, onQuota, state.draft, state.pending, state.sessionId, taskType]);
+  }, [api, exercisePrompt, language, onQuota, state.draft, state.pending, state.sessionId, taskType]);
 
   const setDraft = useCallback((text: string) => dispatch({ type: "draftChanged", text }), []);
   const startNewChat = useCallback(() => dispatch({ type: "newChat", sessionId: createChatSessionId() }), []);

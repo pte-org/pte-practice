@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { PRIVACY_CONTACT_EMAIL, PRIVACY_CONTENT, PRIVACY_OPERATOR, PRIVACY_PATH, PRIVACY_UPDATED } from "./privacy-content";
+import {
+  PRIVACY_CONTACT_EMAIL, PRIVACY_CONTENT, PRIVACY_OPERATOR, PRIVACY_PATH, PRIVACY_UPDATED, privacySectionId,
+} from "./privacy-content";
 
 const LOCALES = ["en", "vi"] as const;
 
@@ -40,6 +42,16 @@ describe("privacy policy content", () => {
     expect(text).toMatch(locale === "en" ? /train/i : /huấn luyện/);
     expect(text).toMatch(locale === "en" ? /\[email\]/ : /\[email\]/);
     expect(text).toMatch(locale === "en" ? /shared|identical/i : /dùng chung|giống hệt/);
+  });
+
+  it.each(LOCALES)("has the page labels (back link, contents, contact) in %s", (locale) => {
+    const content = PRIVACY_CONTENT[locale];
+    for (const label of [content.backLabel, content.tocLabel, content.contactLabel]) expect(label.trim()).not.toBe("");
+  });
+
+  it("builds a stable anchor per section, starting at 1", () => {
+    expect(privacySectionId(0)).toBe("privacy-section-1");
+    expect(privacySectionId(9)).toBe("privacy-section-10");
   });
 
   it("has no unfilled placeholders", () => {

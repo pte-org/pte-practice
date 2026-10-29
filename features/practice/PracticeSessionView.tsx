@@ -519,7 +519,7 @@ export function PracticeSessionView() {
   const closeConfirm = () => setConfirm(null);
 
   return (
-    <ChatLayout taskCode={currentTask.taskCode}>
+    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}>
       <SessionTaskView
         key={currentTask.publicId}
         api={api}
