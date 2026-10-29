@@ -516,4 +516,32 @@ export interface LocaleDict {
     hintClose: string;
     featureComingSoon: string;
   };
+  chat: {
+    title: string;
+    toggleOpen: string;
+    toggleClose: string;
+    newChat: string;
+    placeholder: string;
+    send: string;
+    thinking: string;
+    emptyState: string;
+    quotaLeft: string;
+    quotaWarning: string;
+    quotaExhausted: string;
+    resetIn: string;
+    charCount: string;
+    tooLong: string;
+    emptyInput: string;
+    disclaimer: string;
+    refusedLabel: string;
+    errors: {
+      quotaExceeded: string;
+      inFlight: string;
+      busy: string;
+      sessionNotFound: string;
+      invalidRequest: string;
+      network: string;
+      generic: string;
+    };
+  };
 }

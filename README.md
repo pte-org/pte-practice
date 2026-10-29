@@ -67,3 +67,11 @@ For the first rollout, publish the API deployment support
 Compose service and Nginx routes) to API `main` before running the new practice
 workflow. The practice workflow deliberately fails if that shared deployment
 support is missing; it does not modify tracked server files or bypass checks.
+
+## AI chat assistant
+
+The chat side panel in the practice session is hidden unless the web build has
+`NEXT_PUBLIC_CHAT_ENABLED=true`. Turn it on only together with the backend
+(`chat.ai.enabled=true` and `practice.strict-entitlement.enabled=true`), otherwise students see a
+button whose requests fail. Setup, costs and the release checklist are in
+`pte-doc/plans/261028-ninh-practice-ai-chat-box/`.
