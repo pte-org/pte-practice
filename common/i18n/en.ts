@@ -545,6 +545,14 @@ export const en: LocaleDict = {
     badgeLabel: "{remaining} questions left",
     shortcutHint: "Shortcut: Ctrl+/",
     quotaRefreshing: "Checking your new daily questions...",
+    privacy: {
+      withdraw: "Withdraw consent",
+      delete: "Delete my chats",
+      confirmWithdraw: "Withdraw your consent? You will be asked again before you can use the assistant.",
+      confirmDelete: "Delete all your chats? This cannot be undone, and today's questions are not given back.",
+      confirm: "Yes, continue",
+      cancel: "Cancel",
+    },
     consent: {
       title: "Before you start",
       point1: "Your questions and the assistant's answers are saved with your account for up to 12 months to check service quality.",

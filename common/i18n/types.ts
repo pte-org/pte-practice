@@ -545,6 +545,14 @@ export interface LocaleDict {
     badgeLabel: string;
     shortcutHint: string;
     quotaRefreshing: string;
+    privacy: {
+      withdraw: string;
+      delete: string;
+      confirmWithdraw: string;
+      confirmDelete: string;
+      confirm: string;
+      cancel: string;
+    };
     consent: {
       title: string;
       point1: string;

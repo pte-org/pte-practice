@@ -545,6 +545,14 @@ export const vi: LocaleDict = {
     badgeLabel: "Còn {remaining} lượt hỏi",
     shortcutHint: "Phím tắt: Ctrl+/",
     quotaRefreshing: "Đang kiểm tra lượt hỏi mới của ngày...",
+    privacy: {
+      withdraw: "Rút lại đồng ý",
+      delete: "Xóa các đoạn chat của tôi",
+      confirmWithdraw: "Rút lại sự đồng ý? Bạn sẽ được hỏi lại trước khi dùng trợ lý.",
+      confirmDelete: "Xóa toàn bộ các đoạn chat của bạn? Việc này không thể hoàn tác và lượt hỏi của hôm nay không được hoàn lại.",
+      confirm: "Đồng ý, tiếp tục",
+      cancel: "Hủy",
+    },
     consent: {
       title: "Trước khi bắt đầu",
       point1: "Câu hỏi và câu trả lời của trợ lý được lưu cùng tài khoản của bạn tối đa 12 tháng để kiểm tra chất lượng dịch vụ.",

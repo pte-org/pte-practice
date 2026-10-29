@@ -1,5 +1,5 @@
 import { PracticeApiError, practiceRequest } from "@/features/practice/api";
-import { CHAT_CONSENT_PATH, CHAT_INVALID_RESPONSE_CODE, CHAT_PATHS } from "./constants";
+import { CHAT_CONSENT_PATH, CHAT_HISTORY_PATH, CHAT_INVALID_RESPONSE_CODE, CHAT_PATHS } from "./constants";
 import type { ChatConsent, ChatLatestSession, ChatQuota, ChatReply } from "./contracts";
 import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "./contracts";
 
@@ -8,6 +8,8 @@ export interface SendChatMessageInput {
   message: string;
   taskType: string | null;
   language: "en" | "vi";
+  /** Text of the exercise on screen, sent as context; left out when there is none. */
+  exercisePrompt?: string;
 }
 
 export interface ChatApi {
@@ -17,6 +19,10 @@ export interface ChatApi {
   getConsent(): Promise<ChatConsent>;
   /** Records that the student accepted `policyVersion` and confirmed the age or guardian condition. */
   acceptConsent(policyVersion: string): Promise<ChatConsent>;
+  /** Takes the consent back; chat closes until the student accepts the notice again. */
+  withdrawConsent(): Promise<ChatConsent>;
+  /** Erases the student's chat text for good; the daily question count is not given back. */
+  deleteHistory(): Promise<void>;
 }
 
 function invalidResponse(): PracticeApiError {
@@ -42,6 +48,12 @@ export function createChatApi(request: typeof practiceRequest = practiceRequest)
     },
     async getConsent() {
       return required(normalizeChatConsent(await request<unknown>(CHAT_CONSENT_PATH)));
+    },
+    async withdrawConsent() {
+      return required(normalizeChatConsent(await request<unknown>(CHAT_CONSENT_PATH, { method: "DELETE" })));
+    },
+    async deleteHistory() {
+      await request<unknown>(CHAT_HISTORY_PATH, { method: "DELETE" });
     },
     async acceptConsent(policyVersion) {
       return required(normalizeChatConsent(await request<unknown>(CHAT_CONSENT_PATH, {
