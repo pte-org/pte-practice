@@ -31,7 +31,7 @@ export function useChatSession({ api, taskType, language, onQuota }: UseChatSess
       // Do not mint a session here: "the server has none" and "the server could not be reached" differ, and a
       // fresh id would silently replace the student's real latest conversation. The composer stays locked
       // until a retry succeeds.
-      dispatch({ type: "sendFailed", errorKey: chatErrorKey(error) });
+      dispatch({ type: "requestFailed", errorKey: chatErrorKey(error) });
     }
   }, [api]);
 
@@ -51,7 +51,7 @@ export function useChatSession({ api, taskType, language, onQuota }: UseChatSess
     } catch (error) {
       const exhausted = quotaFromError(error);
       if (exhausted) onQuota(exhausted);
-      dispatch({ type: "sendFailed", errorKey: chatErrorKey(error) });
+      dispatch({ type: "requestFailed", errorKey: chatErrorKey(error) });
     }
   }, [api, language, onQuota, state.draft, state.pending, state.sessionId, taskType]);
 

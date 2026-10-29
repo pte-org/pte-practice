@@ -69,6 +69,27 @@ describe("chat.css", () => {
     expect(bodies.join(" ")).toMatch(/overflow-wrap\s*:\s*(anywhere|break-word)/);
   });
 
+  it("fades new bubbles in but not for people who ask for less motion", () => {
+    const css = stripComments(readCss());
+    expect(ruleBodies(css, ".chat-bubble").join(" ")).toMatch(/animation\s*:\s*chat-fade-in/);
+    const reduced = css.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\}\s*\}/g) ?? [];
+    expect(reduced.join(" ")).toMatch(/\.chat-bubble\s*\{[^}]*animation\s*:\s*none/);
+  });
+
+  it("names the floating button offset instead of repeating a bare number", () => {
+    const css = stripComments(readCss());
+    expect(css).toMatch(/--chat-toggle-bottom\s*:\s*96px/);
+    expect(css).toMatch(/bottom\s*:\s*var\(--chat-toggle-bottom\)/);
+    expect(css).not.toMatch(/bottom\s*:\s*96px/);
+  });
+
+  it("styles the suggestion chips, copy button and quota badge", () => {
+    const css = readCss();
+    for (const selector of [".chat-suggestion", ".chat-copy", ".chat-toggle-badge"]) {
+      expect(ruleBodies(css, selector).length, selector).toBeGreaterThan(0);
+    }
+  });
+
   it("scopes every handwritten rule under a chat- class (no global element selectors)", () => {
     const css = stripComments(readCss());
     // Drop at-rules without a block (@import, @plugin, @source, @layer x;) before looking at rule selectors.

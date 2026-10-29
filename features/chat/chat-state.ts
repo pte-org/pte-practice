@@ -37,7 +37,7 @@ export type ChatAction =
   | { type: "draftChanged"; text: string }
   | { type: "sendStarted"; question: string }
   | { type: "sendSucceeded"; question: string; reply: ChatReply }
-  | { type: "sendFailed"; errorKey: ChatErrorKey }
+  | { type: "requestFailed"; errorKey: ChatErrorKey }
   | { type: "newChat"; sessionId: string }
   | { type: "dismissError" };
 
@@ -81,7 +81,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         errorKey: null,
         sessionId: action.reply.sessionId,
       };
-    case "sendFailed":
+    case "requestFailed":
       return { ...state, pending: false, pendingQuestion: null, errorKey: action.errorKey };
     case "newChat":
       if (state.pending) return state;

@@ -534,6 +534,17 @@ export const vi: LocaleDict = {
     emptyInput: "Hãy nhập câu hỏi trước.",
     disclaimer: "Đoạn chat được lưu lại để kiểm tra chất lượng dịch vụ và cải thiện AI. Đừng chia sẻ thông tin cá nhân.",
     refusedLabel: "Ngoài phạm vi",
+    copy: "Sao chép",
+    copied: "Đã sao chép",
+    suggestionsTitle: "Gợi ý câu hỏi",
+    suggestions: {
+      essayStructure: "Cấu trúc bài Write Essay nên như thế nào?",
+      fixSentence: "Hãy sửa câu này giúp mình: ",
+      compareWords: "Khác nhau giữa 'affect' và 'effect' là gì?",
+    },
+    badgeLabel: "Còn {remaining} lượt hỏi",
+    shortcutHint: "Phím tắt: Ctrl+/",
+    quotaRefreshing: "Đang kiểm tra lượt hỏi mới của ngày...",
     errors: {
       quotaExceeded: "Bạn đã hết lượt hỏi hôm nay.",
       inFlight: "Câu hỏi trước vẫn đang được xử lý. Vui lòng đợi.",

@@ -12,6 +12,12 @@ export const CHAT_MAX_INPUT_CHARS = 1000;
 /** Show a "running low" notice when this many questions or fewer remain. */
 export const CHAT_WARNING_THRESHOLD = 3;
 
+/** Remembers, per browser tab, that the panel was open when the student moved to the next question. */
+export const CHAT_OPEN_STORAGE_KEY = "pte-practice:chat-open";
+
+/** At and below this width the panel covers the page and behaves as a dialog; keep in step with chat.css. */
+export const CHAT_NARROW_QUERY = "(max-width: 960px)";
+
 export const CHAT_ERROR_CODES = {
   quotaExceeded: "CHAT_QUOTA_EXCEEDED",
   inFlight: "CHAT_REQUEST_IN_FLIGHT",

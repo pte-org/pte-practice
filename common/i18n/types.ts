@@ -534,6 +534,17 @@ export interface LocaleDict {
     emptyInput: string;
     disclaimer: string;
     refusedLabel: string;
+    copy: string;
+    copied: string;
+    suggestionsTitle: string;
+    suggestions: {
+      essayStructure: string;
+      fixSentence: string;
+      compareWords: string;
+    };
+    badgeLabel: string;
+    shortcutHint: string;
+    quotaRefreshing: string;
     errors: {
       quotaExceeded: string;
       inFlight: string;

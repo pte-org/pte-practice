@@ -21,6 +21,12 @@ const REQUIRED_KEYS = [
   "emptyInput",
   "disclaimer",
   "refusedLabel",
+  "copy",
+  "copied",
+  "suggestionsTitle",
+  "badgeLabel",
+  "shortcutHint",
+  "quotaRefreshing",
 ];
 
 const REQUIRED_ERROR_KEYS = ["quotaExceeded", "inFlight", "busy", "sessionNotFound", "invalidRequest", "network", "generic"];

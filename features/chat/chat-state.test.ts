@@ -177,11 +177,11 @@ describe("chatReducer draft and send lifecycle", () => {
     expect(new Set(ids).size).toBe(4);
   });
 
-  it("sendFailed stops pending, sets the error and keeps the draft and messages", () => {
+  it("requestFailed stops pending, sets the error and keeps the draft and messages", () => {
     const base = chatReducer(loadedState(), { type: "sendSucceeded", question: "Q1", reply: reply({ markdown: "A1" }) });
     const typing = chatReducer(base, { type: "draftChanged", text: "second question" });
     const pending = chatReducer(typing, { type: "sendStarted", question: "second question" });
-    const state = chatReducer(pending, { type: "sendFailed", errorKey: "busy" });
+    const state = chatReducer(pending, { type: "requestFailed", errorKey: "busy" });
 
     expect(state.pending).toBe(false);
     expect(state.pendingQuestion).toBeNull();

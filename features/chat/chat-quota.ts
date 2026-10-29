@@ -17,6 +17,20 @@ export function quotaNoticeKind(quota: ChatQuota | null): ChatQuotaNoticeKind {
   return quota.remaining <= CHAT_WARNING_THRESHOLD ? "warning" : "none";
 }
 
+/** The small count on the closed toggle; `low` uses the same threshold as the warning notice. */
+export function quotaBadge(quota: ChatQuota | null): { text: string; low: boolean } | null {
+  if (!quota) return null;
+  const remaining = Math.max(0, quota.remaining);
+  return { text: String(remaining), low: remaining <= CHAT_WARNING_THRESHOLD };
+}
+
+/** True once the clock passes the reset time, whether or not the server has caught up with a fresh quota. */
+export function isQuotaResetDue(quota: ChatQuota | null, now: Date): boolean {
+  if (!quota) return false;
+  const resetMs = Date.parse(quota.resetAt);
+  return !Number.isNaN(resetMs) && resetMs <= now.getTime();
+}
+
 /** Whole minutes rounded up, so "reset in 0m" is never shown while the quota is still locked. */
 export function timeUntilReset(resetAt: string, now: Date): { hours: number; minutes: number } {
   const resetMs = Date.parse(resetAt);

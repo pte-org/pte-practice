@@ -534,6 +534,17 @@ export const en: LocaleDict = {
     emptyInput: "Type a question first.",
     disclaimer: "Chats are saved to check service quality and improve the AI. Do not share personal information.",
     refusedLabel: "Out of scope",
+    copy: "Copy",
+    copied: "Copied",
+    suggestionsTitle: "Try asking",
+    suggestions: {
+      essayStructure: "How should I structure a Write Essay answer?",
+      fixSentence: "Please correct this sentence: ",
+      compareWords: "What is the difference between 'affect' and 'effect'?",
+    },
+    badgeLabel: "{remaining} questions left",
+    shortcutHint: "Shortcut: Ctrl+/",
+    quotaRefreshing: "Checking your new daily questions...",
     errors: {
       quotaExceeded: "You have no questions left today.",
       inFlight: "Your previous question is still being answered. Please wait.",
