@@ -1,7 +1,7 @@
 import { PracticeApiError, practiceRequest } from "@/features/practice/api";
-import { CHAT_INVALID_RESPONSE_CODE, CHAT_PATHS } from "./constants";
-import type { ChatLatestSession, ChatQuota, ChatReply } from "./contracts";
-import { normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "./contracts";
+import { CHAT_CONSENT_PATH, CHAT_INVALID_RESPONSE_CODE, CHAT_PATHS } from "./constants";
+import type { ChatConsent, ChatLatestSession, ChatQuota, ChatReply } from "./contracts";
+import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "./contracts";
 
 export interface SendChatMessageInput {
   sessionId: string;
@@ -14,6 +14,9 @@ export interface ChatApi {
   sendMessage(input: SendChatMessageInput): Promise<ChatReply>;
   getQuota(): Promise<ChatQuota>;
   getLatestSession(): Promise<ChatLatestSession>;
+  getConsent(): Promise<ChatConsent>;
+  /** Records that the student accepted `policyVersion` and confirmed the age or guardian condition. */
+  acceptConsent(policyVersion: string): Promise<ChatConsent>;
 }
 
 function invalidResponse(): PracticeApiError {
@@ -36,6 +39,15 @@ export function createChatApi(request: typeof practiceRequest = practiceRequest)
     },
     async getLatestSession() {
       return required(normalizeLatestSession(await request<unknown>(CHAT_PATHS.latestSession)));
+    },
+    async getConsent() {
+      return required(normalizeChatConsent(await request<unknown>(CHAT_CONSENT_PATH)));
+    },
+    async acceptConsent(policyVersion) {
+      return required(normalizeChatConsent(await request<unknown>(CHAT_CONSENT_PATH, {
+        method: "POST",
+        body: { policyVersion, ageConfirmed: true },
+      })));
     },
   };
 }

@@ -545,11 +545,21 @@ export interface LocaleDict {
     badgeLabel: string;
     shortcutHint: string;
     quotaRefreshing: string;
+    consent: {
+      title: string;
+      point1: string;
+      point2: string;
+      point3: string;
+      ageLabel: string;
+      accept: string;
+      retry: string;
+    };
     errors: {
       quotaExceeded: string;
       inFlight: string;
       busy: string;
       sessionNotFound: string;
+      consentRequired: string;
       invalidRequest: string;
       network: string;
       generic: string;
