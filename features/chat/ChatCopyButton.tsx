@@ -26,7 +26,7 @@ export function ChatCopyButton({ text }: { text: string }) {
 
   return (
     <button type="button" className="chat-copy" onClick={() => void copy()}>
-      <AppIcon name={copied ? "check" : "copy"} size={14} />
+      {copied ? <AppIcon name="check" size={14} /> : null}
       <span role="status">{copied ? t("chat.copied") : t("chat.copy")}</span>
     </button>
   );
