@@ -80,7 +80,7 @@ describe("chat.css", () => {
     const css = stripComments(readCss());
     expect(css).toMatch(/--chat-toggle-bottom\s*:\s*96px/);
     expect(css).toMatch(/bottom\s*:\s*var\(--chat-toggle-bottom\)/);
-    expect(css).not.toMatch(/bottom\s*:\s*96px/);
+    expect(css).not.toMatch(/(?<![-\w])bottom\s*:\s*96px/);
   });
 
   it("styles the suggestion chips, copy button and quota badge", () => {
