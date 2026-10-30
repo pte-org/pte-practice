@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLatestGate } from "./latest-request";
+import { createLatestGate } from "@/common/hooks/latest-request";
 
 describe("createLatestGate", () => {
   it("only the newest load is current", () => {

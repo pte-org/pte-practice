@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateSignInField } from "./useSignInValidation";
+import { validateSignInField } from "@/common/hooks/useSignInValidation";
 
 const messages = { usernameRequired: "required", usernameInvalidEmail: "email", passwordRequired: "password" };
 
