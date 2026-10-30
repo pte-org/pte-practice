@@ -4,15 +4,21 @@ import { BlankRenderer } from "./BlankRenderer";
 import { ChoiceRenderer } from "./ChoiceRenderer";
 import { HighlightRenderer } from "./HighlightRenderer";
 import { OrderRenderer } from "./OrderRenderer";
-import { RecordingRenderer } from "./RecordingRenderer";
+import { SpeakingRecorder } from "./SpeakingRecorder";
 import type { TaskRendererProps } from "./RendererTypes";
 import { TextRenderer } from "./TextRenderer";
+import { TypeInRenderer } from "./TypeInRenderer";
 
 type RegisteredRenderer = (props: TaskRendererProps) => ReactNode;
 
 const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRenderer>> = {
-  PERSONAL_INTRODUCTION_V1: (props) => <RecordingRenderer {...props} />,
-  READ_ALOUD_V1: (props) => <RecordingRenderer {...props} />,
+  READ_ALOUD_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "read-aloud"} {...props} />,
+  REPEAT_SENTENCE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "repeat-sentence"} {...props} />,
+  DESCRIBE_IMAGE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "describe-image"} {...props} />,
+  RE_TELL_LECTURE_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "retell-lecture"} {...props} />,
+  ANSWER_SHORT_QUESTION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "answer-short-question"} {...props} />,
+  RESPOND_TO_A_SITUATION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "respond-situation"} {...props} />,
+  SUMMARIZE_GROUP_DISCUSSION_V1: (props) => <SpeakingRecorder key={props.itemPublicId ?? "summarize-discussion"} {...props} />,
   MC_READING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_READING_MULTIPLE_V1: (props) => <ChoiceRenderer {...props} />,
   MC_LISTENING_SINGLE_V1: (props) => <ChoiceRenderer {...props} />,
@@ -21,10 +27,13 @@ const RENDERER_REGISTRY: Partial<Record<AllowlistedRendererKey, RegisteredRender
   RE_ORDER_PARAGRAPHS_V1: (props) => <OrderRenderer {...props} />,
   FILL_IN_THE_BLANKS_DRAG_AND_DROP_V1: (props) => <BlankRenderer {...props} />,
   FILL_IN_THE_BLANKS_DROPDOWN_V1: (props) => <BlankRenderer {...props} />,
+  FILL_IN_THE_BLANKS_TYPE_IN_V1: (props) => <TypeInRenderer {...props} />,
   HIGHLIGHT_CORRECT_SUMMARY_V1: (props) => <HighlightRenderer {...props} />,
   HIGHLIGHT_INCORRECT_WORDS_V1: (props) => <HighlightRenderer {...props} />,
   SUMMARIZE_WRITTEN_TEXT_V1: (props) => <TextRenderer {...props} />,
   WRITE_ESSAY_V1: (props) => <TextRenderer {...props} />,
+  SUMMARIZE_SPOKEN_TEXT_V1: (props) => <TextRenderer {...props} />,
+  WRITE_FROM_DICTATION_V1: (props) => <TextRenderer {...props} />,
 };
 
 export function renderTask(key: AllowlistedRendererKey | null, props: TaskRendererProps): ReactNode | null {

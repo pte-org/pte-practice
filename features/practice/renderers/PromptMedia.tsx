@@ -1,0 +1,94 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { AppIcon } from "@/common/components";
+import { useLocale } from "../../../common/i18n/LocaleProvider";
+import type { PracticeTaskFixture } from "../fixtures";
+import { PromptAudioPlayer } from "../media/PromptAudioPlayer";
+import { createPlayOnceGuard } from "../timed/play-once";
+import type { TimedRendererControl } from "./RendererTypes";
+
+interface PromptMediaProps {
+  fixture: PracticeTaskFixture;
+  /** Set for a timed question: the audio plays once, with no controls and no seeking. */
+  timed?: TimedRendererControl;
+}
+
+/** Prompt audio and image of the question; warns when the question has media that could not be loaded. */
+export function PromptMedia({ fixture, timed }: PromptMediaProps) {
+  const { t } = useLocale();
+  const audioMissing = fixture.audioExpected && !fixture.audioUrl;
+  const imageMissing = fixture.imageExpected && !fixture.imageUrl;
+  if (!fixture.audioExpected && !fixture.imageExpected) return null;
+
+  return (
+    <div className="task-prompt-media">
+      {fixture.imageUrl ? (
+        <div className="task-prompt-image-wrapper">
+          {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL; not optimizable */}
+          <img className="task-prompt-image" src={fixture.imageUrl} alt={t("score.imagePrompt")} />
+        </div>
+      ) : null}
+      {fixture.audioUrl ? (
+        <div className="prompt-audio-panel">
+          <div className="prompt-audio-header">
+            <div className="prompt-audio-title-group">
+              <span className="prompt-audio-icon" aria-hidden="true">
+                <AppIcon name="listening" size={18} />
+              </span>
+              <strong className="prompt-audio-title">{t("score.audioPrompt")}</strong>
+            </div>
+          </div>
+          {timed ? (
+            <OncePrompt url={fixture.audioUrl} timed={timed} label={t("score.audioPrompt")} />
+          ) : (
+            <FreePrompt url={fixture.audioUrl} label={t("score.audioPrompt")} />
+          )}
+        </div>
+      ) : null}
+      {audioMissing || imageMissing ? (
+        <p className="task-recording-message" role="alert">{t("score.mediaUnavailable")}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Untimed prompt: the student plays, pauses and seeks it as often as they like. */
+function FreePrompt({ url, label }: { url: string; label: string }) {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  return (
+    <>
+      <audio ref={audio} className="task-prompt-audio-hidden" src={url} preload="auto" aria-hidden="true" />
+      <PromptAudioPlayer url={url} label={label} audio={audio} interactive />
+    </>
+  );
+}
+
+/** Plays the prompt a single time when told to. `play()` resolving is what counts as the one play. */
+function OncePrompt({ url, timed, label }: { url: string; timed: TimedRendererControl; label: string }) {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const guard = useRef(createPlayOnceGuard());
+  const attempting = useRef(false);
+  const { playPrompt, onPromptBlocked, onPromptError } = timed;
+
+  useEffect(() => {
+    const element = audio.current;
+    if (!playPrompt || !element || attempting.current || !guard.current.canAttempt()) return;
+    attempting.current = true;
+    element.play().then(() => {
+      guard.current.markPlayed();
+    }).catch((error: unknown) => {
+      if (error instanceof DOMException && error.name === "NotAllowedError") onPromptBlocked();
+      else onPromptError();
+    }).finally(() => { attempting.current = false; });
+  }, [playPrompt, url, onPromptBlocked, onPromptError]);
+
+  return (
+    <>
+      <audio ref={audio} className="task-prompt-audio-once" src={url} preload="auto" aria-label={label}
+        onEnded={timed.onPromptEnded} onError={() => { if (!guard.current.hasPlayed()) timed.onPromptError(); }} />
+      {/* Display only: the timed prompt plays once on its own and cannot be paused or replayed. */}
+      <PromptAudioPlayer url={url} label={label} audio={audio} interactive={false} />
+    </>
+  );
+}

@@ -13,7 +13,6 @@ export const ALLOWED_RENDERER_KEYS = [
   "HIGHLIGHT_TEXT",
   "TEXT_INPUT",
   "TEXT_RESPONSE",
-  "PERSONAL_INTRODUCTION_V1",
   "READ_ALOUD_V1",
   "REPEAT_SENTENCE_V1",
   "DESCRIBE_IMAGE_V1",
@@ -42,9 +41,15 @@ export type AllowlistedRendererKey = typeof ALLOWED_RENDERER_KEYS[number];
 
 const ALLOWED_RENDERER_SET = new Set<string>(ALLOWED_RENDERER_KEYS);
 
+/** Every visible practice task type has a client renderer; the generic capability keys do not. */
 const CLIENT_RUNTIME_RENDERERS = new Set<AllowlistedRendererKey>([
-  "PERSONAL_INTRODUCTION_V1",
   "READ_ALOUD_V1",
+  "REPEAT_SENTENCE_V1",
+  "DESCRIBE_IMAGE_V1",
+  "RE_TELL_LECTURE_V1",
+  "ANSWER_SHORT_QUESTION_V1",
+  "RESPOND_TO_A_SITUATION_V1",
+  "SUMMARIZE_GROUP_DISCUSSION_V1",
   "SUMMARIZE_WRITTEN_TEXT_V1",
   "WRITE_ESSAY_V1",
   "MC_READING_SINGLE_V1",
@@ -52,6 +57,14 @@ const CLIENT_RUNTIME_RENDERERS = new Set<AllowlistedRendererKey>([
   "RE_ORDER_PARAGRAPHS_V1",
   "FILL_IN_THE_BLANKS_DRAG_AND_DROP_V1",
   "FILL_IN_THE_BLANKS_DROPDOWN_V1",
+  "SUMMARIZE_SPOKEN_TEXT_V1",
+  "MC_LISTENING_SINGLE_V1",
+  "MC_LISTENING_MULTIPLE_V1",
+  "FILL_IN_THE_BLANKS_TYPE_IN_V1",
+  "HIGHLIGHT_CORRECT_SUMMARY_V1",
+  "SELECT_MISSING_WORD_V1",
+  "HIGHLIGHT_INCORRECT_WORDS_V1",
+  "WRITE_FROM_DICTATION_V1",
 ]);
 
 export function allowlistedRendererKey(value: unknown): AllowlistedRendererKey | null {

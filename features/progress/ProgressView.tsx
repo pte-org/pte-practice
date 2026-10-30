@@ -1,149 +1,161 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppIcon } from "@/common/components";
-import { AccessStatusBanner } from "@/features/practice/AccessStatusBanner";
+import { AppIcon, TabPanel, Tabs } from "@/common/components";
+import { useLatestRequest } from "@/common/hooks/useLatestRequest";
+import { useTranslation } from "@/common/i18n";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import type { PracticeProgress, PracticeProgressEntry } from "@/features/practice/contracts";
-import { iconForTaskType } from "@/features/practice/icon-mapping";
+import { PRACTICE_ROUTES } from "@/features/practice/constants";
+import type { PracticeProgress } from "@/features/practice/contracts";
+import { iconForSection } from "@/features/practice/icon-mapping";
+import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
-import { useTranslation } from "@/common/i18n";
-import type { TranslationKey } from "@/common/i18n";
+import { formatScore, scoreTone, sessionDisplayName, skillKey, taskDisplayName } from "@/features/practice/presentation";
+import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
+import { progressMetrics } from "./progress-summary";
 
-type ProgressLoadState = "loading" | "ready" | "error";
-
-const EMPTY_PROGRESS: PracticeProgress = {
-  entries: [],
-  totalSessions: 0,
-  completedSessions: 0,
-  answeredItems: 0,
-  totalItems: 0,
-  generatedAt: null,
-  hasMore: false,
-};
+type LoadState = "loading" | "ready" | "error";
+const EMPTY: PracticeProgress = { entries: [], totalSessions: 0, completedSessions: 0, answeredItems: 0, totalItems: 0, generatedAt: null, hasMore: false };
 
 export function ProgressView() {
-  const { authStatus, catalog } = usePractice();
+  const { authStatus, catalog, isPracticeUnlocked } = usePractice();
+  const { openFor, dialog } = usePracticeStart();
   const { t } = useTranslation();
   const api = useMemo(() => createPracticeApiClient(), []);
-  const [progress, setProgress] = useState<PracticeProgress>(EMPTY_PROGRESS);
-  const [loadState, setLoadState] = useState<ProgressLoadState>("loading");
+  const gate = useLatestRequest();
+  const [progress, setProgress] = useState<PracticeProgress>(EMPTY);
+  const [loadState, setLoadState] = useState<LoadState>("loading");
   const [error, setError] = useState<string | null>(null);
+  const sections = orderCatalogSections(catalog.sections);
+  const [skill, setSkill] = useState<string>(sections[0]?.code ?? "SPEAKING");
 
   const loadProgress = useCallback(async () => {
     if (authStatus !== "authenticated") return;
+    const id = gate.begin();
     setLoadState("loading");
-    setError(null);
     try {
-      setProgress(await api.getProgress());
+      const loaded = await api.getProgress();
+      if (!gate.isLatest(id)) return;
+      setProgress(loaded);
       setLoadState("ready");
     } catch (reason) {
+      if (!gate.isLatest(id)) return;
       setLoadState("error");
-      setError(reason instanceof PracticeApiError && reason.message ? reason.message : t("ui.progressError"));
+      setError(reason instanceof PracticeApiError && reason.message ? reason.message : t("progress.loadError"));
     }
-  }, [api, authStatus, t]);
+  }, [api, authStatus, gate, t]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadProgress(), 0);
     return () => window.clearTimeout(timer);
   }, [loadProgress]);
 
-  const speaking = orderCatalogSections(catalog.sections).find((section) => section.code === "SPEAKING");
-  const taskRows = speaking?.taskTypes.slice(0, 5) ?? [];
-  const latest = progress.entries[0] ?? null;
-  const metrics = [
-    { label: t("ui.progressMetricSessions"), value: progress.totalSessions, icon: "responses" as const },
-    { label: t("ui.progressMetricCompleted"), value: progress.completedSessions, icon: "check" as const },
-    { label: t("ui.progressMetricResponses"), value: progress.answeredItems, icon: "writing" as const },
-    { label: t("ui.progressMetricTasksReviewed"), value: progress.totalItems, icon: "reading" as const },
+  const metrics = progressMetrics(progress);
+  const taskName = (code: string) => {
+    const found = sections.flatMap((section) => section.taskTypes).find((task) => task.code === code);
+    return taskDisplayName(code, found?.displayName ?? code, t);
+  };
+  const cells = [
+    { label: t("progress.metricSessions"), value: String(metrics.sessions), icon: "responses" as const },
+    { label: t("progress.metricCompleted"), value: String(metrics.completed), icon: "check" as const },
+    { label: t("progress.metricAnswered"), value: String(metrics.answered), icon: "writing" as const },
+    { label: t("progress.metricAverage"), value: formatScore(metrics.averageScore), icon: "progress" as const },
   ];
+  const current = sections.find((section) => section.code === skill) ?? sections[0];
 
   return (
-    <div className="page-stack" data-testid="progress-page">
-      <AccessStatusBanner />
-      <div className="progress-reference">
-        <section className="reference-card progress-overview" aria-labelledby="progress-overview-title">
-          <div className="progress-overview-header">
-            <h1 id="progress-overview-title">{t("ui.progressHeading")}</h1>
-            <p>{latest ? t("ui.progressLoadedDescription") : t("ui.progressEmptyDescription")}</p>
+    <div className="page-column" data-testid="progress-page">
+      <h1 className="page-title">{t("progress.title")}</h1>
+      {loadState === "error" ? (
+        <div className="card progress-error" role="alert">
+          <span>{error}</span>
+          <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
+        </div>
+      ) : null}
+      <div className="metric-grid" aria-busy={loadState === "loading"}>
+        {cells.map((cell) => (
+          <div className="card metric-card" key={cell.label}>
+            <AppIcon name={cell.icon} size={20} />
+            <span>{cell.label}</span>
+            <strong>{loadState === "loading" ? "…" : cell.value}</strong>
           </div>
-          {loadState === "loading" ? <p className="progress-load-state" role="status">{t("ui.progressLoading")}</p> : null}
-          {loadState === "error" ? (
-            <div className="progress-error" role="alert">
-              <span>{error ?? t("ui.progressError")}</span>
-              <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
-            </div>
-          ) : null}
-          <div className="metric-grid">
-            {metrics.map((metric) => (
-              <div className="metric-cell" key={metric.label}>
-                <AppIcon name={metric.icon} size={21} />
-                <span>{metric.label}</span>
-                <strong className={progress.totalSessions ? "metric-value" : "metric-empty"}>{progress.totalSessions ? metric.value : t("ui.progressNoValue")}</strong>
-              </div>
-            ))}
-          </div>
-          <div className="insight-strip"><AppIcon name="sparkle" size={20} /><span>{latest ? progressStatusLabel(latest, t) : t("ui.progressEmptyDescription")}</span></div>
-        </section>
-
-        <section className="reference-section" aria-labelledby="progress-speaking-title">
-          <h2 id="progress-speaking-title">{t("ui.progressSpeaking")}</h2>
-          <div className="progress-section-card">
-            <article className="progress-skill-card">
-              <div className="progress-empty-ring" aria-hidden="true">{latest ? `${latest.answeredItemCount}/${latest.totalItemCount}` : t("ui.progressNoValue")}</div>
-              <div><h3>{t("ui.progressSpeakingProficiency")}</h3><p>{latest ? progressStatusLabel(latest, t) : t("ui.progressCompleteTask")}</p></div>
-            </article>
-            <div className="skills-list">
-              <div className="skill-list-row">
-                <span className="skill-list-icon" aria-hidden="true"><AppIcon name="mic" size={19} /></span>
-                <span className="skill-list-copy"><strong>{t("ui.progressSpeakingItems")}</strong><span>{taskRows.length ? `${taskRows.length} ${t("ui.progressTaskTypes")}` : t("ui.progressNoTaskTypes")}</span></span>
-              </div>
-              {taskRows.map((task) => (
-                <div className="skill-list-row" key={task.code}>
-                  <span className="skill-list-icon" aria-hidden="true"><AppIcon name={iconForTaskType(task.code)} size={17} /></span>
-                  <span className="skill-list-copy"><strong>{task.displayName}</strong><span>{latest ? t("ui.progressSessionHistoryAvailable") : t("ui.progressNoResponse")}</span></span>
-                  <span className="state-badge state-badge-locked">{t("ui.progressNoValue")}</span>
-                  <span className="skill-list-action" aria-hidden="true"><AppIcon name="chevronRight" size={18} /></span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {progress.entries.length ? <ProgressHistory entries={progress.entries} hasMore={progress.hasMore} t={t} /> : null}
-        <p className="quiet-note">{t("ui.progressReadOnlyNote")}</p>
+        ))}
       </div>
+
+      <section className="home-section" aria-labelledby="by-skill-title">
+        <h2 id="by-skill-title" className="section-title">{t("progress.bySkill")}</h2>
+        <div className="card card-flush">
+          <Tabs ariaLabel={t("progress.bySkill")} value={current?.code ?? ""} onChange={setSkill} variant="minimal"
+            items={sections.map((section) => {
+              const key = skillKey(section.code);
+              return { id: section.code, label: key ? t(key) : section.displayName, icon: <AppIcon name={iconForSection(section.code)} size={16} /> };
+            })} />
+          {current ? (
+            <TabPanel id={`progress-${current.code}`} active>
+              {current.taskTypes.map((task) => {
+                const activeSession = progress.entries.find(
+                  (entry) =>
+                    entry.taskCode === task.code &&
+                    (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
+                );
+                const completedSession = progress.entries.find(
+                  (entry) =>
+                    entry.taskCode === task.code &&
+                    (entry.status !== "IN_PROGRESS" && entry.sessionStatus !== "IN_PROGRESS"),
+                );
+                return (
+                  <SkillTaskRow
+                    key={task.code}
+                    task={task}
+                    isPracticeUnlocked={isPracticeUnlocked}
+                    activeSession={activeSession}
+                    completedSession={completedSession}
+                    onStart={openFor}
+                  />
+                );
+              })}
+            </TabPanel>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="home-section" aria-labelledby="history-title">
+        <h2 id="history-title" className="section-title">{t("progress.history")}</h2>
+        {loadState === "ready" && progress.entries.length === 0 ? <p className="catalog-note">{t("progress.empty")}</p> : null}
+        {progress.entries.length ? (
+          <ul className="card card-flush history-list">
+            {progress.entries.map((entry) => {
+              const inProgress = entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS";
+              const targetUrl = inProgress
+                ? `${PRACTICE_ROUTES.practiceSession}?sessionId=${entry.sessionPublicId}`
+                : `${PRACTICE_ROUTES.practiceReview}?sessionId=${entry.sessionPublicId}`;
+              return (
+                <li className="history-row" key={entry.sessionPublicId}>
+                  <Link className="history-copy history-row-link" href={targetUrl}>
+                    <strong>{sessionDisplayName(entry, taskName, t)}</strong>
+                    <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
+                  </Link>
+                  {entry.score !== null && Number.isFinite(entry.score) ? (
+                    <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
+                  ) : null}
+                  <Link className="button button-outline button-pill" href={targetUrl}>
+                    {inProgress ? t("progress.resume") : t("progress.review")}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </section>
+      {dialog}
     </div>
   );
 }
 
-function ProgressHistory({ entries, hasMore, t }: { entries: PracticeProgressEntry[]; hasMore: boolean; t: (k: TranslationKey) => string }) {
-  return (
-    <section className="progress-history" aria-labelledby="progress-history-title">
-      <div className="progress-history-heading"><h2 id="progress-history-title">{t("ui.progressHistoryTitle")}</h2><span>{hasMore ? t("ui.progressLatestSessions") : `${entries.length} ${entries.length === 1 ? t("ui.progressSession") : t("ui.progressSessions")}`}</span></div>
-      <div className="progress-history-list">
-        {entries.map((entry) => (
-          <article className="progress-history-row" key={entry.sessionPublicId}>
-            <div><strong>{entry.title}</strong><span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt, t)}</span></div>
-            <div className="progress-history-stat"><span>{entry.answeredItemCount}/{entry.totalItemCount} {t("ui.progressResponses")}</span><span>{entry.highConfidenceCount} {t("ui.progressHighConfidence")}</span></div>
-            <span className={`state-badge state-badge-${entry.status === "IN_PROGRESS" ? "locked" : "ready"}`}>{progressStatusLabel(entry, t)}</span>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function progressStatusLabel(entry: PracticeProgressEntry, t: (k: TranslationKey) => string): string {
-  if (entry.status === "IN_PROGRESS") return t("ui.progressInProgress");
-  if (entry.status === "COMPLETED_SCORED" && entry.score !== null) return `${t("ui.progressScore")}: ${entry.score}`;
-  if (entry.status === "SCORING_FAILED") return t("ui.progressScoringUnavailable");
-  return t("ui.progressNoScore");
-}
-
-function formatDate(value: string | null, t: (k: TranslationKey) => string): string {
-  if (!value) return t("ui.progressNotStarted");
+function formatDate(value: string | null): string {
+  if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? t("ui.progressRecentActivity") : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
 }

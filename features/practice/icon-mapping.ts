@@ -29,8 +29,6 @@ export function iconForSection(section: string): IconName {
  */
 export function iconForTaskType(taskType: string): IconName {
   switch (taskType.toUpperCase()) {
-    case "PERSONAL_INTRODUCTION":
-      return "personalIntroduction";
     case "READ_ALOUD":
       return "readAloud";
     case "REPEAT_SENTENCE":
@@ -47,8 +45,6 @@ export function iconForTaskType(taskType: string): IconName {
       return "groupDiscussion";
     case "SUMMARIZE_WRITTEN_TEXT":
       return "summarizeWritten";
-    case "WRITE_EMAIL":
-      return "writeEmail";
     case "WRITE_ESSAY":
       return "writeEssay";
     case "MC_READING_SINGLE":

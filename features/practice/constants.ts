@@ -3,13 +3,15 @@ import type { IconName } from "../../common/components";
 import type { CatalogAvailability } from "./contracts";
 
 export const API_PATHS = {
-  requestChallenge: "/api/v1/auth/practice/request",
-  verifyChallenge: "/api/v1/auth/practice/verify",
+  login: "/api/v1/auth/login",
+  changePassword: "/api/v1/auth/change-password",
   refreshToken: "/api/v1/auth/refresh",
   entitlement: "/api/v1/student/practice/entitlement",
   catalog: "/api/v1/student/practice/catalog",
   progress: "/api/v1/student/practice/progress",
   practiceSessions: "/api/v1/student/practice/sessions",
+  mockTests: "/api/v1/student/practice/mock-tests",
+  profile: "/api/v1/student/practice/profile",
   mediaObjects: "/api/v1/objects",
 } as const;
 
@@ -20,6 +22,7 @@ export const PRACTICE_ROUTES = {
   progress: "/progress",
   signIn: "/sign-in",
   practiceSession: "/practice-tests/session",
+  practiceReview: "/practice-tests/session/review",
 } as const;
 
 export const NAV_ITEMS: ReadonlyArray<{ href: string; label: string; icon: IconName }> = [
@@ -40,7 +43,6 @@ export const UI_TEXT = {
   catalogError: "The practice catalog is unavailable. Preview cards remain locked until it loads.",
   sessionStarting: "Preparing your practice session...",
   sessionLoading: "Loading your practice session...",
-  sessionOverview: "Review the session before you begin.",
   sessionNext: "Next",
   sessionSubmit: "Submit answer",
   sessionSkip: "Skip",
@@ -52,6 +54,14 @@ export const UI_TEXT = {
   sessionConflict: "This session changed in another tab. Reload to continue from the latest state.",
   sessionExpired: "This practice session has expired.",
   sessionError: "We could not load this practice session. Please try again.",
+  reviewTitle: "Practice review",
+  reviewEyebrow: "PTE Practice",
+  reviewDescription: "Your submitted answers and their scores.",
+  reviewPageLoading: "Loading your practice review...",
+  reviewBack: "Back to practice",
+  reviewRequiredSession: "A practice session is required.",
+  reviewLoadError: "We could not load this review.",
+  reviewLoading: "Loading your practice review...",
   sessionConfidence: "How confident are you in this answer?",
   confidenceHintTitle: "Rate your confidence",
   confidenceHintDescription: "Your confidence rating is saved with this response to help you understand your learning patterns. It does not change your score.",
@@ -114,52 +124,85 @@ export const AUTH_TEXT = {
   rateLimited: "Too many requests. Please wait a moment and try again.",
 } as const;
 
-export const STUDY_PACKS = [
+export const TARGET_PRACTICE_SECTIONS = [
   {
-    id: "speaking-foundation",
-    title: "Speaking foundation",
-    description: "Build a steady routine across speaking task types.",
-    icon: "mic",
+    code: "SPEAKING",
+    displayName: "Speaking",
+    taskCodes: [
+      "READ_ALOUD",
+      "REPEAT_SENTENCE",
+      "DESCRIBE_IMAGE",
+      "RE_TELL_LECTURE",
+      "ANSWER_SHORT_QUESTION",
+      "SUMMARIZE_GROUP_DISCUSSION",
+      "RESPOND_TO_A_SITUATION",
+    ],
   },
   {
-    id: "writing-toolkit",
-    title: "Writing toolkit",
-    description: "Review structures and practice prompts in one place.",
-    icon: "writing",
+    code: "WRITING",
+    displayName: "Writing",
+    taskCodes: [
+      "SUMMARIZE_WRITTEN_TEXT",
+      "WRITE_ESSAY",
+      "SUMMARIZE_SPOKEN_TEXT",
+      "WRITE_FROM_DICTATION",
+    ],
   },
   {
-    id: "reading-listening",
-    title: "Reading & Listening",
-    description: "Strengthen comprehension with short focused sessions.",
-    icon: "reading",
+    code: "READING",
+    displayName: "Reading",
+    taskCodes: [
+      "FILL_IN_THE_BLANKS_DROPDOWN",
+      "MC_READING_MULTIPLE",
+      "RE_ORDER_PARAGRAPHS",
+      "FILL_IN_THE_BLANKS_DRAG_AND_DROP",
+      "MC_READING_SINGLE",
+      "HIGHLIGHT_CORRECT_SUMMARY",
+      "HIGHLIGHT_INCORRECT_WORDS",
+    ],
+  },
+  {
+    code: "LISTENING",
+    displayName: "Listening",
+    taskCodes: [
+      "MC_LISTENING_MULTIPLE",
+      "FILL_IN_THE_BLANKS_TYPE_IN",
+      "MC_LISTENING_SINGLE",
+      "SELECT_MISSING_WORD",
+    ],
   },
 ] as const;
 
 export const PREVIEW_TASKS = [
-  { code: "PERSONAL_INTRODUCTION", displayName: "Personal Introduction", section: "SPEAKING", scored: false, availability: "VISIBLE", unavailableReason: null },
+  // SPEAKING (7 tasks)
   { code: "READ_ALOUD", displayName: "Read Aloud", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "REPEAT_SENTENCE", displayName: "Repeat Sentence", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "DESCRIBE_IMAGE", displayName: "Describe Image", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "RE_TELL_LECTURE", displayName: "Re-tell Lecture", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "ANSWER_SHORT_QUESTION", displayName: "Answer Short Question", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "RESPOND_TO_A_SITUATION", displayName: "Respond to a Situation", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "SUMMARIZE_GROUP_DISCUSSION", displayName: "Summarize Group Discussion", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "RESPOND_TO_A_SITUATION", displayName: "Respond to a Situation", section: "SPEAKING", scored: true, availability: "VISIBLE", unavailableReason: null },
+
+  // WRITING (4 tasks)
   { code: "SUMMARIZE_WRITTEN_TEXT", displayName: "Summarize Written Text", section: "WRITING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "WRITE_EMAIL", displayName: "Write Email", section: "WRITING", scored: true, availability: "UNAVAILABLE", unavailableReason: "UNSUPPORTED_RUNTIME" },
   { code: "WRITE_ESSAY", displayName: "Write Essay", section: "WRITING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "MC_READING_SINGLE", displayName: "Multiple-choice Reading (Single)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "SUMMARIZE_SPOKEN_TEXT", displayName: "Summarize Spoken Text", section: "WRITING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "WRITE_FROM_DICTATION", displayName: "Write From Dictation", section: "WRITING", scored: true, availability: "VISIBLE", unavailableReason: null },
+
+  // READING (7 tasks)
+  { code: "FILL_IN_THE_BLANKS_DROPDOWN", displayName: "Fill in the Blanks (Dropdown)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "MC_READING_MULTIPLE", displayName: "Multiple-choice Reading (Multiple)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "RE_ORDER_PARAGRAPHS", displayName: "Re-order Paragraphs", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "FILL_IN_THE_BLANKS_DRAG_AND_DROP", displayName: "Fill in the Blanks (Drag and Drop)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "FILL_IN_THE_BLANKS_DROPDOWN", displayName: "Fill in the Blanks (Dropdown)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "SUMMARIZE_SPOKEN_TEXT", displayName: "Summarize Spoken Text", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "MC_LISTENING_SINGLE", displayName: "Multiple-choice Listening (Single)", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "MC_READING_SINGLE", displayName: "Multiple-choice Reading (Single)", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "HIGHLIGHT_CORRECT_SUMMARY", displayName: "Highlight Correct Summary", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "HIGHLIGHT_INCORRECT_WORDS", displayName: "Highlight Incorrect Words", section: "READING", scored: true, availability: "VISIBLE", unavailableReason: null },
+
+  // LISTENING (4 tasks)
   { code: "MC_LISTENING_MULTIPLE", displayName: "Multiple-choice Listening (Multiple)", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "FILL_IN_THE_BLANKS_TYPE_IN", displayName: "Fill in the Blanks (Type In)", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "HIGHLIGHT_CORRECT_SUMMARY", displayName: "Highlight Correct Summary", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
+  { code: "MC_LISTENING_SINGLE", displayName: "Multiple-choice Listening (Single)", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
   { code: "SELECT_MISSING_WORD", displayName: "Select Missing Word", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "HIGHLIGHT_INCORRECT_WORDS", displayName: "Highlight Incorrect Words", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
-  { code: "WRITE_FROM_DICTATION", displayName: "Write From Dictation", section: "LISTENING", scored: true, availability: "VISIBLE", unavailableReason: null },
 ] satisfies ReadonlyArray<{
   code: string;
   displayName: string;
@@ -172,3 +215,30 @@ export const PREVIEW_TASKS = [
 export const PRACTICE_SECTION_ORDER = ["SPEAKING", "WRITING", "READING", "LISTENING"] as const;
 
 export const PRACTICE_TASK_ORDER = PREVIEW_TASKS.map((task) => task.code) as ReadonlyArray<string>;
+
+export const PRACTICE_STORAGE_KEYS = {
+  session: "pte.practice.session",
+  draftPrefix: "pte.practice.draft.",
+  unlockedToast: "pte.practice.unlocked_toast_shown",
+  modePrefix: "pte.practice.mode.",
+  deviceCheckPrefix: "pte.practice.device-check.",
+  readingSize: "pte.practice.reading-size",
+  deviceCheckEvent: "pte.practice.device-check-changed",
+} as const;
+
+export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
+export const DEFAULT_API_BASE_URL = "http://localhost:8080";
+export const ENTITLEMENT_STALE_THRESHOLD_MS = 10_000;
+
+export const SCORE_TONE_THRESHOLDS = {
+  LOW: 40,
+  HIGH: 70,
+} as const;
+
+export const SKILL_SHORT_NAMES = {
+  SPEAKING: { vi: "Nói", en: "Speaking" },
+  WRITING: { vi: "Viết", en: "Writing" },
+  READING: { vi: "Đọc", en: "Reading" },
+  LISTENING: { vi: "Nghe", en: "Listening" },
+  DEFAULT: { vi: "Luyện tập", en: "Practice" },
+} as const;
