@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ICON_PATHS, type IconName } from "./icon-paths";
+import { ICON_PATHS, type IconName } from "@/common/components/icon-paths";
 
 describe("ICON_PATHS", () => {
   const entries = Object.entries(ICON_PATHS) as Array<[IconName, string]>;

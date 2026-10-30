@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stepStates } from "./stepper-state";
+import { stepStates } from "@/common/components/stepper-state";
 
 const steps = [{ id: "listen", label: "Listen" }, { id: "prep", label: "Prepare" }, { id: "record", label: "Record" }];
 

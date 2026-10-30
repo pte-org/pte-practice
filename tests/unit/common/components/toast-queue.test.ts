@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addToastToQueue, removeToastFromQueue, type ToastItem } from "./toast-queue";
+import { addToastToQueue, removeToastFromQueue, type ToastItem } from "@/common/components/toast-queue";
 
 describe("toast-queue", () => {
   const item = (id: string): ToastItem => ({

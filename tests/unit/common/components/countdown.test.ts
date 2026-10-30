@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatClock, fractionRemaining, hasElapsed, remainingSeconds } from "./countdown";
+import { formatClock, fractionRemaining, hasElapsed, remainingSeconds } from "@/common/components/countdown";
 
 describe("remainingSeconds", () => {
   it("rounds up so 0 only shows after the deadline", () => {

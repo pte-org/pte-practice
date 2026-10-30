@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fillFraction, progressDash, RING_PRESETS, ringGeometry, segmentDashes } from "./ring-geometry";
+import { fillFraction, progressDash, RING_PRESETS, ringGeometry, segmentDashes } from "@/common/components/ring-geometry";
 
 describe("ringGeometry", () => {
   it("fits the stroke inside the box", () => {
