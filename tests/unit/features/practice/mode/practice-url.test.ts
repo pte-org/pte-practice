@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { practiceMockTestUrl, practiceSessionUrl, practiceSkillSessionUrl } from "./practice-url";
+import { practiceMockTestUrl, practiceSessionUrl, practiceSkillSessionUrl } from "@/features/practice/mode/practice-url";
 
 describe("practiceSessionUrl", () => {
   it("carries the task, the timing mode and the question count", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_MODE_PREFERENCE, parseModePreference, readModePreference, writeModePreference, type PreferenceStorage,
-} from "./mode-preference";
+} from "@/features/practice/mode/mode-preference";
 
 function fakeStorage(initial: Record<string, string> = {}): PreferenceStorage & { data: Record<string, string> } {
   const data = { ...initial };

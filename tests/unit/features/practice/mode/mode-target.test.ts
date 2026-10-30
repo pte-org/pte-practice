@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { preferenceKey, runnableTasks, skillTarget, taskTarget } from "./mode-target";
+import { preferenceKey, runnableTasks, skillTarget, taskTarget } from "@/features/practice/mode/mode-target";
 
 const task = (code: string, availability: "RUNNABLE" | "VISIBLE", timedAvailable: boolean) =>
   ({ code, displayName: code, availability, rendererKey: "READ_ALOUD_V1", timedAvailable }) as never;
