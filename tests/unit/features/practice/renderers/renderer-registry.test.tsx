@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { fixtureForTask } from "../fixtures";
-import { ALLOWED_RENDERER_KEYS, isClientRuntimeSupported } from "../renderer-allowlist";
-import { PREVIEW_TASKS } from "../constants";
-import { renderTask } from "./renderer-registry";
-import type { TaskRendererProps } from "./RendererTypes";
+import { fixtureForTask } from "@/features/practice/fixtures";
+import { ALLOWED_RENDERER_KEYS, isClientRuntimeSupported } from "@/features/practice/renderer-allowlist";
+import { PREVIEW_TASKS } from "@/features/practice/constants";
+import { renderTask } from "@/features/practice/renderers/renderer-registry";
+import type { TaskRendererProps } from "@/features/practice/renderers/RendererTypes";
 
 const props: TaskRendererProps = {
   fixture: fixtureForTask("MC_READING_SINGLE"),
