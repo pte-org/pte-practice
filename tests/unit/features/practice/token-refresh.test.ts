@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { refreshOnce } from "./token-refresh";
+import { refreshOnce } from "@/features/practice/token-refresh";
 
 describe("refreshOnce", () => {
   it("shares one refresh between requests that fail together", async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePracticeItemResult, normalizePracticeSessionResponse } from "./contracts";
+import { normalizePracticeItemResult, normalizePracticeSessionResponse } from "@/features/practice/contracts";
 
 const scored = {
   itemPublicId: "item-1",

@@ -6,7 +6,7 @@ import {
   toggleWordIndex,
   typeInBlankValues,
   wordIndexes,
-} from "./answer-payloads";
+} from "@/features/practice/answer-payloads";
 
 describe("single and multiple choice payloads", () => {
   it("sends the order index of the picked option as selectedOption", () => {

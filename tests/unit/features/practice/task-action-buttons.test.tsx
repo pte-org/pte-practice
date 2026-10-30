@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LocaleProvider } from "@/common/i18n";
-import { TaskActionButtons } from "./TaskActionButtons";
-import { SkillTaskRow } from "./SkillTaskRow";
-import type { PracticeCatalogTask } from "./contracts";
+import { TaskActionButtons } from "@/features/practice/TaskActionButtons";
+import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
+import type { PracticeCatalogTask } from "@/features/practice/contracts";
 
-import { PREVIEW_CATALOG } from "./preview-catalog";
+import { PREVIEW_CATALOG } from "@/features/practice/preview-catalog";
 
 const baseTask = PREVIEW_CATALOG.sections[0].taskTypes[0];
 const sampleTask: PracticeCatalogTask = {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./session-state";
-import type { PracticeSession } from "./contracts";
+import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "@/features/practice/session-state";
+import type { PracticeSession } from "@/features/practice/contracts";
 
 const session = (status: PracticeSession["status"]): PracticeSession => ({
   publicId: "session-1",

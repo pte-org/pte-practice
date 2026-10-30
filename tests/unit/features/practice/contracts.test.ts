@@ -6,7 +6,7 @@ import {
   normalizePracticeProgressResponse,
   normalizePracticeSessionResponse,
   normalizeRecordingPlayback,
-} from "./contracts";
+} from "@/features/practice/contracts";
 
 describe("practice entitlement contract", () => {
   it("unlocks only when the server returns the exact UNLOCKED state", () => {

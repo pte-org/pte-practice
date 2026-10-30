@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { PracticeTaskContent } from "./contracts";
-import { fixtureFromPracticeTask } from "./task-content";
+import type { PracticeTaskContent } from "@/features/practice/contracts";
+import { fixtureFromPracticeTask } from "@/features/practice/task-content";
 
 function content(overrides: Partial<PracticeTaskContent> = {}): PracticeTaskContent {
   return {

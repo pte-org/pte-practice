@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PracticeApiError, practiceRequest } from "./api";
+import { PracticeApiError, practiceRequest } from "@/features/practice/api";
 
 function stubFetch(status: number, body: unknown) {
   const fetchMock = vi.fn().mockResolvedValue(

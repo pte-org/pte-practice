@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { orderCatalogSections, flattenCatalogTasks } from "./catalog-order";
-import { PREVIEW_CATALOG } from "./preview-catalog";
+import { orderCatalogSections, flattenCatalogTasks } from "@/features/practice/catalog-order";
+import { PREVIEW_CATALOG } from "@/features/practice/preview-catalog";
 
 describe("practice catalog presentation order", () => {
   it("keeps the complete fallback catalog visible", () => {

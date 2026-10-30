@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatScore, itemStatusKey, scoreTone, sessionDisplayName, taskDisplayName } from "./presentation";
+import { formatScore, itemStatusKey, scoreTone, sessionDisplayName, taskDisplayName } from "@/features/practice/presentation";
 
 const t = (key: string) => ({
   "presentation.questions": "câu",

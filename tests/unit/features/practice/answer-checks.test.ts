@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recordingIssue, wordCountIssue } from "./answer-checks";
+import { recordingIssue, wordCountIssue } from "@/features/practice/answer-checks";
 
 describe("wordCountIssue", () => {
   it("flags answers under the minimum or over the maximum", () => {

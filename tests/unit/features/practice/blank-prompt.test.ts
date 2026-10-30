@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseBlankPrompt } from "./blank-prompt";
+import { parseBlankPrompt } from "@/features/practice/blank-prompt";
 
 describe("blank prompt parser", () => {
   it("splits the passage on {{n}} gap markers in source order", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeSavedAnswer } from "./review-answer";
+import { describeSavedAnswer } from "@/features/practice/review-answer";
 
 const options = [
   { text: "Alpha", orderIndex: 0 },

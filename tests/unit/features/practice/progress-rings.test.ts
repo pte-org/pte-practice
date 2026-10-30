@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { latestSessionRing, skillReadiness } from "./progress-rings";
+import { latestSessionRing, skillReadiness } from "@/features/practice/progress-rings";
 
 const task = (availability: "RUNNABLE" | "VISIBLE") => ({ availability, rendererKey: "READ_ALOUD_V1" }) as never;
 

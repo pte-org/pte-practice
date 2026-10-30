@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PREVIEW_TASKS } from "./constants";
-import { iconForSection, iconForTaskType } from "./icon-mapping";
+import { PREVIEW_TASKS } from "@/features/practice/constants";
+import { iconForSection, iconForTaskType } from "@/features/practice/icon-mapping";
 
 const EXPECTED_TASK_ICONS: Record<string, string> = {
   READ_ALOUD: "readAloud",

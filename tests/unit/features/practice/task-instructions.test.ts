@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCanonicalTaskInstruction } from "./task-instructions";
+import { getCanonicalTaskInstruction } from "@/features/practice/task-instructions";
 
 describe("getCanonicalTaskInstruction", () => {
   it("returns null for empty or null task code", () => {

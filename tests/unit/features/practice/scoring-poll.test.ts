@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { PracticeItemResult } from "./contracts";
+import type { PracticeItemResult } from "@/features/practice/contracts";
 import {
   POLL_INITIAL_DELAY_MS,
   POLL_MAX_DELAY_MS,
   POLL_TIMEOUT_MS,
   nextPollDelay,
   pollItemResult,
-} from "./scoring-poll";
+} from "@/features/practice/scoring-poll";
 
 function result(state: PracticeItemResult["state"]): PracticeItemResult {
   return {
