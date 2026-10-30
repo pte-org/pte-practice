@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
 import { chatErrorKey } from "@/features/chat/chat-errors";
 import { quotaFromError } from "@/features/chat/chat-quota";
@@ -17,17 +17,24 @@ const CONTRACT_PATH = join(
   "../../../../../pte-api/app/src/test/resources/chat/api-contract-v1.json",
 );
 
+interface ChatApiContract {
+  limits: { exercisePromptMaxChars: number };
+  quota: unknown;
+  reply: unknown;
+  latestSession: unknown;
+  consentGranted: unknown;
+  consentMissing: Record<string, unknown>;
+  quotaExceededError: { code: string; data: { resetAt: string } };
+  consentRequiredError: { code: string; data: { policyVersion: string } };
+}
+
 describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the backend)", () => {
-  const contract = JSON.parse(readFileSync(CONTRACT_PATH, "utf8")) as {
-    limits: { exercisePromptMaxChars: number };
-    quota: unknown;
-    reply: unknown;
-    latestSession: unknown;
-    consentGranted: unknown;
-    consentMissing: Record<string, unknown>;
-    quotaExceededError: { code: string; data: { resetAt: string } };
-    consentRequiredError: { code: string; data: { policyVersion: string } };
-  };
+  let contract: ChatApiContract;
+
+  beforeAll(() => {
+    // Skipped suites are still collected; read the shared fixture only when this suite runs.
+    contract = JSON.parse(readFileSync(CONTRACT_PATH, "utf8")) as ChatApiContract;
+  });
 
   it("cuts the exercise text at the same length the server accepts", () => {
     expect(CHAT_EXERCISE_MAX_CHARS).toBe(contract.limits.exercisePromptMaxChars);
