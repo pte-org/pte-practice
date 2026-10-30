@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeEstimatedScores, normalizeMockTests } from "./mock-test-contracts";
+import { normalizeEstimatedScores, normalizeMockTests } from "@/features/mockTests/mock-test-contracts";
 
 describe("normalizeMockTests", () => {
   it("reads a test with and without an attempt", () => {

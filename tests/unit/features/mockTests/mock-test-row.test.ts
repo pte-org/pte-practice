@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatEstimatedDuration, mockTestAction } from "./mock-test-row";
+import { formatEstimatedDuration, mockTestAction } from "@/features/mockTests/mock-test-row";
 
 const test = (status?: string) => ({
   latestAttempt: status ? { status } : null,
