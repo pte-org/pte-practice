@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { runInBackground } from "./background-mutation";
+import { runInBackground } from "@/features/practice/session/background-mutation";
 
 describe("runInBackground", () => {
   it("settles the heartbeat before running the action and returns its value", async () => {

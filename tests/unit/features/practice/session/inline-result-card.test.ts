@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { subScoreLabel } from "../ScoreView";
+import { subScoreLabel } from "@/features/practice/ScoreView";
 
 describe("InlineResultCard helpers", () => {
   it("formats subScore labels with clean capitalization", () => {

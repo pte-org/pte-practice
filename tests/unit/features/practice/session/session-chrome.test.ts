@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sessionParts, shouldWarnOnLeave } from "./session-chrome";
+import { sessionParts, shouldWarnOnLeave } from "@/features/practice/session/session-chrome";
 
 const sections = ["SPEAKING", "WRITING", "READING", "LISTENING"].map((code) => ({ code })) as never;
 

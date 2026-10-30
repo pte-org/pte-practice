@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { continueHref, sessionAverageScore } from "./complete-actions";
+import { continueHref, sessionAverageScore } from "@/features/practice/session/complete-actions";
 
 describe("continueHref", () => {
   it("restarts the same task type or skill untimed with the default count", () => {

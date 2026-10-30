@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   currentTaskPosition, effectiveDraft, hasAnswer, isVersionConflict, parsePayload, progressFor, sessionErrorMessage,
-} from "./session-draft";
+} from "@/features/practice/session/session-draft";
 
 const messages = { conflict: "changed", expired: "expired", fallback: "failed" };
 const task = { publicId: "i-1", savedPayload: '{"selectedOption":"1"}', confidence: "HIGH" as const, orderIndex: 2 };
