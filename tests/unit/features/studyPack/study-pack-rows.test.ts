@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studySkillRows, totalPracticeQuestions } from "./study-pack-rows";
+import { studySkillRows, totalPracticeQuestions } from "@/features/studyPack/study-pack-rows";
 
 const task = { code: "T", availability: "RUNNABLE", rendererKey: "READ_ALOUD_V1" };
 const section = (code: string, total: number, answered: number, tasks: unknown[] = [task]) =>
