@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { en, vi as viDictionary } from "@/common/i18n";
 import type { practiceRequest } from "@/features/practice/api";
-import { createChatApi } from "./api";
-import { chatPrivacyReducer, INITIAL_PRIVACY_STATE, type ChatPrivacyState } from "./chat-privacy";
-import { CHAT_CONSENT_PATH, CHAT_HISTORY_PATH } from "./constants";
+import { createChatApi } from "@/features/chat/api";
+import { chatPrivacyReducer, INITIAL_PRIVACY_STATE, type ChatPrivacyState } from "@/features/chat/chat-privacy";
+import { CHAT_CONSENT_PATH, CHAT_HISTORY_PATH } from "@/features/chat/constants";
 
 type Request = typeof practiceRequest;
 const fakeRequest = (result: unknown) => vi.fn().mockResolvedValue(result) as unknown as ReturnType<typeof vi.fn> & Request;

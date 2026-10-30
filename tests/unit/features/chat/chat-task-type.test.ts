@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CHAT_TASK_TYPES } from "./constants";
-import { normalizeChatTaskType } from "./chat-task-type";
+import { CHAT_TASK_TYPES } from "@/features/chat/constants";
+import { normalizeChatTaskType } from "@/features/chat/chat-task-type";
 
 describe("normalizeChatTaskType", () => {
   it.each(["READ_ALOUD", "WRITE_ESSAY", "PERSONAL_INTRODUCTION", "FILL_IN_THE_BLANKS_DRAG_AND_DROP"])(

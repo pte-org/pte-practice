@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
-import type { ChatQuota } from "./contracts";
-import { isQuotaExhausted, quotaFromError, quotaNoticeKind, timeUntilReset } from "./chat-quota";
+import type { ChatQuota } from "@/features/chat/contracts";
+import { isQuotaExhausted, quotaFromError, quotaNoticeKind, timeUntilReset } from "@/features/chat/chat-quota";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 

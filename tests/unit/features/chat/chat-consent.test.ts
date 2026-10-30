@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { en, vi as viDictionary } from "@/common/i18n";
 import { PracticeApiError, type practiceRequest } from "@/features/practice/api";
-import { createChatApi } from "./api";
+import { createChatApi } from "@/features/chat/api";
 import {
   canAcceptConsent,
   chatConsentReducer,
   consentBlocksChat,
   INITIAL_CONSENT_STATE,
   type ChatConsentState,
-} from "./chat-consent";
-import { chatErrorKey } from "./chat-errors";
-import { CHAT_CONSENT_ERROR_CODE, CHAT_CONSENT_PATH, CHAT_CONSENT_POLICY_VERSION } from "./constants";
-import { normalizeChatConsent } from "./contracts";
+} from "@/features/chat/chat-consent";
+import { chatErrorKey } from "@/features/chat/chat-errors";
+import { CHAT_CONSENT_ERROR_CODE, CHAT_CONSENT_PATH, CHAT_CONSENT_POLICY_VERSION } from "@/features/chat/constants";
+import { normalizeChatConsent } from "@/features/chat/contracts";
 
 type Request = typeof practiceRequest;
 const fakeRequest = (result: unknown) => vi.fn().mockResolvedValue(result) as unknown as ReturnType<typeof vi.fn> & Request;

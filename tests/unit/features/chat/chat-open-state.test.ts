@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CHAT_OPEN_STORAGE_KEY } from "./constants";
-import { readChatOpen, writeChatOpen, type ChatStorage } from "./chat-open-state";
+import { CHAT_OPEN_STORAGE_KEY } from "@/features/chat/constants";
+import { readChatOpen, writeChatOpen, type ChatStorage } from "@/features/chat/chat-open-state";
 
 function memoryStorage(initial: Record<string, string> = {}): ChatStorage & { data: Record<string, string> } {
   const data = { ...initial };

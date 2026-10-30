@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { en, vi } from "@/common/i18n";
 import { PRIVACY_CONTENT } from "@/features/privacy/privacy-content";
-import { CHAT_CONSENT_POLICY_VERSION } from "./constants";
+import { CHAT_CONSENT_POLICY_VERSION } from "@/features/chat/constants";
 
 /**
  * Students agree to a specific text. If that text changes, `CHAT_CONSENT_POLICY_VERSION` (here and in the
@@ -53,7 +53,7 @@ describe("consent policy version", () => {
   it("matches the backend version when the backend repository sits next to this one", () => {
     const backend = join(
       fileURLToPath(new URL(".", import.meta.url)),
-      "../../../pte-api/app/src/main/java/com/pte/chat/internal/constant/ChatConstants.java",
+      "../../../../../pte-api/app/src/main/java/com/pte/chat/internal/constant/ChatConstants.java",
     );
     if (!existsSync(backend)) return;
     const match = readFileSync(backend, "utf8").match(/CONSENT_POLICY_VERSION\s*=\s*"([^"]+)"/);

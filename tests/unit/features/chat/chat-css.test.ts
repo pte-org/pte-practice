@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const CHAT_DIR = fileURLToPath(new URL(".", import.meta.url));
+// The tests mirror the source tree, so the production chat folder is no longer this file's own directory.
+const CHAT_DIR = fileURLToPath(new URL("../../../../features/chat/", import.meta.url));
 const CSS_PATH = join(CHAT_DIR, "chat.css");
 
 const readCss = () => readFileSync(CSS_PATH, "utf8");

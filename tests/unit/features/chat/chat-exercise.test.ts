@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildSendInput, exerciseContextFrom } from "./chat-exercise";
-import { CHAT_EXERCISE_MAX_CHARS } from "./constants";
+import { buildSendInput, exerciseContextFrom } from "@/features/chat/chat-exercise";
+import { CHAT_EXERCISE_MAX_CHARS } from "@/features/chat/constants";
 
 describe("exerciseContextFrom", () => {
   it.each([null, undefined, "", "   ", "\n\t "])("returns null when there is no exercise text (%j)", (value) => {

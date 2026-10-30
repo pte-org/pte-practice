@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ChatMarkdown } from "./ChatMarkdown";
+import { ChatMarkdown } from "@/features/chat/ChatMarkdown";
 
 const render = (markdown: string) => renderToStaticMarkup(<ChatMarkdown markdown={markdown} />);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isQuotaFresh, isQuotaResetDue, quotaBadge } from "./chat-quota";
-import type { ChatQuota } from "./contracts";
+import { isQuotaFresh, isQuotaResetDue, quotaBadge } from "@/features/chat/chat-quota";
+import type { ChatQuota } from "@/features/chat/contracts";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 const quota = (remaining: number, resetAt = RESET_AT): ChatQuota => ({ used: 20 - remaining, remaining, limit: 20, resetAt });

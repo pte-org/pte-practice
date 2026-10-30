@@ -6,7 +6,7 @@ import {
   CHAT_PATHS,
   CHAT_TASK_TYPES,
   CHAT_WARNING_THRESHOLD,
-} from "./constants";
+} from "@/features/chat/constants";
 
 const EXPECTED_TASK_TYPES = [
   "PERSONAL_INTRODUCTION",

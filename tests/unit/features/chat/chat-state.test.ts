@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ChatHistoryItem, ChatQuota, ChatReply } from "./contracts";
-import { chatComposerState, chatReducer, INITIAL_CHAT_STATE, type ChatState } from "./chat-state";
+import type { ChatHistoryItem, ChatQuota, ChatReply } from "@/features/chat/contracts";
+import { chatComposerState, chatReducer, INITIAL_CHAT_STATE, type ChatState } from "@/features/chat/chat-state";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 const OLD_ID = "0b8f2c3e-6d4a-4f7e-9c1b-2a3d4e5f6a7b";

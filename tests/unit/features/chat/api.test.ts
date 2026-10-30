@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { PracticeApiError, type practiceRequest } from "@/features/practice/api";
-import { createChatApi } from "./api";
+import { createChatApi } from "@/features/chat/api";
 
 type Request = typeof practiceRequest;
 

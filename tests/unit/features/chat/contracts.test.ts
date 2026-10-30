@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "./contracts";
+import { normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "@/features/chat/contracts";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 

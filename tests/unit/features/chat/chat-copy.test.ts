@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { copyToClipboard } from "./chat-copy";
+import { copyToClipboard } from "@/features/chat/chat-copy";
 
 describe("copyToClipboard", () => {
   it("writes the text and reports success", async () => {

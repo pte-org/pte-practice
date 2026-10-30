@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
-import { chatErrorKey } from "./chat-errors";
+import { chatErrorKey } from "@/features/chat/chat-errors";
 
 describe("chatErrorKey", () => {
   it.each([

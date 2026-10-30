@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { en, vi } from "@/common/i18n";
-import { CHAT_SUGGESTION_KEYS } from "./chat-suggestions";
-import { validateChatInput } from "./chat-input";
+import { CHAT_SUGGESTION_KEYS } from "@/features/chat/chat-suggestions";
+import { validateChatInput } from "@/features/chat/chat-input";
 
 type Tree = { [key: string]: unknown };
 const suggestions = (dictionary: unknown) => ((dictionary as { chat: { suggestions: Tree } }).chat.suggestions);

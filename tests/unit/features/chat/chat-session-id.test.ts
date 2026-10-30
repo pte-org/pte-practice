@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createChatSessionId, isUuidV4 } from "./chat-session-id";
+import { createChatSessionId, isUuidV4 } from "@/features/chat/chat-session-id";
 
 afterEach(() => {
   vi.unstubAllGlobals();

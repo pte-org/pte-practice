@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSafeChatHref } from "./chat-links";
+import { isSafeChatHref } from "@/features/chat/chat-links";
 
 describe("isSafeChatHref", () => {
   it.each([

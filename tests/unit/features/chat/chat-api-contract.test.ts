@@ -3,10 +3,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
-import { chatErrorKey } from "./chat-errors";
-import { quotaFromError } from "./chat-quota";
-import { CHAT_CONSENT_POLICY_VERSION, CHAT_EXERCISE_MAX_CHARS } from "./constants";
-import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "./contracts";
+import { chatErrorKey } from "@/features/chat/chat-errors";
+import { quotaFromError } from "@/features/chat/chat-quota";
+import { CHAT_CONSENT_POLICY_VERSION, CHAT_EXERCISE_MAX_CHARS } from "@/features/chat/constants";
+import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "@/features/chat/contracts";
 
 /**
  * Reads the contract file the backend's `ChatApiContractTest` checks against its real responses, so this client
@@ -14,7 +14,7 @@ import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalize
  */
 const CONTRACT_PATH = join(
   fileURLToPath(new URL(".", import.meta.url)),
-  "../../../pte-api/app/src/test/resources/chat/api-contract-v1.json",
+  "../../../../../pte-api/app/src/test/resources/chat/api-contract-v1.json",
 );
 
 describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the backend)", () => {

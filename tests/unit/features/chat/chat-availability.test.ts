@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
-import { isChatUnavailable } from "./chat-availability";
+import { isChatUnavailable } from "@/features/chat/chat-availability";
 
 describe("isChatUnavailable", () => {
   it.each([

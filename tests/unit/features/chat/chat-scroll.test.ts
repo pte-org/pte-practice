@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { scrollTargetFor } from "./chat-scroll";
-import type { ChatMessageView } from "./chat-state";
+import { scrollTargetFor } from "@/features/chat/chat-scroll";
+import type { ChatMessageView } from "@/features/chat/chat-state";
 
 const user = (id: string): ChatMessageView => ({ id, role: "user", text: "q", refused: false });
 const assistant = (id: string, refused = false): ChatMessageView => ({ id, role: "assistant", text: "a", refused });

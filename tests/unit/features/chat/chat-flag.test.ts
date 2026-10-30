@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isChatEnabled } from "./chat-flag";
+import { isChatEnabled } from "@/features/chat/chat-flag";
 
 describe("isChatEnabled", () => {
   it("is on only for the string true, ignoring case and surrounding spaces", () => {

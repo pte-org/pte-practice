@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CHAT_MAX_INPUT_CHARS } from "./constants";
-import { remainingInputChars, validateChatInput } from "./chat-input";
+import { CHAT_MAX_INPUT_CHARS } from "@/features/chat/constants";
+import { remainingInputChars, validateChatInput } from "@/features/chat/chat-input";
 
 describe("validateChatInput", () => {
   it("accepts a normal question and returns it trimmed", () => {

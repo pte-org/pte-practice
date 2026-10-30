@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isChatToggleShortcut } from "./chat-shortcut";
+import { isChatToggleShortcut } from "@/features/chat/chat-shortcut";
 
 const base = { key: "/", ctrlKey: true, metaKey: false, altKey: false, shiftKey: false, isComposing: false };
 
