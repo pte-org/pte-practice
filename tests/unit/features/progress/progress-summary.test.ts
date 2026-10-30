@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { progressMetrics } from "./progress-summary";
+import { progressMetrics } from "@/features/progress/progress-summary";
 
 const progress = (scores: (number | null)[]) => ({
   entries: scores.map((score) => ({ score })), totalSessions: scores.length, completedSessions: 2, answeredItems: 9,
