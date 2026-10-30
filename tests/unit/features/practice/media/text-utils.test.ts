@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countPracticeWords, normalizePracticeText } from "./text-utils";
+import { countPracticeWords, normalizePracticeText } from "@/features/practice/media/text-utils";
 
 describe("practice text utilities", () => {
   it("counts Unicode words without counting punctuation", () => {

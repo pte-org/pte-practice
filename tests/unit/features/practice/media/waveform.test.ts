@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampRecordingDuration, computePeaks, normalizePeaks, padLevels, playedBars, rmsLevel, seekFraction,
-} from "./waveform";
+} from "@/features/practice/media/waveform";
 
 describe("computePeaks", () => {
   it("takes the loudest sample of each slice", () => {

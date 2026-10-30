@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encodeWav } from "./audio-recorder";
+import { encodeWav } from "@/features/practice/media/audio-recorder";
 
 describe("WAV recording encoder", () => {
   it("creates a mono PCM WAV payload", async () => {

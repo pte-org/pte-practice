@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fallbackPeaks, stableUrlKey } from "./prompt-peaks";
+import { fallbackPeaks, stableUrlKey } from "@/features/practice/media/prompt-peaks";
 
 describe("fallbackPeaks", () => {
   it("draws the same shape for the same file and a different one for another", () => {
