@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createOnceCommand, createPlayOnceGuard } from "./play-once";
+import { createOnceCommand, createPlayOnceGuard } from "@/features/practice/timed/play-once";
 
 describe("play-once guard", () => {
   it("still allows an attempt until play() has resolved", () => {

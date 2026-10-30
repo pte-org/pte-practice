@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { PracticeItemTiming } from "../session-contracts";
+import type { PracticeItemTiming } from "@/features/practice/session-contracts";
 import {
   buildPhasePlan, initialTimedState, timedReducer, type TimedEvent, type TimedState,
-} from "./timed-phase";
+} from "@/features/practice/timed/timed-phase";
 
 const REPEAT: PracticeItemTiming = { preListenSeconds: 3, preRecordSeconds: 3, responseSeconds: 15 };
 const READ_ALOUD: PracticeItemTiming = { preListenSeconds: null, preRecordSeconds: 35, responseSeconds: 40 };

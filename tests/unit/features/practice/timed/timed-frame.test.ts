@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { PracticeItemTiming } from "../session-contracts";
-import { answerLocked, currentStepId, recordCommand, shouldMountTimedFrame, stepperStepIds } from "./timed-frame";
+import type { PracticeItemTiming } from "@/features/practice/session-contracts";
+import { answerLocked, currentStepId, recordCommand, shouldMountTimedFrame, stepperStepIds } from "@/features/practice/timed/timed-frame";
 
 const TIMING: PracticeItemTiming = { preListenSeconds: null, preRecordSeconds: 10, responseSeconds: 40 };
 const task = (timing: PracticeItemTiming | null) => ({ timing }) as never;
