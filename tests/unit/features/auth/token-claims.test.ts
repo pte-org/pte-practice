@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasStudentRole } from "./token-claims";
+import { hasStudentRole } from "@/features/auth/token-claims";
 
 function token(claims: Record<string, unknown>): string {
   const payload = btoa(JSON.stringify(claims)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

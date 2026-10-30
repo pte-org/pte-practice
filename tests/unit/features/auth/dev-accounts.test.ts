@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDevTestAccounts } from "./dev-accounts";
+import { parseDevTestAccounts } from "@/features/auth/dev-accounts";
 
 describe("parseDevTestAccounts", () => {
   it("reads account:password pairs separated by semicolons", () => {
