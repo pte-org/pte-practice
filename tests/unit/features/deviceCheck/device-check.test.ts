@@ -11,7 +11,7 @@ import {
   readReadingSize,
   wordsPerMinute,
   writeReadingSize,
-} from "./device-check";
+} from "@/features/deviceCheck/device-check";
 
 function memoryStorage() {
   const values = new Map<string, string>();
