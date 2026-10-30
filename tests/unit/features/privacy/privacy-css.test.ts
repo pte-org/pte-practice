@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const CSS = readFileSync(join(fileURLToPath(new URL(".", import.meta.url)), "privacy.css"), "utf8");
+const PRIVACY_DIR = fileURLToPath(new URL("../../../../features/privacy/", import.meta.url));
+const CSS = readFileSync(join(PRIVACY_DIR, "privacy.css"), "utf8");
 const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 function ruleBodies(css: string, selector: string): string[] {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PRIVACY_CONTACT_EMAIL, PRIVACY_CONTENT, PRIVACY_OPERATOR, PRIVACY_PATH, PRIVACY_UPDATED, privacySectionId,
-} from "./privacy-content";
+} from "@/features/privacy/privacy-content";
 
 const LOCALES = ["en", "vi"] as const;
 
