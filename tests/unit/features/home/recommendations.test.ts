@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildRecommendations } from "./recommendations";
+import { buildRecommendations } from "@/features/home/recommendations";
 
 const t = (key: string) => ({
   "presentation.inProgress": "Đang làm dở · {done}/{total} câu",

@@ -6,7 +6,7 @@ import {
   formatMonthYearHeader,
   formatShortExamDate,
   getWeekdayLabels,
-} from "./exam-date";
+} from "@/features/home/exam-date";
 
 describe("formatExamDate", () => {
   const currentYearDate = new Date("2026-10-25T10:00:00Z");
