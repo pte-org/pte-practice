@@ -4,7 +4,7 @@ import { LocaleProvider } from "@/common/i18n";
 import { ToastProvider } from "@/common/components/Toast";
 import { ThemeProvider } from "@/common/providers/ThemeProvider";
 import { PracticeProvider } from "@/features/practice/PracticeProvider";
-import { CommandPalette } from "./CommandPalette";
+import { CommandPalette } from "@/features/shell/CommandPalette";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
