@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { ConfirmDialog, useToast } from "@/common/components";
 import { useOnlineStatus } from "@/common/hooks/useOnlineStatus";
 import { useTranslation } from "@/common/i18n";
+import { ChatLayout } from "@/features/chat/ChatLayout";
 import { AudioPlaybackCheckDialog } from "@/features/deviceCheck/AudioPlaybackCheckDialog";
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
 import type { DeviceCheckKind } from "@/features/deviceCheck/device-check";
@@ -518,7 +519,7 @@ export function PracticeSessionView() {
   const closeConfirm = () => setConfirm(null);
 
   return (
-    <>
+    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}>
       <SessionTaskView
         key={currentTask.publicId}
         api={api}
@@ -576,6 +577,6 @@ export function PracticeSessionView() {
       ) : null}
       <AudioPlaybackCheckDialog open={showAudioCheck} onConfirm={() => { markPassed("speaker"); finishCheck("speaker"); }} />
       <DeviceCheckDialog kind={showMicCheck ? "mic" : null} onClose={() => finishCheck("mic")} onPassed={markPassed} onFailed={markFailed} />
-    </>
+    </ChatLayout>
   );
 }

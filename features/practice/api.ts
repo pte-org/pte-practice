@@ -29,6 +29,8 @@ export class PracticeApiError extends Error {
     message: string,
     public readonly status = 0,
     public readonly code: string | null = null,
+    /** Structured detail of the error body, e.g. the reset time of an exhausted chat quota. */
+    public readonly data?: unknown,
   ) {
     super(message);
     this.name = "PracticeApiError";
@@ -218,6 +220,7 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
         : API_ERROR_TEXT.requestFailed,
       response.status,
       typeof errorRecord.code === "string" ? errorRecord.code : null,
+      errorRecord.data,
     );
   }
 
