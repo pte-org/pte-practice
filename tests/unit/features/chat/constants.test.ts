@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { en } from "@/common/i18n";
 import {
   CHAT_ERROR_CODES,
+  CHAT_HISTORY_MAX_TURNS,
   CHAT_MAX_INPUT_CHARS,
   CHAT_PATHS,
   CHAT_TASK_TYPES,
@@ -35,11 +36,10 @@ const EXPECTED_TASK_TYPES = [
 ];
 
 describe("chat constants", () => {
-  it("points the endpoints at the student chat API", () => {
+  it("points the endpoints at the student chat API, with nothing to read back a stored chat", () => {
     expect(CHAT_PATHS).toEqual({
       messages: "/api/v1/student/chat/messages",
       quota: "/api/v1/student/chat/quota",
-      latestSession: "/api/v1/student/chat/sessions/latest",
     });
   });
 
@@ -48,12 +48,15 @@ describe("chat constants", () => {
     expect(CHAT_WARNING_THRESHOLD).toBe(3);
   });
 
-  it("lists the five backend chat error codes", () => {
+  it("sends at most 6 earlier exchanges, the number the server keeps", () => {
+    expect(CHAT_HISTORY_MAX_TURNS).toBe(12);
+  });
+
+  it("lists the four backend chat error codes", () => {
     expect(CHAT_ERROR_CODES).toEqual({
       quotaExceeded: "CHAT_QUOTA_EXCEEDED",
       inFlight: "CHAT_REQUEST_IN_FLIGHT",
       busy: "CHAT_BUSY",
-      sessionNotFound: "CHAT_SESSION_NOT_FOUND",
       invalidRequest: "CHAT_INVALID_REQUEST",
     });
   });

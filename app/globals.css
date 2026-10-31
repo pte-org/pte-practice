@@ -935,7 +935,6 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .sign-in-lead { margin: 0; color: var(--muted); }
 .sign-in-form { gap: 10px; }
 .sign-in-step-title { margin: 0; font-size: 1.2rem; }
-.sign-in-terms { text-align: left; }
 .password-field { position: relative; }
 .password-field input { padding-right: 116px; }
 .password-toggle { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--accent); font-size: 0.75rem; font-weight: 700; cursor: pointer; }
@@ -3047,52 +3046,62 @@ html[data-theme="dark"] .media-player {
 /* Microphone denied guide box */
 .mic-denied-box {
   display: grid;
-  gap: 12px;
-  padding: 16px 20px;
-  border-radius: 14px;
+  gap: 14px;
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  border-radius: 18px;
   background: var(--amber-soft);
-  border: 1.5px solid var(--amber);
   color: var(--text);
-  margin: 12px 0;
   animation: pageFadeIn 250ms ease;
 }
 .mic-denied-box-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 0.92rem;
+  gap: 12px;
+}
+.mic-denied-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--amber) 22%, transparent);
+  color: var(--amber);
 }
 .mic-denied-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   color: var(--amber);
+  font-size: 0.92rem;
   font-weight: 700;
+  line-height: 1.4;
 }
 .mic-denied-steps {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 .mic-step-item {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
   font-size: 0.88rem;
   line-height: 1.45;
 }
 .mic-step-num {
-  display: inline-grid;
+  display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  flex: 0 0 20px;
-  margin-top: 2px;
 }
 
 

@@ -164,20 +164,6 @@
 }
 .chat-empty { margin: auto 0; color: var(--muted); text-align: center; line-height: 1.5; }
 .chat-empty-block { display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 12px; }
-.chat-consent {
-  flex: 1;
-  min-height: 0;
-  padding: 16px 14px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.chat-consent-title { margin: 0; font-size: 1rem; font-weight: 800; }
-.chat-consent-points { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; line-height: 1.5; font-size: 0.875rem; }
-.chat-consent-link { color: var(--accent); font-size: 0.875rem; font-weight: 600; text-decoration: underline; }
-.chat-consent-age { display: flex; align-items: flex-start; gap: 8px; font-size: 0.875rem; line-height: 1.45; cursor: pointer; }
-.chat-consent-age input { margin-top: 3px; }
 .chat-suggestions-title { margin: 0; color: var(--muted); font-size: 0.75rem; font-weight: 700; text-align: center; }
 .chat-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .chat-suggestion {
@@ -323,47 +309,6 @@
 .chat-counter { margin-top: 4px; color: var(--muted); font-size: 0.75rem; text-align: right; }
 .chat-counter[data-over="true"] { color: var(--red); }
 .chat-disclaimer { padding: 0 14px 12px; color: var(--muted); font-size: 0.6875rem; line-height: 1.4; }
-
-.chat-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 14px 10px; }
-.chat-footer .chat-notice-quota { margin: 0; }
-.chat-menu { position: relative; margin-left: auto; }
-.chat-menu > summary {
-  list-style: none;
-  padding: 2px 6px;
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.6875rem;
-  cursor: pointer;
-}
-.chat-menu > summary::-webkit-details-marker { display: none; }
-.chat-menu > summary:hover { background: var(--surface-raised); color: var(--text); }
-.chat-menu-list {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 4px);
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-.chat-menu-list .chat-privacy-link {
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: var(--text);
-  font-size: 0.8125rem;
-  text-align: left;
-  text-decoration: none;
-}
-.chat-menu-list .chat-privacy-link:hover { background: var(--surface-raised); }
-.chat-privacy { padding: 0 14px 12px; font-size: 0.75rem; line-height: 1.45; }
-.chat-privacy p { margin: 0 0 6px; }
-.chat-privacy-link { padding: 0; border: 0; background: none; color: var(--muted); font-size: 0.75rem; cursor: pointer; }
-.chat-privacy-buttons { display: flex; gap: 8px; }
 
 /* Markdown. Colours come from the app tokens so both themes work. */
 .chat-markdown {

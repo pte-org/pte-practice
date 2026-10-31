@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { en, vi } from "@/common/i18n";
 
-// Changed 2026-10-29 on the PM's decision: the data is stored but not used to train or improve any model yet.
-const VI_DISCLAIMER = "Đoạn chat được lưu lại để kiểm tra chất lượng dịch vụ. Đừng chia sẻ thông tin cá nhân.";
+// Changed 2026-10-31 on the team's decision: chat text is not stored, it only goes to Google AI to be answered.
+const VI_DISCLAIMER = "Câu hỏi được gửi tới Google AI để trả lời và không được lưu lại. Đừng nhập thông tin cá nhân.";
+
+const REMOVED_KEYS = ["dataSettings", "privacy", "consent"];
+const REMOVED_ERROR_KEYS = ["sessionNotFound", "consentRequired"];
 
 const REQUIRED_KEYS = [
   "title",
@@ -30,7 +33,7 @@ const REQUIRED_KEYS = [
   "quotaRefreshing",
 ];
 
-const REQUIRED_ERROR_KEYS = ["quotaExceeded", "inFlight", "busy", "sessionNotFound", "invalidRequest", "network", "generic"];
+const REQUIRED_ERROR_KEYS = ["quotaExceeded", "inFlight", "busy", "invalidRequest", "network", "generic"];
 
 type Tree = { [key: string]: unknown };
 
@@ -101,5 +104,20 @@ describe("chat i18n", () => {
   it("keeps the English disclaimer different from the Vietnamese one", () => {
     expect(enChat?.disclaimer).toBeTypeOf("string");
     expect(enChat?.disclaimer).not.toBe(VI_DISCLAIMER);
+  });
+
+  it("says in both languages that the question is not saved", () => {
+    expect(String(enChat?.disclaimer)).toMatch(/not saved/i);
+    expect(String(viChat?.disclaimer)).toMatch(/không được lưu/i);
+  });
+
+  it.each(REMOVED_KEYS)("no longer has chat.%s, because there is no consent or stored data to manage", (key) => {
+    expect(enChat?.[key]).toBeUndefined();
+    expect(viChat?.[key]).toBeUndefined();
+  });
+
+  it.each(REMOVED_ERROR_KEYS)("no longer has chat.errors.%s", (key) => {
+    expect((enChat?.errors as Tree | undefined)?.[key]).toBeUndefined();
+    expect((viChat?.errors as Tree | undefined)?.[key]).toBeUndefined();
   });
 });
