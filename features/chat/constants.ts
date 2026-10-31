@@ -3,25 +3,19 @@ const CHAT_API_BASE = "/api/v1/student/chat";
 export const CHAT_PATHS = {
   messages: `${CHAT_API_BASE}/messages`,
   quota: `${CHAT_API_BASE}/quota`,
-  latestSession: `${CHAT_API_BASE}/sessions/latest`,
 } as const;
 
-/** Kept apart from `CHAT_PATHS` and `CHAT_ERROR_CODES` so those two stay exactly the first release's contract. */
-export const CHAT_CONSENT_PATH = `${CHAT_API_BASE}/consent`;
-export const CHAT_CONSENT_ERROR_CODE = "CHAT_CONSENT_REQUIRED";
-export const CHAT_HISTORY_PATH = `${CHAT_API_BASE}/history`;
-
-/**
- * The privacy notice the student accepts before chatting. It must equal the server's
- * `ChatConstants.CONSENT_POLICY_VERSION`: a mismatch is refused, and changing the notice means changing both,
- * which asks every student again.
- */
-export const CHAT_CONSENT_POLICY_VERSION = "2026-10-29";
 /** Longest exercise text sent with a question; the server cuts at the same length (shared contract file). */
 export const CHAT_EXERCISE_MAX_CHARS = 1500;
 
 /** Mirrors the server limit (`chat.ai.max-input-chars`); the server stays the authority. */
 export const CHAT_MAX_INPUT_CHARS = 1000;
+
+/**
+ * Earlier turns (6 questions and their answers) sent with a new question. The server keeps the same number,
+ * so sending more would only be thrown away.
+ */
+export const CHAT_HISTORY_MAX_TURNS = 12;
 
 /** Show a "running low" notice when this many questions or fewer remain. */
 export const CHAT_WARNING_THRESHOLD = 3;
@@ -29,12 +23,10 @@ export const CHAT_WARNING_THRESHOLD = 3;
 /** Remembers, per browser tab, that the panel was open when the student moved to the next question. */
 export const CHAT_OPEN_STORAGE_KEY = "pte-practice:chat-open";
 
-
 export const CHAT_ERROR_CODES = {
   quotaExceeded: "CHAT_QUOTA_EXCEEDED",
   inFlight: "CHAT_REQUEST_IN_FLIGHT",
   busy: "CHAT_BUSY",
-  sessionNotFound: "CHAT_SESSION_NOT_FOUND",
   invalidRequest: "CHAT_INVALID_REQUEST",
 } as const;
 
