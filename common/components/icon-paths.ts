@@ -1,4 +1,5 @@
 import {
+  mdiAccountOutline,
   mdiAccountVoice,
   mdiAlertCircleOutline,
   mdiBullhorn,
@@ -79,6 +80,7 @@ export const ICON_PATHS = {
   arrowRight: mdiArrowRight,
   skipNext: mdiSkipNext,
   lock: mdiLockOutline,
+  account: mdiAccountOutline,
   play: mdiPlay,
   sparkle: mdiStarFourPointsOutline,
   star: mdiStar,
