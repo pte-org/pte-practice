@@ -1,12 +1,10 @@
 import { PracticeApiError } from "@/features/practice/api";
-import { CHAT_CONSENT_ERROR_CODE, CHAT_ERROR_CODES } from "./constants";
+import { CHAT_ERROR_CODES } from "./constants";
 
 export type ChatErrorKey =
-  | "consentRequired"
   | "quotaExceeded"
   | "inFlight"
   | "busy"
-  | "sessionNotFound"
   | "invalidRequest"
   | "network"
   | "generic";
@@ -20,9 +18,7 @@ export function chatErrorKey(error: unknown): ChatErrorKey {
     case CHAT_ERROR_CODES.quotaExceeded: return "quotaExceeded";
     case CHAT_ERROR_CODES.inFlight: return "inFlight";
     case CHAT_ERROR_CODES.busy: return "busy";
-    case CHAT_ERROR_CODES.sessionNotFound: return "sessionNotFound";
     case CHAT_ERROR_CODES.invalidRequest: return "invalidRequest";
-    case CHAT_CONSENT_ERROR_CODE: return "consentRequired";
     default: break;
   }
   if (error.status === 0 || error.code === "NETWORK_ERROR") return "network";

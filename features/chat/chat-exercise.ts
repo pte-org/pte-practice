@@ -17,7 +17,14 @@ export function exerciseContextFrom(text: string | null | undefined): string | n
 
 type SendInputParts = Omit<SendChatMessageInput, "exercisePrompt"> & { exercisePrompt?: string | null };
 
-/** The request body: the exercise text is added only when there is one, so a question without it is unchanged. */
-export function buildSendInput({ exercisePrompt, ...rest }: SendInputParts): SendChatMessageInput {
-  return exercisePrompt ? { ...rest, exercisePrompt } : rest;
+/**
+ * The request body: the exercise text and the earlier turns are added only when there are any, so a first
+ * question without an exercise is just the message, the task and the language.
+ */
+export function buildSendInput({ exercisePrompt, history, ...rest }: SendInputParts): SendChatMessageInput {
+  return {
+    ...rest,
+    ...(exercisePrompt ? { exercisePrompt } : {}),
+    ...(history && history.length > 0 ? { history } : {}),
+  };
 }

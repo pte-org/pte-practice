@@ -88,7 +88,6 @@ export function SignInView() {
             ) : (
               <SignInForm onSignedIn={handleSignedIn} />
             )}
-            <p className="auth-footnote sign-in-terms">{t("auth.terms")}</p>
           </div>
           <SignInShowcase />
         </section>
