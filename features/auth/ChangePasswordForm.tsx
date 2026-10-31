@@ -4,6 +4,8 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import { createPracticeApiClient } from "@/features/practice/api";
+import { getPracticeSession } from "@/features/practice/session-storage";
+import { buildChangePasswordBody } from "./change-password-body";
 import { MIN_PASSWORD_LENGTH } from "./constants";
 
 interface ChangePasswordFormProps {
@@ -33,7 +35,9 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
     setErrorKey(null);
     setIsSubmitting(true);
     try {
-      await createPracticeApiClient().changePassword({ currentPassword, newPassword });
+      await createPracticeApiClient().changePassword(
+        buildChangePasswordBody(currentPassword, newPassword, getPracticeSession()),
+      );
       onChanged();
     } catch {
       setErrorKey("auth.changePasswordError");
