@@ -251,7 +251,7 @@ export const en: LocaleDict = {
     mic_loud: "Too loud, the sound may distort. Move the microphone a little further away.",
     mic_good: "Good level. Listen back to make sure it sounds clear.",
     micDenied: "Microphone access was blocked. Allow it in the browser address bar and try again.",
-    micStep1: "Click the site settings / lock icon 🔒 on the left of the Chrome address bar.",
+    micStep1: "Click the site settings / lock icon on the left of the Chrome address bar.",
     micStep2: "Switch Microphone to Allow, then return to this page.",
     micFailed: "The microphone could not be started.",
     micStart: "Record 5 seconds",

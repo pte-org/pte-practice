@@ -151,7 +151,7 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
       {isPermissionDenied ? (
         <div className="mic-denied-box" role="alert">
           <div className="mic-denied-box-header">
-            <span className="mic-denied-badge">🔒 {t("deviceCheck.micDenied")}</span>
+            <span className="mic-denied-icon" aria-hidden="true"><AppIcon name="lock" size={18} /></span><span className="mic-denied-badge">{t("deviceCheck.micDenied")}</span>
           </div>
           <div className="mic-denied-steps">
             <div className="mic-step-item">
