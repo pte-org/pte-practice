@@ -7,7 +7,6 @@ describe("chatErrorKey", () => {
     ["CHAT_QUOTA_EXCEEDED", 429, "quotaExceeded"],
     ["CHAT_REQUEST_IN_FLIGHT", 409, "inFlight"],
     ["CHAT_BUSY", 503, "busy"],
-    ["CHAT_SESSION_NOT_FOUND", 404, "sessionNotFound"],
     ["CHAT_INVALID_REQUEST", 400, "invalidRequest"],
   ])("maps %s to %s", (code, status, key) => {
     expect(chatErrorKey(new PracticeApiError("m", status, code))).toBe(key);
@@ -35,12 +34,14 @@ describe("chatErrorKey", () => {
     new PracticeApiError("server", 500),
     new PracticeApiError("forbidden", 403, "FORBIDDEN"),
     new PracticeApiError("bad gateway", 502, "CHAT_INVALID_RESPONSE"),
+    new PracticeApiError("gone", 404, "CHAT_SESSION_NOT_FOUND"),
+    new PracticeApiError("consent", 403, "CHAT_CONSENT_REQUIRED"),
     new Error("plain"),
     "string",
     null,
     undefined,
     {},
-  ])("maps anything else to generic (%#)", (error) => {
+  ])("maps anything else, including codes the server no longer sends, to generic (%#)", (error) => {
     expect(chatErrorKey(error)).toBe("generic");
   });
 });

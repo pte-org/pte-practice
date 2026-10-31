@@ -38,7 +38,11 @@ describe("exerciseContextFrom", () => {
 });
 
 describe("buildSendInput", () => {
-  const base = { sessionId: "0b8f2c3e-6d4a-4f7e-9c1b-2a3d4e5f6a7b", message: "How do I say it?", taskType: "WRITE_ESSAY", language: "en" as const };
+  const base = { message: "How do I say it?", taskType: "WRITE_ESSAY", language: "en" as const };
+  const history = [
+    { role: "user" as const, text: "What is a gerund?" },
+    { role: "assistant" as const, text: "A verb form ending in -ing." },
+  ];
 
   it("adds the exercise text when there is one", () => {
     expect(buildSendInput({ ...base, exercisePrompt: "Technology makes us less social." })).toEqual({
@@ -52,5 +56,26 @@ describe("buildSendInput", () => {
 
     expect(input).toEqual(base);
     expect("exercisePrompt" in input).toBe(false);
+  });
+
+  it("adds the earlier turns when there are any", () => {
+    expect(buildSendInput({ ...base, history })).toEqual({ ...base, history });
+  });
+
+  it.each([undefined, []])("leaves the history out for a first question (%j)", (value) => {
+    const input = buildSendInput({ ...base, history: value });
+
+    expect(input).toEqual(base);
+    expect("history" in input).toBe(false);
+  });
+
+  it("sends nothing about a session, because the server keeps none", () => {
+    expect(Object.keys(buildSendInput({ ...base, exercisePrompt: "text", history })).sort()).toEqual([
+      "exercisePrompt",
+      "history",
+      "language",
+      "message",
+      "taskType",
+    ]);
   });
 });
