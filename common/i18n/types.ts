@@ -170,7 +170,6 @@ export interface LocaleDict {
     submit: string;
     submitting: string;
     forgotPassword: string;
-    terms: string;
     invalidCredentials: string;
     notStudent: string;
     genericError: string;
@@ -522,7 +521,6 @@ export interface LocaleDict {
     toggleClose: string;
     newChat: string;
     subtitle: string;
-    dataSettings: string;
     placeholder: string;
     send: string;
     thinking: string;
@@ -547,30 +545,10 @@ export interface LocaleDict {
     badgeLabel: string;
     shortcutHint: string;
     quotaRefreshing: string;
-    privacy: {
-      withdraw: string;
-      delete: string;
-      confirmWithdraw: string;
-      confirmDelete: string;
-      confirm: string;
-      cancel: string;
-    };
-    consent: {
-      title: string;
-      point1: string;
-      point2: string;
-      point3: string;
-      policyLink: string;
-      ageLabel: string;
-      accept: string;
-      retry: string;
-    };
     errors: {
       quotaExceeded: string;
       inFlight: string;
       busy: string;
-      sessionNotFound: string;
-      consentRequired: string;
       invalidRequest: string;
       network: string;
       generic: string;
