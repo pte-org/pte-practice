@@ -814,6 +814,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .auth-form input::placeholder { color: #756b86; }
 .auth-form input:focus { border-color: var(--accent); }
 .form-error { padding: 10px 12px; border: 1px solid rgb(228 94 104 / 28%); border-radius: 9px; background: var(--red-soft); color: #ffc1c6; font-size: 0.8rem; }
+.form-success { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--green); border-radius: 9px; background: var(--green-soft); color: var(--green); font-size: 0.8rem; }
 .auth-footnote { text-align: center; font-size: 0.72rem; }
 
 @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.88); } 50% { opacity: 1; transform: scale(1); } }

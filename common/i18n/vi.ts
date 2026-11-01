@@ -181,6 +181,7 @@ export const vi: LocaleDict = {
     confirmPasswordLabel: "Nhập lại mật khẩu mới",
     changePasswordSubmit: "Lưu và tiếp tục",
     changingPassword: "Đang lưu...",
+    passwordChanged: "Đã đổi mật khẩu. Đang chuyển bạn vào phần luyện tập…",
     passwordTooShort: "Mật khẩu mới phải có ít nhất 8 ký tự.",
     passwordMismatch: "Hai mật khẩu không khớp.",
     changePasswordError: "Không thể đổi mật khẩu. Vui lòng thử lại.",

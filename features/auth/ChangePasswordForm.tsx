@@ -7,7 +7,7 @@ import type { TranslationKey } from "@/common/i18n";
 import { createPracticeApiClient } from "@/features/practice/api";
 import { getPracticeSession } from "@/features/practice/session-storage";
 import { buildChangePasswordBody } from "./change-password-body";
-import { MIN_PASSWORD_LENGTH } from "./constants";
+import { MIN_PASSWORD_LENGTH, PASSWORD_CHANGED_NOTICE_MS } from "./constants";
 
 interface ChangePasswordFormProps {
   currentPassword: string;
@@ -21,6 +21,7 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChanged, setIsChanged] = useState(false);
   const [errorKey, setErrorKey] = useState<TranslationKey | null>(null);
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
@@ -39,7 +40,9 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
       await createPracticeApiClient().changePassword(
         buildChangePasswordBody(currentPassword, newPassword, getPracticeSession()),
       );
-      onChanged();
+      setIsChanged(true);
+      // Let the student see the confirmation before the page moves on.
+      window.setTimeout(onChanged, PASSWORD_CHANGED_NOTICE_MS);
     } catch {
       setErrorKey("auth.changePasswordError");
       setIsSubmitting(false);
@@ -63,8 +66,13 @@ export function ChangePasswordForm({ currentPassword, onChanged, onCancel }: Cha
         onChange={(event) => setConfirmPassword(event.target.value)} />
       </div>
       {errorKey ? <p className="form-error" role="alert">{t(errorKey)}</p> : null}
+      {isChanged ? (
+        <p className="form-success" role="status">
+          <AppIcon name="check" size={18} /> {t("auth.passwordChanged")}
+        </p>
+      ) : null}
       <button className="auth-submit" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("auth.changingPassword") : t("auth.changePasswordSubmit")}
+        {isChanged ? t("auth.passwordChanged") : isSubmitting ? t("auth.changingPassword") : t("auth.changePasswordSubmit")}
       </button>
       <button className="button button-outline-danger button-wide button-pill" type="button" disabled={isSubmitting} onClick={onCancel}>
         {t("auth.backToSignIn")}

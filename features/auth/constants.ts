@@ -12,3 +12,4 @@ export const MIN_PASSWORD_LENGTH = 8;
  */
 export const DEV_TEST_ACCOUNTS_ENV = process.env.NEXT_PUBLIC_DEV_TEST_ACCOUNTS ?? "";
 export const IS_DEV_BUILD = process.env.NODE_ENV !== "production";
+export const PASSWORD_CHANGED_NOTICE_MS = 1400;
