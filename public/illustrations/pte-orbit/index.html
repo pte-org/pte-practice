@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>PTE Orbit</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <script>
+      try {
+        const theme = window.localStorage.getItem("pte-practice-theme");
+        const resolved = theme === "light" || theme === "dark" ? theme
+          : window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.style.colorScheme = resolved;
+      } catch {
+        // Storage can be disabled in private or embedded browser contexts.
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css?v=motion-10" />
+    <script>
+      if (new URLSearchParams(window.location.search).get("embed") === "1") {
+        document.documentElement.dataset.mode = "embed";
+      }
+    </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+        }
+      }
+    </script>
+    <!-- Fetch Three.js and the addons in parallel with bootstrap instead of discovering them
+         one import at a time, so the scene is ready sooner. -->
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js"
+      crossorigin
+    />
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/controls/OrbitControls.js"
+      crossorigin
+    />
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/environments/RoomEnvironment.js"
+      crossorigin
+    />
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/geometries/RoundedBoxGeometry.js"
+      crossorigin
+    />
+  </head>
+  <body>
+    <main>
+      <section class="viewer" aria-label="PTE 3D artwork">
+        <div id="canvas-host" class="canvas-host"></div>
+        <div id="loading" class="loading" role="status" aria-label="PTE Prep artwork">
+          <div class="loading-art" aria-hidden="true">
+            <span class="loading-orbit loading-orbit-wide"></span>
+            <span class="loading-orbit loading-orbit-tilted"></span>
+            <span class="loading-core">P</span>
+          </div>
+        </div>
+        <div id="fallback" class="fallback" role="alert" hidden>
+          <p>Unable to load 3D artwork.</p>
+          <p id="fallback-detail"></p>
+          <button id="retry" type="button">Retry</button>
+        </div>
+        <div class="scene-label" aria-hidden="true">
+          <span class="live-dot"></span>
+          <span id="render-state">LIVE 3D</span>
+        </div>
+        <div class="controls" aria-label="3D controls">
+          <button
+            id="motion-toggle"
+            class="primary-button"
+            type="button"
+            aria-pressed="false"
+            disabled
+          >
+            Pause
+          </button>
+          <button id="reset-view" class="text-button" type="button" disabled>Reset</button>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+            Theme
+          </button>
+        </div>
+      </section>
+    </main>
+    <noscript><p class="noscript">JavaScript is required to view the 3D artwork.</p></noscript>
+    <script type="module" src="bootstrap.js?v=motion-10"></script>
+  </body>
+</html>

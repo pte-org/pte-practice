@@ -181,6 +181,7 @@ export const en: LocaleDict = {
     confirmPasswordLabel: "Confirm new password",
     changePasswordSubmit: "Save and continue",
     changingPassword: "Saving…",
+    passwordChanged: "Password changed. Taking you to practice…",
     passwordTooShort: "The new password must have at least 8 characters.",
     passwordMismatch: "The two passwords do not match.",
     changePasswordError: "We could not change your password. Please try again.",

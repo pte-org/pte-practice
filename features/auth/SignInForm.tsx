@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useMemo, useState } from "react";
+import { AppIcon } from "@/common/components";
 import { useSignInValidation } from "@/common/hooks/useSignInValidation";
 import { useTranslation } from "@/common/i18n";
 import { FieldWarning } from "@/features/practice/session/FieldWarning";
@@ -52,13 +53,17 @@ export function SignInForm({ onSignedIn }: SignInFormProps) {
   return (
     <form className="auth-form sign-in-form" onSubmit={signIn} noValidate>
       <label htmlFor="username">{t("auth.usernameLabel")}</label>
-      <input id="username" name="username" autoComplete="username" value={username} required
+      <div className="auth-field">
+        <span className="auth-field-icon"><AppIcon name="account" size={18} /></span>
+        <input id="username" name="username" autoComplete="username" value={username} required
         aria-invalid={validation.errors.username ? true : undefined}
         placeholder={t("auth.usernamePlaceholder")} onBlur={(event) => validation.onBlur("username", event.target.value)}
         onChange={(event) => { setUsername(event.target.value); validation.onChange("username", event.target.value); }} />
+      </div>
       {validation.errors.username ? <FieldWarning message={validation.errors.username} /> : null}
       <label htmlFor="password">{t("auth.passwordLabel")}</label>
-      <div className="password-field">
+      <div className="auth-field password-field">
+        <span className="auth-field-icon"><AppIcon name="lock" size={18} /></span>
         <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password"
           value={password} required placeholder={t("auth.passwordPlaceholder")}
           aria-invalid={validation.errors.password ? true : undefined}
@@ -71,7 +76,7 @@ export function SignInForm({ onSignedIn }: SignInFormProps) {
       </div>
       {validation.errors.password ? <FieldWarning message={validation.errors.password} /> : null}
       {errorKey ? <p className="form-error" role="alert">{t(errorKey)}</p> : null}
-      <button className="button button-outline button-wide button-pill" type="submit" disabled={isSubmitting}>
+      <button className="auth-submit" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.submitting") : t("auth.submit")}
       </button>
       <p className="auth-footnote">{t("auth.forgotPassword")}</p>

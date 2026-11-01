@@ -23,6 +23,7 @@ import {
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 import { refreshOnce } from "./token-refresh";
+import type { ChangePasswordBody } from "../auth/change-password-body";
 
 export class PracticeApiError extends Error {
   constructor(
@@ -53,7 +54,7 @@ export function createPracticeApiClient() {
         body,
         allowRefresh: false,
       }),
-    changePassword: (body: { currentPassword: string; newPassword: string }): Promise<void> =>
+    changePassword: (body: ChangePasswordBody): Promise<void> =>
       request<void>(API_PATHS.changePassword, { method: "POST", body }).then(() => undefined),
     getEntitlement: async (): Promise<PracticeEntitlement> => {
       const response = await request<unknown>(API_PATHS.entitlement);

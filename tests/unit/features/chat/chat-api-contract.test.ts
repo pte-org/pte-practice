@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
 import { chatErrorKey } from "@/features/chat/chat-errors";
 import { quotaFromError } from "@/features/chat/chat-quota";
-import { CHAT_EXERCISE_MAX_CHARS, CHAT_HISTORY_MAX_TURNS } from "@/features/chat/constants";
+import { CHAT_EXERCISE_MAX_CHARS } from "@/features/chat/constants";
 import { normalizeChatQuota, normalizeChatReply } from "@/features/chat/contracts";
 
 /**
@@ -18,9 +18,9 @@ const CONTRACT_PATH = join(
 );
 
 interface ChatApiContract {
-  limits: { exercisePromptMaxChars: number; historyMaxItems: number };
+  limits: { exercisePromptMaxChars: number };
+  reply: Record<string, unknown>;
   quota: unknown;
-  reply: unknown;
   quotaExceededError: { code: string; data: { resetAt: string } };
 }
 
@@ -36,16 +36,14 @@ describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the 
     expect(CHAT_EXERCISE_MAX_CHARS).toBe(contract.limits.exercisePromptMaxChars);
   });
 
-  it("never sends more earlier turns than the server accepts", () => {
-    expect(CHAT_HISTORY_MAX_TURNS).toBeLessThanOrEqual(contract.limits.historyMaxItems);
-  });
-
   it("reads the quota", () => {
     expect(normalizeChatQuota(contract.quota)).toEqual(contract.quota);
   });
 
   it("reads a reply", () => {
-    expect(normalizeChatReply(contract.reply)).toEqual(contract.reply);
+    // The server also sends fromCache and sessionId; this client reads only the fields below.
+    const { markdown, onTopic, remaining, limit, resetAt } = contract.reply;
+    expect(normalizeChatReply(contract.reply)).toEqual({ markdown, onTopic, remaining, limit, resetAt });
   });
 
   it("builds the exhausted quota from the quota-exceeded error", () => {

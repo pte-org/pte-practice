@@ -181,6 +181,7 @@ export interface LocaleDict {
     confirmPasswordLabel: string;
     changePasswordSubmit: string;
     changingPassword: string;
+    passwordChanged: string;
     passwordTooShort: string;
     passwordMismatch: string;
     changePasswordError: string;
