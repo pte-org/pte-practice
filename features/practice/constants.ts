@@ -15,6 +15,26 @@ export const API_PATHS = {
   mediaObjects: "/api/v1/objects",
 } as const;
 
+/** Between an achieved trait score and its maximum, e.g. "4 / 6". */
+export const SUB_SCORE_MAX_SEPARATOR = " / ";
+
+/**
+ * Labels of the Pearson trait keys a rubric-scored result carries (backend rubric catalog). Keys of older results
+ * (FLUENCY, PROSODY, ACCURACY, COMPLETENESS, ...) are not listed and keep their generic label.
+ */
+export const PEARSON_TRAIT_LABELS: Readonly<Record<string, string>> = {
+  CONTENT: "Content",
+  FORM: "Form",
+  PRONUNCIATION: "Pronunciation",
+  ORAL_FLUENCY: "Oral fluency",
+  GRAMMAR: "Grammar",
+  VOCABULARY: "Vocabulary",
+  VOCABULARY_RANGE: "Vocabulary range",
+  GENERAL_LINGUISTIC_RANGE: "General linguistic range",
+  DEVELOPMENT_STRUCTURE_COHERENCE: "Development, structure and coherence",
+  SPELLING: "Spelling",
+};
+
 export const PRACTICE_ROUTES = {
   home: "/",
   practiceTests: "/practice-tests",
