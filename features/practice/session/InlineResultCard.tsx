@@ -5,7 +5,7 @@ import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeItemResult } from "../contracts";
-import { subScoreLabel } from "../ScoreView";
+import { formatSubScore, subScoreLabel } from "../ScoreView";
 import { useItemResult } from "../useItemResult";
 
 export interface InlineResultCardProps {
@@ -183,7 +183,7 @@ function InlineResultCardInner({
           {subScoreEntries.map(([key, val]) => (
             <div key={key} className="inline-subscore-item">
               <span className="inline-subscore-label">{subScoreLabel(key)}</span>
-              <strong className="inline-subscore-value">{val}</strong>
+              <strong className="inline-subscore-value">{formatSubScore(val, result.subScoreMax?.[key])}</strong>
             </div>
           ))}
         </div>
