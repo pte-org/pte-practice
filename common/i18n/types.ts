@@ -156,6 +156,7 @@ export interface LocaleDict {
     invalidSession: string;
   };
   auth: {
+    welcomeTitle: string;
     brandTagline: string;
     headingStart: string;
     headingHighlight: string;
@@ -174,6 +175,8 @@ export interface LocaleDict {
     notStudent: string;
     genericError: string;
     rateLimited: string;
+    networkError: string;
+    serviceUnavailable: string;
     devAccounts: string;
     changePasswordTitle: string;
     changePasswordDescription: string;
@@ -188,6 +191,11 @@ export interface LocaleDict {
     backToSignIn: string;
     toggleLanguage: string;
     toggleTheme: string;
+    footerLabel: string;
+    footerCopyright: string;
+    footerTerms: string;
+    footerPrivacy: string;
+    footerSupport: string;
     showcaseLabel: string;
     showcaseScore: string;
     showcaseTime: string;
@@ -294,8 +302,46 @@ export interface LocaleDict {
     previous: string;
     next: string;
   };
+  settings: {
+    title: string;
+    language: string;
+    theme: string;
+    vietnamese: string;
+    english: string;
+    light: string;
+    dark: string;
+  };
+  appearance: {
+    title: string;
+    localNotice: string;
+    background: string;
+    default: string;
+    ocean: string;
+    forest: string;
+    dawn: string;
+    custom: string;
+    upload: string;
+    chooseImage: string;
+    imageHelp: string;
+    blur: string;
+    opacity: string;
+    focus: string;
+    reset: string;
+    processing: string;
+    storageError: string;
+    typeError: string;
+    sizeError: string;
+    decodeError: string;
+  };
   session: {
     recordedAnswer: string;
+    supportTitle: string;
+    supportSubtitle: string;
+    practiceTip: string;
+    askAssistant: string;
+    askAssistantDescription: string;
+    exitBeforeLeaving: string;
+    recordingLocalDraft: string;
     recording_short: string;
     recording_silent: string;
     keepRecording: string;
@@ -521,6 +567,15 @@ export interface LocaleDict {
     toggleOpen: string;
     toggleClose: string;
     newChat: string;
+    assistantName: string;
+    renameAssistant: string;
+    nameLocalNotice: string;
+    nameSaveError: string;
+    saveName: string;
+    resetName: string;
+    namedPlaceholder: string;
+    moveHint: string;
+    resizeHint: string;
     subtitle: string;
     placeholder: string;
     send: string;
@@ -534,6 +589,7 @@ export interface LocaleDict {
     tooLong: string;
     emptyInput: string;
     disclaimer: string;
+    disclaimerShort: string;
     refusedLabel: string;
     copy: string;
     copied: string;
@@ -552,6 +608,8 @@ export interface LocaleDict {
       busy: string;
       invalidRequest: string;
       network: string;
+      accessDenied: string;
+      unavailable: string;
       generic: string;
     };
   };

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { en, vi } from "@/common/i18n";
 
-// Changed 2026-10-31 on the team's decision: chat text is not stored, it only goes to Google AI to be answered.
-const VI_DISCLAIMER = "Câu hỏi được gửi tới Google AI để trả lời và không được lưu lại. Đừng nhập thông tin cá nhân.";
+// Chat now uses the configured question-generation provider; the no-storage notice remains explicit.
+const VI_DISCLAIMER = "Câu hỏi được gửi tới nhà cung cấp AI để trả lời và không được lưu lại. Đừng nhập thông tin cá nhân.";
 
 const REMOVED_KEYS = ["dataSettings", "privacy", "consent"];
 const REMOVED_ERROR_KEYS = ["sessionNotFound", "consentRequired"];
@@ -33,7 +33,7 @@ const REQUIRED_KEYS = [
   "quotaRefreshing",
 ];
 
-const REQUIRED_ERROR_KEYS = ["quotaExceeded", "inFlight", "busy", "invalidRequest", "network", "generic"];
+const REQUIRED_ERROR_KEYS = ["quotaExceeded", "inFlight", "busy", "invalidRequest", "network", "accessDenied", "unavailable", "generic"];
 
 type Tree = { [key: string]: unknown };
 
