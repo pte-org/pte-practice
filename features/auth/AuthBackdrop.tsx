@@ -16,7 +16,7 @@ const EASE = 0.14;
 const MAX_PIXEL_RATIO = 2;
 
 const readAccentColor = (): string =>
-  getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+  getComputedStyle(document.documentElement).getPropertyValue("--auth-action").trim();
 
 /**
  * Canvas dot grid: dots near the pointer swell, brighten and bulge outwards, with a soft glow;
