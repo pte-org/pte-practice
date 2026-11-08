@@ -47,8 +47,8 @@ export const PRACTICE_ROUTES = {
 
 export const NAV_ITEMS: ReadonlyArray<{ href: string; label: string; icon: IconName }> = [
   { href: PRACTICE_ROUTES.home, label: "Home", icon: "home" },
+  { href: PRACTICE_ROUTES.studyPack, label: "Skill practice", icon: "studyPack" },
   { href: PRACTICE_ROUTES.practiceTests, label: "Practice tests", icon: "practice" },
-  { href: PRACTICE_ROUTES.studyPack, label: "Study-Pack", icon: "studyPack" },
   { href: PRACTICE_ROUTES.progress, label: "Progress", icon: "progress" },
 ] as const;
 
@@ -249,6 +249,7 @@ export const PRACTICE_STORAGE_KEYS = {
 export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
 export const DEFAULT_API_BASE_URL = "http://localhost:8080";
 export const ENTITLEMENT_STALE_THRESHOLD_MS = 10_000;
+export const PRACTICE_SESSION_CLEARED_EVENT = "pte-practice-session-cleared";
 
 export const SCORE_TONE_THRESHOLDS = {
   LOW: 40,
