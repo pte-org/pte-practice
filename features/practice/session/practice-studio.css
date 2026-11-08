@@ -1,0 +1,90 @@
+.practice-studio {
+  min-height: 100dvh;
+  padding: 24px;
+  background: radial-gradient(ellipse at top left, color-mix(in srgb, var(--accent) 8%, transparent), transparent 55%), var(--exam-canvas);
+  color: var(--text);
+}
+.practice-studio.practice-session { width: 100%; max-width: none; margin: 0; }
+.practice-studio .practice-studio-layout { max-width: 1440px; margin-inline: auto; padding: 0; gap: 28px; border: 0; background: transparent; }
+.practice-studio .practice-studio-layout { position: relative; isolation: isolate; }
+/* Extend the frame outward so its breathing room does not narrow or move the exercise. */
+.practice-studio-layout::before {
+  content: "";
+  position: absolute;
+  inset: -16px -32px -32px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+}
+@media (max-width: 1535px) {
+  .practice-studio-layout::before { inset: -12px -12px -24px; border-radius: 24px; }
+}
+.practice-studio-layout .session-header { position: static; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.practice-studio .session-header-bar { padding: 20px 24px; }
+.practice-studio .session-header-title h1 { font-family: var(--font-sans); font-size: 1.15rem; font-weight: 750; }
+.practice-studio .segmented-progress { gap: 4px; height: 5px; }
+.practice-studio-layout .workspace-layout-columns { grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; }
+.practice-studio-layout .workspace-layout-main { gap: 0; }
+.practice-studio-layout .workspace-layout-sidebar { position: sticky; top: 24px; }
+.practice-studio .exam-body { width: 100%; margin: 0; padding: 0; gap: 20px; }
+.practice-studio .exam-task-heading { padding: 4px 4px 0; flex-wrap: wrap; }
+.practice-studio .exam-task-heading h2 { font-size: clamp(1.4rem, 2vw, 1.8rem); font-family: var(--font-sans); letter-spacing: -0.04em; }
+.practice-task-badge { padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 0.75rem; font-weight: 650; }
+.practice-studio .exam-instruction-card { padding: 16px 20px; border: 0; border-radius: 14px; background: var(--accent-soft); box-shadow: none; }
+.practice-studio .exam-instruction-text { font-size: 0.88rem; line-height: 1.7; font-weight: 450; }
+.practice-studio .exam-task-card { padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: none; }
+.practice-studio .task-source-text { padding: 0 0 24px; margin: 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; box-shadow: none; font-size: clamp(1.1rem, 1.6vw, 1.35rem); line-height: 1.9; }
+.practice-studio .task-recording-panel { gap: 28px; }
+.practice-studio .task-recording-panel .record-card { max-width: none; margin: 0; padding: 24px; border-radius: 16px; border-color: color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 3%, var(--surface)); box-shadow: none; }
+.practice-studio .record-card-header { flex-wrap: wrap; gap: 16px; }
+.practice-studio .record-card-icon { background: var(--accent-soft); color: var(--accent); border-radius: 12px; }
+.practice-studio .record-card-recording { border-color: var(--danger); }
+.practice-studio .task-recording-actions .button { min-height: 46px; border-radius: 12px; }
+.practice-studio .task-recording-actions .button-outline:not(.button-outline-danger) { background: var(--accent); border-color: var(--accent); color: var(--on-accent, white); }
+.practice-studio .practice-studio-actions { position: sticky; bottom: 12px; z-index: 6; margin-top: 20px; padding: 4px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.practice-studio .session-footer { position: static; width: 100%; padding: 12px 16px; border: 0; background: transparent; box-shadow: none; }
+.practice-studio .session-footer-center { position: static; transform: none; margin-right: auto; }
+.practice-studio .session-btn-primary { border-radius: 12px; background: var(--accent); }
+.practice-support { display: grid; gap: 16px; padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.practice-support-heading { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; }
+.practice-support-icon { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; background: var(--accent-soft); color: var(--accent); }
+.practice-support h2 { margin: 0; font-size: 1rem; }
+.practice-support p { margin: 8px 0 0; color: var(--muted); font-size: 0.875rem; line-height: 1.75; }
+.practice-support-heading p { margin-top: 2px; font-size: 0.75rem; }
+.practice-support .collapsible { padding: 0 0 16px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.practice-support .collapsible-head { padding: 0; }
+.practice-support .collapsible-toggle { width: 100%; gap: 10px; font-size: 0.875rem; }
+.practice-ai-entry { display: grid; justify-items: start; gap: 12px; padding: 20px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent) 3%, var(--surface))); color: var(--accent); }
+.practice-ai-entry p { margin: 0; }
+.practice-ai-entry .button { width: 100%; border-radius: 12px; }
+.practice-skeleton-card { display: grid; gap: 24px; padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.practice-skeleton-header { display: flex; justify-content: space-between; gap: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.practice-loading-label { display: block; margin-bottom: 16px; color: var(--muted); font-size: 0.875rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .practice-studio .exam-body { animation: practice-studio-enter 160ms ease-out; }
+  .practice-studio button { transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease; }
+  .practice-studio button:not(:disabled):active { transform: scale(0.98); }
+  @keyframes practice-studio-enter { from { opacity: 0.94; } to { opacity: 1; } }
+}
+@media (max-width: 1099px) {
+  .practice-studio-layout .workspace-layout-columns { grid-template-columns: minmax(0, 1fr); }
+  .practice-studio-layout .workspace-layout-sidebar { position: static; }
+}
+@media (max-width: 767px) {
+  .practice-studio { padding: 12px; }
+  .practice-studio .practice-studio-layout { gap: 20px; }
+  .practice-studio-layout::before { inset: -6px -6px -12px; border-radius: 20px; }
+  .practice-studio .session-header-bar { gap: 12px; padding: 16px; flex-wrap: wrap; }
+  .practice-studio .session-header-title { flex-basis: 100%; }
+  .practice-studio .session-header-meta { flex: 1; justify-items: start; border: 0; }
+  .practice-studio .exam-task-card, .practice-support, .practice-skeleton-card { padding: 20px; }
+  .practice-studio .task-recording-panel .record-card { padding: 16px; }
+  .practice-studio .record-card-meta { flex-wrap: wrap; }
+  .practice-studio .session-footer { padding: 8px; }
+  .practice-studio .practice-studio-actions { bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .practice-studio *, .practice-studio *::before, .practice-studio *::after { animation: none; transition: none; scroll-behavior: auto; }
+}

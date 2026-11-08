@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/common/i18n";
+import { LoadingState } from "@/common/components";
 import type { PracticeApiClient } from "./api";
 import { PEARSON_TRAIT_LABELS, SUB_SCORE_MAX_SEPARATOR } from "./constants";
 import type { PracticeItemResult } from "./contracts";
@@ -32,8 +33,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
   if (!result || result.state === "SCORING") {
     return (
       <div className={className} role="status" aria-live="polite">
-        <span className="loading-dot" />
-        <p>{t("score.scoring")}</p>
+        <LoadingState compact message={t("score.scoring")} />
         <small>{t("score.scoringHint")}</small>
       </div>
     );

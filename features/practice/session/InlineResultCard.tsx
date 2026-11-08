@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AppIcon } from "@/common/components";
+import { AppIcon, LoadingState } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeItemResult } from "../contracts";
@@ -85,10 +85,7 @@ function InlineResultCardInner({
   if (!result || result.state === "SCORING") {
     return (
       <div className="inline-result-card inline-result-scoring" role="status" aria-live="polite" data-testid="inline-result-scoring">
-        <div className="inline-scoring-bar">
-          <span className="loading-dot" />
-          <strong>{t("session.scoringInProgress")}</strong>
-        </div>
+        <LoadingState compact message={t("session.scoringInProgress")} />
         <small className="inline-scoring-hint">{t("score.scoringHint")}</small>
       </div>
     );

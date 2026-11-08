@@ -8,14 +8,10 @@ import type { PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
 import { formatScore, scoreTone } from "../presentation";
 import { continueHref, sessionAverageScore } from "./complete-actions";
+import { SessionSkeleton } from "./SessionSkeleton";
 
 export function SessionLoading() {
-  const { t } = useTranslation();
-  return (
-    <section className="session-state-card" role="status">
-      <span className="loading-dot" /><p>{t("ui.sessionLoading")}</p>
-    </section>
-  );
+  return <SessionSkeleton />;
 }
 
 interface SessionErrorCardProps {

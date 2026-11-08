@@ -2,6 +2,21 @@ import { describe, expect, it } from "vitest";
 import { getCanonicalTaskInstruction } from "@/features/practice/task-instructions";
 
 describe("getCanonicalTaskInstruction", () => {
+  it("does not claim a preparation countdown in ordinary speaking practice", () => {
+    for (const code of ["READ_ALOUD", "DESCRIBE_IMAGE", "RE_TELL_LECTURE"]) {
+      expect(getCanonicalTaskInstruction(code, null, true)).not.toContain("seconds");
+      expect(getCanonicalTaskInstruction(code)).toContain("seconds");
+    }
+  });
+  it("removes writing deadlines in untimed practice while preserving response requirements", () => {
+    for (const code of ["WRITE_ESSAY", "SUMMARIZE_WRITTEN_TEXT", "SUMMARIZE_SPOKEN_TEXT"]) {
+      expect(getCanonicalTaskInstruction(code, null, true)).not.toContain("minutes");
+      expect(getCanonicalTaskInstruction(code)).toContain("minutes");
+    }
+    expect(getCanonicalTaskInstruction("WRITE_ESSAY", null, true)).toContain("200-300 words");
+    expect(getCanonicalTaskInstruction("SUMMARIZE_WRITTEN_TEXT", null, true)).toContain("one sentence");
+    expect(getCanonicalTaskInstruction("SUMMARIZE_SPOKEN_TEXT", null, true)).toContain("50-70 words");
+  });
   it("returns null for empty or null task code", () => {
     expect(getCanonicalTaskInstruction(null)).toBeNull();
     expect(getCanonicalTaskInstruction("")).toBeNull();
