@@ -14,7 +14,8 @@ import {
   type ReactNode,
 } from "react";
 import { useTranslation } from "@/common/i18n";
-import { AppIcon } from "./AppIcon";
+import { ToastIcon } from "./ToastIcon";
+import "./toast.css";
 import {
   addToastToQueue,
   removeToastFromQueue,
@@ -41,13 +42,6 @@ interface ToastContextValue {
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
-
-const TONE_ICON: Record<ToastTone, "info" | "check" | "alert"> = {
-  info: "info",
-  success: "check",
-  warning: "alert",
-  error: "alert",
-};
 
 const emptySubscribe = () => () => {};
 
@@ -108,16 +102,16 @@ export function ToastProvider({ children }: { children: ReactNode }): ReactEleme
         createPortal(
           <aside aria-live="polite" aria-atomic="false" className="toast-container">
             {toasts.map((toast) => {
-              const iconName = TONE_ICON[toast.tone];
               const isAlert = toast.tone === "error" || toast.tone === "warning";
               return (
                 <div
                   key={toast.id}
                   role={isAlert ? "alert" : "status"}
                   className="toast-item"
+                  data-tone={toast.tone}
                 >
                   <span aria-hidden="true" className={`toast-icon toast-icon-${toast.tone}`}>
-                    <AppIcon name={iconName} size={18} />
+                    <ToastIcon tone={toast.tone} />
                   </span>
                   <div className="toast-content">
                     {toast.title ? <p className="toast-title">{toast.title}</p> : null}
@@ -130,7 +124,7 @@ export function ToastProvider({ children }: { children: ReactNode }): ReactEleme
                       onClick={() => dismiss(toast.id)}
                       className="toast-close"
                     >
-                      <AppIcon name="close" size={16} />
+                      <ToastIcon tone="close" />
                     </button>
                   ) : null}
                 </div>

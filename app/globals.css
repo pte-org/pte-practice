@@ -32,6 +32,27 @@
   --input-bg: #252526;
   --mobile-rail-bg: rgba(30, 30, 30, 0.96);
 
+  /* Authentication tokens mirror the tenant and vendor portal shell. */
+  --auth-surface-page: #09090b;
+  --auth-surface-card: #171718;
+  --auth-surface-frame: #0f0f0f;
+  --auth-shell-border: #2b2c2e;
+  --auth-ink-primary: rgba(255, 255, 255, 0.9);
+  --auth-ink-secondary: #a1a1aa;
+  --auth-ink-muted: #a1a1aa;
+  --auth-control-border: rgba(255, 255, 255, 0.05);
+  --auth-brand: #6d8cff;
+  --auth-brand-ink: #b6c6ff;
+  --auth-action: #5aa9e8;
+  --auth-action-gradient-start: #70d0ff;
+  --auth-action-gradient-mid: #2999e5;
+  --auth-action-gradient-end: #5abafa;
+  --auth-action-tint: #163859;
+  --auth-action-foreground: #07111d;
+  --auth-mint-action: #63d6b8;
+  --auth-blush-tint: #4b292b;
+  --auth-blush-action: #ff9a83;
+
   --wave-idle: #4a4a4f;
   --wave-active: var(--accent);
 
@@ -66,6 +87,26 @@ html[data-theme="light"] {
   --search-pill-border: #E5E5E5;
   --input-bg: #FFFFFF;
   --mobile-rail-bg: #FFFFFF;
+
+  --auth-surface-page: #f4f4f5;
+  --auth-surface-card: #ffffff;
+  --auth-surface-frame: #fcfcfd;
+  --auth-shell-border: #e8e8e8;
+  --auth-ink-primary: #18181b;
+  --auth-ink-secondary: #52525b;
+  --auth-ink-muted: #71717a;
+  --auth-control-border: #d4d4d8;
+  --auth-brand: #4169e8;
+  --auth-brand-ink: #3359d2;
+  --auth-action: #0d6fbe;
+  --auth-action-gradient-start: #0e82d0;
+  --auth-action-gradient-mid: #0b70c0;
+  --auth-action-gradient-end: #168bd8;
+  --auth-action-tint: #e8f2f9;
+  --auth-action-foreground: #ffffff;
+  --auth-mint-action: #088068;
+  --auth-blush-tint: #fdede8;
+  --auth-blush-action: #be452b;
 
   --wave-idle: #d1d5db;
   --wave-active: var(--accent);
@@ -1131,92 +1172,6 @@ html[data-theme="dark"] .audio-waveform-bar { fill: #64748b; opacity: 0.45; }
 .reading-size-xl { font-size: 1.3rem; }
 html[data-reading-size="lg"] .practice-session .task-source-text, html[data-reading-size="lg"] .practice-session .session-task-prompt { font-size: 1.15rem; }
 html[data-reading-size="xl"] .practice-session .task-source-text, html[data-reading-size="xl"] .practice-session .session-task-prompt { font-size: 1.3rem; }
-
-/* Toast notification (plan 261025-hung-practice-ui-polish). */
-.toast-container {
-  position: fixed;
-  top: 76px;
-  right: 20px;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 420px;
-  pointer-events: none;
-}
-.toast-item {
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-raised);
-  color: var(--text);
-  box-shadow: var(--shadow);
-  animation: toastFadeIn 200ms ease;
-  min-width: 280px;
-}
-.toast-icon {
-  display: grid;
-  flex: 0 0 auto;
-  margin-top: 2px;
-}
-.toast-icon-info { color: var(--accent); }
-.toast-icon-success { color: var(--green); }
-.toast-icon-warning { color: var(--amber); }
-.toast-icon-error { color: var(--red); }
-
-.toast-content {
-  min-width: 0;
-  flex: 1;
-}
-.toast-title {
-  margin: 0 0 2px;
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-.toast-message {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--muted-strong);
-  line-height: 1.4;
-}
-.toast-close {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  margin: -4px -4px 0 0;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 150ms ease, background 150ms ease;
-}
-.toast-close:hover {
-  background: var(--surface-soft);
-  color: var(--text);
-}
-@keyframes toastFadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@media (max-width: 600px) {
-  .toast-container {
-    top: 72px;
-    right: 12px;
-    left: 12px;
-    max-width: none;
-  }
-  .toast-item {
-    min-width: 0;
-  }
-}
 
 /* Target exam date line & dialog */
 .exam-date-line {
@@ -2890,6 +2845,7 @@ html[data-theme="dark"] .media-player {
 .tabs-trigger-selected { border-bottom-color: var(--accent); color: var(--text); }
 .tabs-badge { padding: 2px 6px; border-radius: 999px; background: var(--surface-raised); font-size: 0.72rem; }
 .skill-task-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.skill-task-actions .task-new-set-button { min-height: 36px; padding: 8px 12px; gap: 6px; border-width: 1px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; text-decoration: none; }
 .active-session-indicator { color: var(--accent); font-weight: 500; }
 .history-list { display: grid; margin: 0; padding: 0; list-style: none; }
 .history-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; transition: background 0.15s ease; }
@@ -3005,12 +2961,8 @@ html[data-theme="dark"] .media-player {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* Smooth page transitions for regular navigation */
-.main-content,
-.session-page,
-.content-frame {
-  animation: pageFadeIn 240ms cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Keep the shared canvas visible; route content owns its entrance motion. */
+html { scrollbar-gutter: stable; }
 
 @keyframes pageFadeIn {
   from {
