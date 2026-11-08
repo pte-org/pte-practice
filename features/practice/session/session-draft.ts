@@ -1,4 +1,5 @@
 import type { PracticeSession } from "../contracts";
+import { hasLocalRecording } from "../media/recordingDrafts";
 
 /** Reads the saved answer payload of an item; anything that is not a JSON object reads as no answer. */
 export function parsePayload(payload: string | null): Record<string, unknown> {
@@ -18,6 +19,7 @@ export function effectiveDraft(task: { publicId: string; savedPayload: string | 
 }
 
 export function hasAnswer(value: Record<string, unknown>): boolean {
+  if (hasLocalRecording(value)) return true;
   return Object.values(value).some((entry) => Array.isArray(entry)
     ? entry.some((item) => typeof item !== "string" || item.trim().length > 0)
     : typeof entry === "object" && entry !== null ? Object.keys(entry).length > 0
