@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AppIcon } from "@/common/components";
+import { AppIcon, Button } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { copyToClipboard } from "./chat-copy";
 
@@ -25,9 +25,11 @@ export function ChatCopyButton({ text }: { text: string }) {
   };
 
   return (
-    <button type="button" className="chat-copy" onClick={() => void copy()}>
-      {copied ? <AppIcon name="check" size={14} /> : null}
-      <span role="status">{copied ? t("chat.copied") : t("chat.copy")}</span>
-    </button>
+    <Button variant="secondary" appearance="ghost" size="sm" iconOnly className="chat-copy"
+      onClick={() => void copy()} aria-label={copied ? t("chat.copied") : t("chat.copy")}
+      title={copied ? t("chat.copied") : t("chat.copy")}>
+      <AppIcon name={copied ? "tick" : "copy"} size={15} />
+      <span className="chat-sr-only" role="status">{copied ? t("chat.copied") : ""}</span>
+    </Button>
   );
 }

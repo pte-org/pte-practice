@@ -25,6 +25,13 @@ describe("chatErrorKey", () => {
     expect(chatErrorKey(new PracticeApiError("offline", 0))).toBe("network");
   });
 
+  it.each([
+    [403, "accessDenied"],
+    [404, "unavailable"],
+  ])("explains HTTP %i without hiding the chat (%s)", (status, key) => {
+    expect(chatErrorKey(new PracticeApiError("server detail", status))).toBe(key);
+  });
+
   it("maps a global rate limit (429 without a chat code) to busy", () => {
     expect(chatErrorKey(new PracticeApiError("slow down", 429))).toBe("busy");
     expect(chatErrorKey(new PracticeApiError("slow down", 429, "RATE_LIMITED"))).toBe("busy");
@@ -32,10 +39,7 @@ describe("chatErrorKey", () => {
 
   it.each([
     new PracticeApiError("server", 500),
-    new PracticeApiError("forbidden", 403, "FORBIDDEN"),
     new PracticeApiError("bad gateway", 502, "CHAT_INVALID_RESPONSE"),
-    new PracticeApiError("gone", 404, "CHAT_SESSION_NOT_FOUND"),
-    new PracticeApiError("consent", 403, "CHAT_CONSENT_REQUIRED"),
     new Error("plain"),
     "string",
     null,

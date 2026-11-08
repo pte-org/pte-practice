@@ -1,4 +1,12 @@
 const CHAT_API_BASE = "/api/v1/student/chat";
+export const CHAT_PANEL_GUTTER = 12;
+export const CHAT_PANEL_MIN_WIDTH = 300;
+export const CHAT_PANEL_MIN_HEIGHT = 320;
+export const ASSISTANT_NAME_STORAGE_KEY = "pte-practice:assistant-name";
+export const ASSISTANT_NAME_CHANGE_EVENT = "pte-practice:assistant-name-changed";
+export const ASSISTANT_NAME_MAX_LENGTH = 32;
+export const CHAT_PANEL_MOVE_STEP = 10;
+export const CHAT_PANEL_MOVE_FAST_STEP = 40;
 
 export const CHAT_PATHS = {
   messages: `${CHAT_API_BASE}/messages`,
