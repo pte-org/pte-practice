@@ -7,6 +7,7 @@ import type { PracticeItemTiming } from "./session-contracts";
 export function getCanonicalTaskInstruction(
   taskCode: string | null | undefined,
   timing?: PracticeItemTiming | null,
+  untimed = false,
 ): string | null {
   if (!taskCode) return null;
   const code = taskCode.toUpperCase();
@@ -15,12 +16,15 @@ export function getCanonicalTaskInstruction(
 
   switch (code) {
     case "READ_ALOUD":
+      if (untimed) return "Read the text below aloud as naturally and clearly as possible. You can listen to your recording and record again before submitting.";
       return `Look at the text below. In ${responseSeconds} seconds, you must read this text aloud as naturally and clearly as possible. You have ${responseSeconds} seconds to read aloud.`;
     case "REPEAT_SENTENCE":
       return "You will hear a sentence. Please repeat the sentence exactly as you hear it. You will hear the sentence only once.";
     case "DESCRIBE_IMAGE":
+      if (untimed) return "Look at the image below and describe its main features in detail. You can record again before submitting.";
       return `Look at the image below. In ${prepSeconds} seconds, please speak into the microphone and describe in detail what the image is showing. You have ${responseSeconds} seconds to give your response.`;
     case "RE_TELL_LECTURE":
+      if (untimed) return "Listen to the lecture, then retell it in your own words. You can record again before submitting.";
       return `You will hear a lecture. After listening to the lecture, in ${prepSeconds > 0 ? prepSeconds : 10} seconds, please speak into the microphone and retell what you have just heard from the lecture in your own words. You have ${responseSeconds} seconds to give your response.`;
     case "ANSWER_SHORT_QUESTION":
       return "You will hear a question. Please give a simple and short answer. Often just one or a few words is enough.";
@@ -31,8 +35,10 @@ export function getCanonicalTaskInstruction(
     case "PERSONAL_INTRODUCTION":
       return `Read the prompt below. In ${prepSeconds} seconds, you must record your introduction. You have ${responseSeconds} seconds to complete your response.`;
     case "SUMMARIZE_WRITTEN_TEXT":
+      if (untimed) return "Read the passage below and summarize it using one sentence. Your response will be judged on the quality of your writing and how well it presents the key points in the passage.";
       return "Read the passage below and summarize it using one sentence. You have 10 minutes to finish this task. Your response will be judged on the quality of your writing and on how well your response presents the key points in the passage.";
     case "WRITE_ESSAY":
+      if (untimed) return "Plan, write and revise an essay about the topic below. Develop a position, organize your ideas, present supporting details, and use standard written English. You should write 200-300 words.";
       return "You will have 20 minutes to plan, write and revise an essay about the topic below. Your response will be judged on how well you develop a position, organize your ideas, present supporting details, and control the elements of standard written English. You should write 200-300 words.";
     case "MC_READING_SINGLE":
       return "Read the text and choose the best answer.";
@@ -47,6 +53,7 @@ export function getCanonicalTaskInstruction(
     case "FILL_BLANKS_READING_WRITING":
       return "Below is a text with blanks. Select the appropriate answer choice for each blank.";
     case "SUMMARIZE_SPOKEN_TEXT":
+      if (untimed) return "You will hear a short lecture. Write a summary for a fellow student who was not present at the lecture. You should write 50-70 words.";
       return "You will hear a short lecture. Write a summary for a fellow student who was not present at the lecture. You should write 50-70 words. You have 10 minutes to finish this task.";
     case "MC_LISTENING_SINGLE":
       return "Listen to the recording and answer the multiple-choice question by selecting the correct response. Only one response is correct.";

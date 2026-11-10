@@ -18,6 +18,9 @@ import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
+import { PracticeFrame } from "./PracticeFrame";
+import { PracticeSupport } from "./PracticeSupport";
+import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "./questionPresentation";
 
 export type MissingField = "answer" | null;
 
@@ -39,7 +42,6 @@ interface SessionTaskViewProps {
   missing: MissingField;
   value: Record<string, unknown>;
   onChange: (value: Record<string, unknown>) => void;
-  onUploadRecording: TaskRendererProps["onUploadRecording"];
   onLoadPlayback: TaskRendererProps["onLoadPlayback"];
   onActivityChange: (busy: boolean) => void;
   /** Reloads the session so the prompt gets a fresh media link. */
@@ -95,23 +97,27 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   }, [notice, showToast]);
 
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
+  const audioUnavailable = requiresQuestionAudio(task.taskCode, fixture, isSubmitted);
   // Read-aloud, written-text, blank, highlight, and describe-image renderers draw the passage/media themselves; showing it here too doubles it.
   const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens || (task.taskCode === "DESCRIBE_IMAGE" && fixture?.imageUrl));
-  const promptText = fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
+  const promptText = hideQuestionTranscript(task.taskCode, isSubmitted) ? ""
+    : fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
   const timing = task.timing;
   const isSpeaking = task.section === "SPEAKING";
   const hasSavedRecording = typeof value.mediaPublicId === "string" && value.mediaPublicId.length > 0;
-  const timedFrame = shouldMountTimedFrame(session) && timing && fixture && !unsupported && !isSubmitted ? timing : null;
+  const timedFrame = shouldMountTimedFrame(session) && timing && fixture && !unsupported && !audioUnavailable && !isSubmitted ? timing : null;
   const skill = skillKey(task.section);
   const locked = busy || offline;
-  const instruction = fixture?.instruction || getCanonicalTaskInstruction(task.taskCode, timing) || t("ui.sessionAnswerTaskBelow");
+  const instruction = session.timingMode === "UNTIMED"
+    ? getCanonicalTaskInstruction(task.taskCode, timing, true) || fixture?.instruction || t("ui.sessionAnswerTaskBelow")
+    : fixture?.instruction || getCanonicalTaskInstruction(task.taskCode, timing) || t("ui.sessionAnswerTaskBelow");
 
   const renderBody = (timed?: TimedRendererControl, timedLocked = false, attempt = 0) => fixture ? (
-    <TaskRenderer key={`${task.publicId}:${attempt}`} fixture={fixture} rendererKey={task.rendererKey} value={value}
+    <TaskRenderer key={`${task.publicId}:${attempt}`} fixture={questionFixture(task.taskCode, fixture, isSubmitted)} rendererKey={task.rendererKey} value={value}
       sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed}
-      onUploadRecording={props.onUploadRecording} onLoadPlayback={props.onLoadPlayback}
+      onLoadPlayback={props.onLoadPlayback}
       onActivityChange={props.onActivityChange}
-      disabled={busy || unsupported || timedLocked || isSubmitted} onChange={props.onChange} />
+      disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted} onChange={props.onChange} />
   ) : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>;
 
   useEffect(() => {
@@ -123,14 +129,24 @@ export function SessionTaskView(props: SessionTaskViewProps) {
     : currentTaskPosition(session);
 
   return (
-    <section className="exam-shell practice-session" data-testid="practice-session">
-      <SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
+    <PracticeFrame
+      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode} />}
+      header={<SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
         parts={sessionParts(session)} questionNumber={questionNum} questionCount={session.totalItemCount}
         pauseDisabled={locked || recorderBusy}
-        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />
+        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />}
+      footer={<SessionFooter
+        busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={locked || recorderBusy || prevDisabled}
+        showSkip={props.showSkip} skipDisabled={locked || recorderBusy} onSkip={props.onSkip}
+        showSubmit={props.showSubmit} submitDisabled={locked || unsupported || audioUnavailable || recorderBusy || props.submitDisabled}
+        submitLabel={props.submitLabel} onSubmit={props.onSubmitAnswer}
+        showNext={props.showNext} nextDisabled={locked || unsupported || recorderBusy || props.nextDisabled}
+        nextLabel={recorderBusy ? t("session.savingRecording") : (nextLabel ?? t("session.next"))}
+        onNext={props.onSubmit} />}>
       <div className="exam-body">
         <div className="exam-task-heading">
           <h2>{task.displayName}</h2>
+          <span className="practice-task-badge">{skill ? t(skill) : task.section}</span>
         </div>
         <div className="exam-instruction-card" role="region" aria-label={t("ui.sessionAnswerTaskBelow")}>
           <span className="exam-instruction-icon" aria-hidden="true">
@@ -162,23 +178,6 @@ export function SessionTaskView(props: SessionTaskViewProps) {
           />
         ) : null}
       </div>
-      <SessionFooter
-        busy={locked}
-        showPrev={showPrev}
-        onPrev={onPrev}
-        prevDisabled={prevDisabled}
-        showSkip={props.showSkip}
-        skipDisabled={locked || recorderBusy}
-        onSkip={props.onSkip}
-        showSubmit={props.showSubmit}
-        submitDisabled={locked || unsupported || recorderBusy || props.submitDisabled}
-        submitLabel={props.submitLabel}
-        onSubmit={props.onSubmitAnswer}
-        showNext={props.showNext}
-        nextDisabled={locked || unsupported || recorderBusy || props.nextDisabled}
-        nextLabel={recorderBusy ? t("session.savingRecording") : (nextLabel ?? t("session.next"))}
-        onNext={props.onSubmit}
-      />
-    </section>
+    </PracticeFrame>
   );
 }

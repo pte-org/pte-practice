@@ -1,5 +1,5 @@
 import type { PracticeSessionTokens } from "./contracts";
-import { PRACTICE_STORAGE_KEYS } from "./constants";
+import { PRACTICE_SESSION_CLEARED_EVENT, PRACTICE_STORAGE_KEYS } from "./constants";
 
 const SESSION_KEY = PRACTICE_STORAGE_KEYS.session;
 const DRAFT_KEY_PREFIX = PRACTICE_STORAGE_KEYS.draftPrefix;
@@ -38,7 +38,11 @@ export function savePracticeSession(tokens: PracticeSessionTokens): void {
 
 export function clearPracticeSession(): void {
   if (typeof window === "undefined" || !window.localStorage) return;
+  const existed = window.localStorage.getItem(SESSION_KEY) !== null;
   window.localStorage.removeItem(SESSION_KEY);
+  if (existed && typeof window.dispatchEvent === "function") {
+    window.dispatchEvent(new Event(PRACTICE_SESSION_CLEARED_EVENT));
+  }
 }
 
 /** Explicit sign-out only: a shared computer must not keep the previous student's unsent answers. */

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { PRACTICE_STORAGE_KEYS } from "@/features/practice/constants";
+import { PRACTICE_SESSION_CLEARED_EVENT, PRACTICE_STORAGE_KEYS } from "@/features/practice/constants";
 import {
   clearPracticeDraft,
   clearPracticeDrafts,
@@ -47,6 +47,15 @@ afterEach(() => {
 const tokens = { accessToken: "a", refreshToken: "r", tokenType: "Bearer", expiresInSeconds: 60, mustChangePassword: false };
 
 describe("session tokens", () => {
+  it("notifies mounted consumers once when credentials are removed", () => {
+    const dispatch = vi.fn();
+    vi.stubGlobal("window", { localStorage: storage, dispatchEvent: dispatch });
+    savePracticeSession(tokens);
+    clearPracticeSession();
+    clearPracticeSession();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(dispatch.mock.calls[0][0].type).toBe(PRACTICE_SESSION_CLEARED_EVENT);
+  });
   it("returns null when nothing is stored", () => {
     expect(getPracticeSession()).toBeNull();
   });

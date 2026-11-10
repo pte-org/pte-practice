@@ -1,0 +1,99 @@
+/* Color values mirror pte-web/packages/ui/src/styles/design-tokens.css. */
+:root, html[data-theme="dark"] {
+  --action: #5aa9e8;
+  --action-hover: #75b8ee;
+  --action-active: #4596d3;
+  --action-gradient-start: #70d0ff;
+  --action-gradient-mid: #2999e5;
+  --action-gradient-end: #5abafa;
+  --action-tint: #163859;
+  --action-tint-hover: #204a70;
+  --action-foreground: #07111d;
+  --button-surface: #171718;
+  --button-subtle: #18181b;
+  --button-border: rgba(255, 255, 255, 0.05);
+  --button-ink: rgba(255, 255, 255, 0.9);
+  --button-secondary-ink: #a1a1aa;
+  --button-danger-tint: #4b292b;
+  --button-danger-ink: #ff9a83;
+  --button-ring: #6d8cff;
+  --button-disabled-border: #2b2c2e;
+  --button-disabled-ink: #a1a1aa;
+}
+html[data-theme="light"] {
+  --action: #0d6fbe;
+  --action-hover: #0b61a8;
+  --action-active: #09538c;
+  --action-gradient-start: #0e82d0;
+  --action-gradient-mid: #0b70c0;
+  --action-gradient-end: #168bd8;
+  --action-tint: #e8f2f9;
+  --action-tint-hover: #d9eaf5;
+  --action-foreground: #ffffff;
+  --button-surface: #ffffff;
+  --button-subtle: #f4f4f5;
+  --button-border: #d4d4d8;
+  --button-ink: #18181b;
+  --button-secondary-ink: #52525b;
+  --button-danger-tint: #fdede8;
+  --button-danger-ink: #be452b;
+  --button-ring: #4169e8;
+  --button-disabled-border: #e8e8e8;
+  --button-disabled-ink: #71717a;
+}
+:root { --primary-action-gradient: linear-gradient(to right, var(--action-gradient-start), var(--action-gradient-mid), var(--action-gradient-end)); --primary-action-shadow: 0 2px 8px rgba(13, 111, 190, 0.22); --primary-action-hover-shadow: 0 4px 12px rgba(13, 111, 190, 0.28); }
+.pte-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1px solid transparent; border-radius: 8px; font: inherit; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, filter 150ms ease, opacity 150ms ease; }
+.pte-button[data-size="sm"] { min-height: 32px; padding-inline: 12px; font-size: 0.75rem; }
+.pte-button[data-size="lg"] { min-height: 44px; padding-inline: 24px; font-size: 1rem; }
+.pte-button[data-full-width] { width: 100%; }
+.pte-button[data-icon-only] { aspect-ratio: 1; padding-inline: 0; }
+.pte-button[data-appearance="outline"] { border-color: var(--button-border); background: var(--button-surface); color: var(--button-ink); }
+.pte-button[data-appearance="outline"]:hover:not(:disabled) { background: var(--button-subtle); }
+.pte-button[data-variant="secondary"][data-appearance="outline"] { color: var(--button-secondary-ink); }
+.pte-button[data-variant="secondary"][data-appearance="fill"] { background: var(--action-tint); color: var(--action); }
+.pte-button[data-variant="secondary"][data-appearance="fill"]:hover:not(:disabled) { background: var(--action-tint-hover); }
+.pte-button[data-appearance="ghost"], .pte-button[data-variant="ghost"] { background: transparent; color: var(--action); }
+.pte-button[data-appearance="ghost"]:hover:not(:disabled), .pte-button[data-variant="ghost"]:hover:not(:disabled) { background: var(--action-tint); }
+.pte-button[data-variant="ghost"] { border-color: transparent; }
+.pte-button[data-variant="secondary"][data-appearance="ghost"] { color: var(--button-secondary-ink); }
+.pte-button[data-variant="secondary"][data-appearance="ghost"]:hover:not(:disabled) { background: var(--button-subtle); }
+/* Existing semantic class buttons receive the same surfaces without changing their handlers or dimensions. */
+.pte-button[data-variant="primary"][data-appearance="fill"],
+.button.button-primary:not(:disabled), .button:not([class*="button-"]):not(:disabled),
+.chat-layout .chat-send:not(:disabled), .chat-layout .chat-toggle, .sign-in-page .auth-submit:not(:disabled),
+.student-shell .quick-study-button, .student-shell.studio-shell .nav-link-active,
+.practice-studio .session-btn-primary:not(:disabled),
+.practice-studio .task-recording-actions .button.button-outline:not(.button-outline-danger):not(:disabled) {
+  background: var(--primary-action-gradient); color: var(--action-foreground); border-color: transparent; box-shadow: var(--primary-action-shadow);
+}
+.pte-button[data-variant="primary"][data-appearance="fill"]:hover:not(:disabled),
+.button.button-primary:hover:not(:disabled), .button:not([class*="button-"]):hover:not(:disabled),
+.chat-layout .chat-send:hover:not(:disabled), .chat-layout .chat-toggle:hover, .sign-in-page .auth-submit:hover:not(:disabled),
+.student-shell .quick-study-button:hover, .student-shell.studio-shell .nav-link-active:hover,
+.practice-studio .session-btn-primary:hover:not(:disabled),
+.practice-studio .task-recording-actions .button.button-outline:not(.button-outline-danger):hover:not(:disabled) {
+  background: var(--primary-action-gradient); border-color: transparent; filter: brightness(1.05); box-shadow: var(--primary-action-hover-shadow); color: var(--action-foreground);
+}
+.pte-button[data-variant="primary"][data-appearance="fill"]:active:not(:disabled), .button.button-primary:active:not(:disabled), .student-shell.studio-shell .nav-link-active:active { filter: brightness(0.95); }
+.button.button-outline:not(:disabled), .session-header .session-pause-btn:not(:disabled), .session-footer .session-btn-outline:not(:disabled) { border-color: var(--button-border); background: var(--button-surface); color: var(--button-ink); }
+.button.button-outline:hover:not(:disabled), .session-header .session-pause-btn:hover:not(:disabled), .session-footer .session-btn-outline:hover:not(:disabled) { background: var(--button-subtle); border-color: var(--button-border); color: var(--button-ink); }
+.button.button-accent:not(:disabled) { background: var(--action-tint); color: var(--action); border-color: transparent; }
+.button.button-accent:hover:not(:disabled) { background: var(--action-tint-hover); }
+.pte-button[data-variant="danger"][data-appearance="fill"], .button.button-danger:not(:disabled) { background: var(--button-danger-tint); color: var(--button-danger-ink); }
+.pte-button[data-variant="danger"][data-appearance="outline"], .button.button-outline-danger:not(:disabled), .button.button-danger-outline:not(:disabled) { background: var(--button-surface); color: var(--button-danger-ink); border-color: color-mix(in srgb, var(--button-danger-ink) 40%, transparent); }
+.pte-button[data-variant="danger"][data-appearance="ghost"] { color: var(--button-danger-ink); }
+.pte-button[data-variant="danger"]:hover:not(:disabled) { background: var(--button-danger-tint); }
+.pte-button[data-variant="danger"][data-appearance="fill"]:hover:not(:disabled) { filter: brightness(0.95); }
+.pte-button[data-variant][data-appearance]:disabled,
+.button.button-primary:disabled, .button.button-outline:disabled, .button.button-danger:disabled,
+.practice-studio .session-btn-primary:disabled, .practice-studio .session-btn-outline:disabled {
+  cursor: not-allowed; border-color: var(--button-disabled-border); background: var(--button-subtle); background-image: none; color: var(--button-disabled-ink); box-shadow: none; filter: none;
+}
+.button.button-ghost:not(:disabled) { background: transparent; color: var(--action); }
+.button.button-ghost:hover:not(:disabled) { background: var(--action-tint); }
+.skill-task-actions .task-chevron-btn:not(:disabled) { color: var(--action); }
+.skill-task-actions .task-chevron-btn:hover:not(:disabled) { background: var(--action-tint); }
+.pte-button:focus-visible, .button:focus-visible, .student-shell .nav-link:focus-visible { outline: 2px solid color-mix(in srgb, var(--button-ring) 35%, transparent); outline-offset: 2px; }
+.pte-button-spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) { .pte-button-spinner { animation: pte-button-spin 700ms linear infinite; } @keyframes pte-button-spin { to { transform: rotate(360deg); } } }
+@media (prefers-reduced-motion: reduce) { .pte-button { transition: none; } }

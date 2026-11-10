@@ -6,10 +6,6 @@ import { ConfirmDialog, useToast } from "@/common/components";
 import { useOnlineStatus } from "@/common/hooks/useOnlineStatus";
 import { useTranslation } from "@/common/i18n";
 import { ChatLayout } from "@/features/chat/ChatLayout";
-import { AudioPlaybackCheckDialog } from "@/features/deviceCheck/AudioPlaybackCheckDialog";
-import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
-import type { DeviceCheckKind } from "@/features/deviceCheck/device-check";
-import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
 import { wordCountIssue } from "./answer-checks";
 import { countPracticeWords } from "./media/text-utils";
 import { sessionDisplayName } from "./presentation";
@@ -19,8 +15,9 @@ import { PRACTICE_ROUTES } from "./constants";
 import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "./contracts";
 import type { PracticeTaskFixture } from "./fixtures";
 import { uploadPracticeRecording } from "./media/api";
+import { createRecordingCommitter } from "./media/recordingDrafts";
+import { createRecordingDraftSaver } from "./session/recordingCommit";
 import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./session-state";
-import { clearPracticeDraft, getPracticeDraft } from "./session-storage";
 import { fixtureFromPracticeTask } from "./task-content";
 import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./session/session-draft";
 import {
@@ -61,16 +58,15 @@ export function PracticeSessionView() {
   const [missing, setMissing] = useState<MissingField>(null);
   const sessionRef = useRef<PracticeSession | null>(null);
   const questionStartTime = useRef<number>(0);
-  const { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer } = useSessionDraft();
+  const { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer, readDraft, forgetDraft,
+    recordingDrafts, hasRecordingDrafts } = useSessionDraft();
+  const [commitRecording] = useState(createRecordingCommitter);
+  const [saveRecordingDrafts] = useState(createRecordingDraftSaver);
   const { showToast } = useToast();
   const online = useOnlineStatus();
-  const { markPassed, markFailed } = useDeviceChecks();
   const [recorderBusy, setRecorderBusy] = useState(false);
   const [confirm, setConfirm] = useState<null | "pause" | { words: number; min: number | null; max: number | null }>(null);
-  /** Device checks done since this session was opened; starting or resuming a session asks again. */
-  const [checksDone, setChecksDone] = useState<DeviceCheckKind[]>([]);
-  const finishCheck = (kind: DeviceCheckKind) => setChecksDone((done) => (done.includes(kind) ? done : [...done, kind]));
-  useLeaveGuard(recorderBusy);
+  useLeaveGuard(recorderBusy || hasRecordingDrafts, () => showToast(t("session.exitBeforeLeaving"), { tone: "warning" }));
   const wasOnline = useRef(online);
   useEffect(() => {
     if (wasOnline.current === online) return;
@@ -82,7 +78,7 @@ export function PracticeSessionView() {
     conflict: t("ui.sessionConflict"), expired: t("ui.sessionExpired"), fallback: t("ui.sessionError"),
   }), [t]);
   const heartbeat = useHeartbeat({ api, phase: state.phase, sessionRef, dispatch, errorMessage });
-  const { runMutation, runBackgroundMutation, retryLastMutation, hasRetryAction } = useSessionMutations({
+  const { runMutation, retryLastMutation, hasRetryAction } = useSessionMutations({
     api, dispatch, sessionRef, heartbeat, hydrateDraft, errorMessage, unavailableMessage: t("ui.sessionError"),
     onConflict: () => showToast(t("session.conflict"), { tone: "warning" }),
   });
@@ -93,7 +89,6 @@ export function PracticeSessionView() {
     setHistory([]);
     setViewingHistoryIndex(null);
     setMissing(null);
-    setChecksDone([]);
     hydratedSessionId.current = null;
   }, []);
   const { reload } = useSessionLifecycle({
@@ -193,7 +188,7 @@ export function PracticeSessionView() {
   useEffect(() => {
     const session = state.session;
     if (!session || !activeTask) return;
-    const local = getPracticeDraft(session.publicId, activeTask.publicId);
+    const local = readDraft(session.publicId, activeTask.publicId);
     if (local) {
       setDraftTaskId(activeTask.publicId);
       setDraft(local.payload);
@@ -202,9 +197,15 @@ export function PracticeSessionView() {
       setDraft(parsePayload(activeTask.savedPayload));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-hydrate when switching to a different task or session
-  }, [state.session?.publicId, activeTask?.publicId, setDraft, setDraftTaskId]);
+  }, [state.session?.publicId, activeTask?.publicId, setDraft, setDraftTaskId, readDraft]);
 
-  const goHome = () => router.push(PRACTICE_ROUTES.home);
+  const goHome = () => {
+    if (hasRecordingDrafts || recorderBusy) {
+      showToast(t("session.exitBeforeLeaving"), { tone: "warning" });
+      return;
+    }
+    router.push(PRACTICE_ROUTES.home);
+  };
   const unavailable = () => Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
 
   const begin = () => runMutation("begin", (key) => sessionRef.current
@@ -224,12 +225,19 @@ export function PracticeSessionView() {
     if (!session) return Promise.resolve();
     const task = activeTask;
     const savedDraft = task ? effectiveDraft(task, draftTaskId, draft) : {};
-    const draftRequest = task && hasAnswer(savedDraft) ? {
-      itemPublicId: task.publicId, payload: JSON.stringify(savedDraft), confidence: null,
-    } : undefined;
-    return runMutation(`exit:${task?.publicId ?? "overview"}`, (key) => sessionRef.current
-      ? api.saveAndExit(sessionRef.current.publicId, sessionRef.current.version, draftRequest, key) : unavailable(),
+    return runMutation(`exit:${task?.publicId ?? "overview"}`, async (key) => {
+      // Drafts from other visited items stay local until this explicit exit as well.
+      await saveRecordingDrafts(api, recordingDrafts(session.publicId), task?.publicId, sessionRef, key, forgetDraft);
+      const payload = task ? await commitRecording(savedDraft, (blob, duration) =>
+        uploadPracticeRecording(api, blob, session.publicId, task.publicId, duration)) : {};
+      const draftRequest = task && hasAnswer(payload) ? {
+        itemPublicId: task.publicId, payload: JSON.stringify(payload), confidence: null,
+      } : undefined;
+      return sessionRef.current
+        ? api.saveAndExit(sessionRef.current.publicId, sessionRef.current.version, draftRequest, key) : unavailable();
+    },
     (next) => {
+      for (const entry of recordingDrafts(session.publicId)) forgetDraft(session.publicId, entry.itemId);
       dispatch({ type: "exited", session: next });
       router.replace(PRACTICE_ROUTES.home);
     });
@@ -244,7 +252,7 @@ export function PracticeSessionView() {
     return runMutation(`skip:${task.publicId}`, (key) => sessionRef.current
       ? api.skip(sessionRef.current.publicId, task.publicId, sessionRef.current.version, key) : unavailable(),
     (next) => {
-      clearPracticeDraft(session.publicId, task.publicId);
+      forgetDraft(session.publicId, task.publicId);
       setHistory((prev) => [
         ...prev,
         {
@@ -267,7 +275,7 @@ export function PracticeSessionView() {
     const session = state.session;
     const task = activeTask;
     if (!session || !task) return Promise.resolve();
-    const answerDraft = effectiveDraft(task, draftTaskId, draft);
+    let answerDraft = effectiveDraft(task, draftTaskId, draft);
     // Missing input is a warning on the form, not a failed session: the student keeps their draft and fixes it in place.
     if (!hasAnswer(answerDraft)) { setMissing("answer"); return Promise.resolve(); }
     setMissing(null);
@@ -281,12 +289,16 @@ export function PracticeSessionView() {
     }
     const start = questionStartTime.current || Date.now();
     const timeSpent = Math.max(1, Math.round((Date.now() - start) / 1000));
-    return runMutation(`answer:${task.publicId}`, (key) => sessionRef.current
-      ? api.answer(sessionRef.current.publicId, task.publicId, {
+    return runMutation(`answer:${task.publicId}`, async (key) => {
+      await saveRecordingDrafts(api, recordingDrafts(session.publicId), task.publicId, sessionRef, key, forgetDraft);
+      answerDraft = await commitRecording(answerDraft, (blob, duration) =>
+        uploadPracticeRecording(api, blob, session.publicId, task.publicId, duration));
+      return sessionRef.current ? api.answer(sessionRef.current.publicId, task.publicId, {
         clientVersion: sessionRef.current.version, payload: JSON.stringify(answerDraft), confidence: null,
-      }, key) : unavailable(),
+      }, key) : unavailable();
+    },
     (next) => {
-      clearPracticeDraft(session.publicId, task.publicId);
+      forgetDraft(session.publicId, task.publicId);
       const newResult: PracticeItemResult = next.itemResult ?? {
         itemPublicId: task.publicId,
         taskCode: task.taskCode,
@@ -394,29 +406,6 @@ export function PracticeSessionView() {
     }
   };
 
-  /** Uploads a recording, then saves it on the session so it can be replayed after a reload. A failed save is not fatal:
-   *  the recording stays in memory and is saved again with the answer. */
-  const uploadAndSaveRecording = async (blob: Blob, durationSeconds: number) => {
-    const session = sessionRef.current ?? state.session;
-    const task = activeTask;
-    if (!session || !task) return Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
-    heartbeat.setBusy(true);
-    try {
-      const media = await uploadPracticeRecording(api, blob, session.publicId, task.publicId, durationSeconds);
-      const saved = await runBackgroundMutation(`draft:${task.publicId}:${media.mediaPublicId}`, (key) => sessionRef.current
-        ? api.saveDraft(sessionRef.current.publicId, task.publicId, {
-          clientVersion: sessionRef.current.version,
-          payload: JSON.stringify({ mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds }),
-          confidence: null,
-        }, key) : unavailable());
-      if (!saved.ok) throw new PracticeApiError(errorMessage(saved.reason), 0, "DRAFT_SAVE_FAILED");
-      editAnswer(session.publicId, task.publicId, { mediaPublicId: media.mediaPublicId, durationSeconds: media.durationSeconds });
-      return media;
-    } finally {
-      heartbeat.setBusy(false);
-    }
-  };
-
   const refreshPrompt = async () => {
     const current = sessionRef.current ?? state.session;
     if (!current) return;
@@ -511,11 +500,6 @@ export function PracticeSessionView() {
 
   const title = sessionDisplayName(session, (code) => (code === currentTask.taskCode ? currentTask.displayName : code), t);
 
-  const hasSpeaking = session.sections.some((section) => section.code === "SPEAKING");
-  const hasAudio = hasSpeaking || session.sections.some((section) => section.code === "LISTENING");
-  // Speaker first, then the microphone; closing the mic check without recording is allowed, it is guidance only.
-  const showAudioCheck = hasAudio && !checksDone.includes("speaker");
-  const showMicCheck = hasSpeaking && !showAudioCheck && !checksDone.includes("mic");
   const closeConfirm = () => setConfirm(null);
 
   return (
@@ -558,7 +542,6 @@ export function PracticeSessionView() {
             editAnswer(session.publicId, currentTask.publicId, value);
           }
         }}
-        onUploadRecording={uploadAndSaveRecording}
         onLoadPlayback={() => api.getRecordingPlayback(session.publicId, currentTask.publicId).then((playback) => playback.url)}
         onActivityChange={setRecorderBusy}
         onRefreshPrompt={refreshPrompt}
@@ -575,8 +558,6 @@ export function PracticeSessionView() {
           confirmLabel={t("session.submitAnyway")} cancelLabel={t("session.cancel")}
           onClose={closeConfirm} onConfirm={() => { closeConfirm(); void submit(true); }} />
       ) : null}
-      <AudioPlaybackCheckDialog open={showAudioCheck} onConfirm={() => { markPassed("speaker"); finishCheck("speaker"); }} />
-      <DeviceCheckDialog kind={showMicCheck ? "mic" : null} onClose={() => finishCheck("mic")} onPassed={markPassed} onFailed={markFailed} />
     </ChatLayout>
   );
 }

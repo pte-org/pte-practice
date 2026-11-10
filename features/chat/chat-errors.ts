@@ -7,13 +7,19 @@ export type ChatErrorKey =
   | "busy"
   | "invalidRequest"
   | "network"
+  | "accessDenied"
+  | "unavailable"
   | "generic";
 
 const HTTP_TOO_MANY_REQUESTS = 429;
+const HTTP_FORBIDDEN = 403;
+const HTTP_NOT_FOUND = 404;
 
 /** Maps a failed request to an i18n key; the server's English `userMessage` is never shown to students. */
 export function chatErrorKey(error: unknown): ChatErrorKey {
   if (!(error instanceof PracticeApiError)) return "generic";
+  if (error.status === HTTP_FORBIDDEN) return "accessDenied";
+  if (error.status === HTTP_NOT_FOUND) return "unavailable";
   switch (error.code) {
     case CHAT_ERROR_CODES.quotaExceeded: return "quotaExceeded";
     case CHAT_ERROR_CODES.inFlight: return "inFlight";

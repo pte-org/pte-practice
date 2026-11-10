@@ -1,56 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppIcon, TabPanel, Tabs } from "@/common/components";
-import { useLatestRequest } from "@/common/hooks/useLatestRequest";
+import { useState, type ReactElement } from "react";
+import { AppIcon, Skeleton, TabPanel, Tabs } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
-import type { PracticeProgress } from "@/features/practice/contracts";
 import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { formatScore, scoreTone, sessionDisplayName, skillKey, taskDisplayName } from "@/features/practice/presentation";
 import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
+import { latestActiveTaskSession } from "@/features/practice/task-session";
 import { progressMetrics } from "./progress-summary";
+import { useWorkspaceProgress } from "@/features/workspace/WorkspaceProgressProvider";
 
-type LoadState = "loading" | "ready" | "error";
-const EMPTY: PracticeProgress = { entries: [], totalSessions: 0, completedSessions: 0, answeredItems: 0, totalItems: 0, generatedAt: null, hasMore: false };
-
-export function ProgressView() {
-  const { authStatus, catalog, isPracticeUnlocked } = usePractice();
+export const ProgressView = (): ReactElement => {
+  const { catalog, catalogStatus, isPracticeUnlocked, accessState } = usePractice();
   const { openFor, dialog } = usePracticeStart();
   const { t } = useTranslation();
-  const api = useMemo(() => createPracticeApiClient(), []);
-  const gate = useLatestRequest();
-  const [progress, setProgress] = useState<PracticeProgress>(EMPTY);
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [error, setError] = useState<string | null>(null);
+  const { progress, status: loadState, refresh: loadProgress } = useWorkspaceProgress();
   const sections = orderCatalogSections(catalog.sections);
   const [skill, setSkill] = useState<string>(sections[0]?.code ?? "SPEAKING");
-
-  const loadProgress = useCallback(async () => {
-    if (authStatus !== "authenticated") return;
-    const id = gate.begin();
-    setLoadState("loading");
-    try {
-      const loaded = await api.getProgress();
-      if (!gate.isLatest(id)) return;
-      setProgress(loaded);
-      setLoadState("ready");
-    } catch (reason) {
-      if (!gate.isLatest(id)) return;
-      setLoadState("error");
-      setError(reason instanceof PracticeApiError && reason.message ? reason.message : t("progress.loadError"));
-    }
-  }, [api, authStatus, gate, t]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => void loadProgress(), 0);
-    return () => window.clearTimeout(timer);
-  }, [loadProgress]);
 
   const metrics = progressMetrics(progress);
   const taskName = (code: string) => {
@@ -67,10 +38,10 @@ export function ProgressView() {
 
   return (
     <div className="page-column" data-testid="progress-page">
-      <h1 className="page-title">{t("progress.title")}</h1>
+      <h2 className="section-title">{t("progress.title")}</h2>
       {loadState === "error" ? (
         <div className="card progress-error" role="alert">
-          <span>{error}</span>
+          <span>{t("progress.loadError")}</span>
           <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
         </div>
       ) : null}
@@ -79,7 +50,7 @@ export function ProgressView() {
           <div className="card metric-card" key={cell.label}>
             <AppIcon name={cell.icon} size={20} />
             <span>{cell.label}</span>
-            <strong>{loadState === "loading" ? "…" : cell.value}</strong>
+            {loadState === "loading" ? <Skeleton variant="title" /> : <strong>{cell.value}</strong>}
           </div>
         ))}
       </div>
@@ -95,11 +66,7 @@ export function ProgressView() {
           {current ? (
             <TabPanel id={`progress-${current.code}`} active>
               {current.taskTypes.map((task) => {
-                const activeSession = progress.entries.find(
-                  (entry) =>
-                    entry.taskCode === task.code &&
-                    (entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS"),
-                );
+                const activeSession = latestActiveTaskSession(progress.entries, task.code);
                 const completedSession = progress.entries.find(
                   (entry) =>
                     entry.taskCode === task.code &&
@@ -110,6 +77,8 @@ export function ProgressView() {
                     key={task.code}
                     task={task}
                     isPracticeUnlocked={isPracticeUnlocked}
+                    accessState={accessState}
+                    contentState={catalogStatus === "ready" ? "ready" : catalogStatus === "error" ? "error" : "loading"}
                     activeSession={activeSession}
                     completedSession={completedSession}
                     onStart={openFor}
@@ -152,7 +121,7 @@ export function ProgressView() {
       {dialog}
     </div>
   );
-}
+};
 
 function formatDate(value: string | null): string {
   if (!value) return "—";

@@ -1,0 +1,130 @@
+/* Match pte-web's AuthBrandShell and AuthFormControls in this standalone app.
+ * Scope the portal tokens here so the practice workspace keeps its own theme. */
+.sign-in-page {
+  --surface: var(--auth-surface-card);
+  --text: var(--auth-ink-primary);
+  --muted: var(--auth-ink-muted);
+  --muted-strong: var(--auth-ink-secondary);
+  --line: var(--auth-shell-border);
+  --line-strong: var(--auth-control-border);
+  --accent: var(--auth-brand);
+  --accent-strong: var(--auth-brand-ink);
+  --accent-soft: var(--auth-action-tint);
+  --input-bg: var(--auth-surface-card);
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.43;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sign-in-page .sign-in-toolbar { align-items: center; }
+.sign-in-page .locale-control { position: relative; }
+.sign-in-page .locale-control > svg { position: absolute; right: 10px; top: 12px; pointer-events: none; color: var(--auth-ink-muted); }
+.sign-in-page .sign-in-toolbar .icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--auth-surface-frame);
+  color: var(--auth-ink-primary);
+}
+.sign-in-page .sign-in-toolbar .locale-button {
+  display: flex;
+  width: auto;
+  min-width: 62px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border-color: var(--auth-control-border);
+  background: var(--auth-surface-card);
+  color: var(--auth-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  appearance: none;
+  padding-right: 30px;
+}
+.sign-in-page .sign-in-stage { padding-bottom: 16px; }
+.sign-in-page .sign-in-card {
+  grid-template-columns: minmax(0, 1fr);
+  box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--auth-action) 15%, transparent);
+}
+.sign-in-page .orbit-panel { display: none; min-height: 34rem; }
+.sign-in-page .sign-in-column { min-width: 0; padding: 32px; }
+.sign-in-page .sign-in-brand strong { color: var(--auth-brand-ink); letter-spacing: -0.025em; }
+html[data-theme="dark"] .sign-in-page .sign-in-brand strong { color: var(--auth-brand-ink); }
+.sign-in-page .sign-in-brand small { color: var(--auth-action); }
+.sign-in-page .sign-in-body { padding-top: 32px; }
+.sign-in-page .sign-in-body h1 { font-size: 2rem; line-height: 1.25; }
+.sign-in-page .sign-in-lead {
+  margin-top: 8px;
+  color: var(--auth-ink-secondary);
+  font-size: 15px;
+  line-height: 1.625;
+}
+.sign-in-page .sign-in-form { display: flex; flex-direction: column; gap: 18px; }
+.sign-in-page .auth-control-group { display: flex; flex-direction: column; gap: 6px; }
+.sign-in-page .auth-form label { font-size: 13px; font-weight: 600; }
+.sign-in-page .auth-field { flex-shrink: 0; }
+.sign-in-page .auth-field input { min-width: 0; font-size: 15px; color: var(--auth-ink-primary); }
+.sign-in-page .auth-field input::placeholder { color: var(--auth-ink-muted); }
+.sign-in-page .auth-field input:focus-visible { outline: none; }
+.sign-in-page .auth-field:has(input[aria-invalid="true"]) {
+  border-color: var(--auth-blush-action);
+}
+.sign-in-page .auth-field:has(input[aria-invalid="true"]):focus-within {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--auth-blush-action) 15%, transparent);
+}
+.sign-in-page .auth-field-valid { display: flex; flex-shrink: 0; color: var(--auth-mint-action); }
+.sign-in-page .auth-field-valid[data-visible="false"] { opacity: 0; }
+.sign-in-page .auth-field-error { color: var(--auth-blush-action); font-size: 12.5px; font-weight: 500; }
+.sign-in-page .auth-form .password-field input { padding-right: 0; }
+.sign-in-page .password-toggle {
+  position: static;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0;
+  transform: none;
+  color: var(--auth-ink-muted);
+}
+.sign-in-page .password-toggle:hover { background: transparent; color: var(--auth-ink-primary); }
+.sign-in-page .auth-submit {
+  flex-shrink: 0;
+  background-image: linear-gradient(90deg, var(--auth-action-gradient-start), var(--auth-action-gradient-mid), var(--auth-action-gradient-end), var(--auth-action-gradient-start));
+  color: var(--auth-action-foreground);
+  font-size: 15px;
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--auth-action) 30%, transparent), 0 4px 6px -4px color-mix(in srgb, var(--auth-action) 30%, transparent);
+}
+.sign-in-page .auth-control-group .auth-footnote {
+  display: block;
+  align-self: flex-end;
+  margin-top: 2px;
+  color: var(--auth-brand-ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+.sign-in-page .form-error { border: 0; background: var(--auth-blush-tint); color: var(--auth-blush-action); }
+.sign-in-page .sign-in-footer { position: relative; z-index: 1; padding: 8px 16px 24px; }
+.sign-in-page .sign-in-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--auth-ink-muted);
+  font-size: 12px;
+}
+.sign-in-page .sign-in-footer li + li::before { content: "·"; margin-right: 12px; }
+
+@media (min-width: 640px) {
+  .sign-in-page .sign-in-column { padding: 40px; }
+}
+@media (min-width: 768px) {
+  .sign-in-page .sign-in-card { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .sign-in-page .orbit-panel { display: block; }
+  .sign-in-page .sign-in-column { padding: 40px 56px; }
+  .sign-in-page .sign-in-body { padding-top: 28px; }
+}

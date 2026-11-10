@@ -31,6 +31,9 @@ describe("TaskActionButtons", () => {
     );
 
     expect(html).toContain("task-chevron-btn");
+    expect(html).toContain("sessionId=sess-123");
+    expect(html).toContain("pte-button task-new-set-button");
+    expect(html).not.toContain('role="dialog"');
   });
 
   it("renders chevron right button when no activeSession exists", () => {

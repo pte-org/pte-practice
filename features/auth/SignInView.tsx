@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { Suspense, useState, type ReactElement } from "react";
 import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { useTheme } from "@/common/providers/ThemeProvider";
@@ -13,6 +13,7 @@ import { ChangePasswordForm } from "./ChangePasswordForm";
 import { BRAND_NAME } from "./constants";
 import { OrbitPanel } from "./OrbitPanel";
 import { SignInForm } from "./SignInForm";
+import "./sign-in.css";
 
 const LOGO_WIDTH = 482;
 const LOGO_HEIGHT = 567;
@@ -22,7 +23,7 @@ interface PendingPasswordChange {
   currentPassword: string;
 }
 
-export function SignInView() {
+export const SignInView = (): ReactElement => {
   const { t, locale, setLocale } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [pending, setPending] = useState<PendingPasswordChange | null>(null);
@@ -59,10 +60,17 @@ export function SignInView() {
     <main className="sign-in-page">
       <AuthBackdrop />
       <div className="sign-in-toolbar">
-        <button className="icon-button" type="button" onClick={() => setLocale(locale === "en" ? "vi" : "en")}
-          aria-label={t("auth.toggleLanguage")} title={t("auth.toggleLanguage")}>{locale.toUpperCase()}</button>
-        <button className="icon-button" type="button" onClick={toggleTheme}
-          aria-label={t("auth.toggleTheme")} title={t("auth.toggleTheme")}>
+        <div className="locale-control">
+          <select className="icon-button locale-button" value={locale}
+            onChange={(event) => setLocale(event.target.value === "vi" ? "vi" : "en")}
+            aria-label={t("auth.toggleLanguage")} title={t("auth.toggleLanguage")}>
+            <option value="vi">VI</option>
+            <option value="en">EN</option>
+          </select>
+          <AppIcon name="chevronDown" size={16} />
+        </div>
+        <button className="icon-button theme-button" type="button" onClick={toggleTheme}
+          aria-label={t("auth.toggleTheme")} title={t("auth.toggleTheme")} aria-pressed={theme === "dark"}>
           <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
         </button>
       </div>
@@ -85,9 +93,7 @@ export function SignInView() {
               ) : (
                 <>
                   <div>
-                    <h1 id="sign-in-title">
-                      {t("auth.headingStart")}<span className="sign-in-highlight">{t("auth.headingHighlight")}</span>{t("auth.headingEnd")}
-                    </h1>
+                    <h1 id="sign-in-title">{t("auth.welcomeTitle")}</h1>
                     <p className="sign-in-lead">{t("auth.description")}</p>
                   </div>
                   <SignInForm onSignedIn={handleSignedIn} />
@@ -97,6 +103,21 @@ export function SignInView() {
           </div>
         </div>
       </div>
+      <footer className="sign-in-footer">
+        <nav aria-label={t("auth.footerLabel")}>
+          <ul>
+            <li><Suspense fallback={null}><CopyrightYear /></Suspense></li>
+            <li>{t("auth.footerTerms")}</li>
+            <li>{t("auth.footerPrivacy")}</li>
+            <li>{t("auth.footerSupport")}</li>
+          </ul>
+        </nav>
+      </footer>
     </main>
   );
-}
+};
+
+const CopyrightYear = (): ReactElement => {
+  const { t } = useTranslation();
+  return <>{t("auth.footerCopyright").replace("{year}", String(new Date().getFullYear()))}</>;
+};

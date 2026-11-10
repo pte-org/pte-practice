@@ -41,6 +41,7 @@ export class PracticeApiError extends Error {
 interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
   allowRefresh?: boolean;
+  authenticated?: boolean;
 }
 
 const request = practiceRequest;
@@ -53,6 +54,7 @@ export function createPracticeApiClient() {
         method: "POST",
         body,
         allowRefresh: false,
+        authenticated: false,
       }),
     changePassword: (body: ChangePasswordBody): Promise<void> =>
       request<void>(API_PATHS.changePassword, { method: "POST", body }).then(() => undefined),
@@ -187,8 +189,8 @@ export function createPracticeIdempotencyKey(prefix: string): string {
 }
 
 export async function practiceRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { allowRefresh = true, body, headers: customHeaders, ...requestInit } = options;
-  const session = getPracticeSession();
+  const { allowRefresh = true, authenticated = true, body, headers: customHeaders, ...requestInit } = options;
+  const session = authenticated ? getPracticeSession() : null;
   const headers = new Headers(customHeaders);
   if (body !== undefined) headers.set("Content-Type", "application/json");
   if (session?.accessToken) headers.set("Authorization", `Bearer ${session.accessToken}`);
@@ -209,11 +211,16 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
     if (getPracticeSession()?.accessToken !== session.accessToken) return request<T>(path, { ...options, allowRefresh: false });
     const refreshed = await refreshOnce(session.refreshToken, refreshSession);
     if (refreshed) return request<T>(path, { ...options, allowRefresh: false });
+    if (getPracticeSession()?.refreshToken !== session.refreshToken) {
+      throw new PracticeApiError(API_ERROR_TEXT.requestFailed, 409, "SESSION_CHANGED");
+    }
     clearPracticeSession();
   }
 
   const bodyValue = await parseJson(response);
   if (!response.ok) {
+    if (response.status === 401 && authenticated && session
+        && getPracticeSession()?.refreshToken === session.refreshToken) clearPracticeSession();
     const errorRecord = asRecord(bodyValue);
     throw new PracticeApiError(
       typeof errorRecord.userMessage === "string"
@@ -229,20 +236,27 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
 }
 
 async function refreshSession(refreshToken: string): Promise<boolean> {
+  let response: Response;
   try {
-    const response = await fetch(`${getApiBaseUrl()}${API_PATHS.refreshToken}`, {
+    response = await fetch(`${getApiBaseUrl()}${API_PATHS.refreshToken}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
-    if (!response.ok) return false;
-    const value = unwrap<PracticeSessionTokens>(await parseJson(response));
-    if (!value.accessToken || !value.refreshToken) return false;
-    savePracticeSession(value);
-    return true;
   } catch {
-    return false;
+    throw new PracticeApiError(API_ERROR_TEXT.network, 0, "NETWORK_ERROR");
   }
+  // Only an explicit authentication refusal invalidates credentials. Outages remain retryable.
+  if (response.status === 401 || response.status === 403) return false;
+  if (!response.ok) throw new PracticeApiError(API_ERROR_TEXT.requestFailed, response.status, null);
+  const value = unwrap<PracticeSessionTokens>(await parseJson(response));
+  if (!value.accessToken || !value.refreshToken) {
+    throw new PracticeApiError(API_ERROR_TEXT.requestFailed, 502, "INVALID_REFRESH_RESPONSE");
+  }
+  // A response that finishes after sign-out must not resurrect the old session.
+  if (getPracticeSession()?.refreshToken !== refreshToken) return false;
+  savePracticeSession(value);
+  return true;
 }
 
 export function getApiBaseUrl(): string {

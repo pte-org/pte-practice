@@ -1,0 +1,71 @@
+/* The overview routes share one shell; delivery and review keep their existing chrome. */
+.student-shell.studio-shell {
+  grid-template-columns: 248px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding: 16px;
+}
+.student-shell.studio-shell > aside.side-rail {
+  top: 16px;
+  height: calc(100dvh - 32px);
+  min-height: 0;
+  padding: 24px 16px 16px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.studio-shell .rail-brand { padding-bottom: 32px; gap: 10px; }
+.studio-shell .rail-brand strong { font-size: 0.95rem; }
+.studio-shell .quick-study-button { min-height: 48px; margin-bottom: 28px; padding-inline: 16px; border-radius: 14px; font-size: 0.9rem; }
+.studio-shell .side-nav { gap: 8px; }
+.studio-shell .nav-link { min-height: 48px; padding-inline: 14px; gap: 12px; border-radius: 14px; font-size: 0.9rem; font-weight: 500; }
+.studio-shell .nav-link:hover { border-color: transparent; background: var(--accent-soft); }
+.studio-shell .nav-link-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; border-color: color-mix(in srgb, var(--accent) 14%, transparent); }
+.studio-shell .account-card { padding: 16px 0 8px; gap: 8px; }
+.studio-shell .account-card .icon-button { border-color: transparent; background: color-mix(in srgb, var(--surface) 55%, transparent); }
+.studio-shell .account-card .icon-button:hover { border-color: var(--line-strong); color: var(--accent); }
+.studio-shell .account-card .icon-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.studio-shell .rail-footer { padding: 8px 0 0; color: var(--muted); }
+.studio-shell .top-bar { top: 16px; min-height: 64px; padding-inline: 20px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.studio-shell .search-pill { min-width: 260px; min-height: 40px; padding: 8px 14px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 75%, transparent); box-shadow: none; font-size: 0.875rem; }
+.studio-shell .search-pill:hover { background: var(--surface); box-shadow: none; }
+.studio-shell .main-content:has(.learning-dashboard) { width: 100%; padding: 24px 0 0; }
+.student-shell.studio-shell:not([data-background="default"]) .practice-scene::after { background: color-mix(in srgb, var(--exam-canvas) 60%, transparent); }
+.student-shell.studio-shell:not([data-background="default"]) :is(.side-rail, .top-bar) { background: var(--studio-glass); }
+.student-shell.studio-shell[data-background="default"] :is(.side-rail, .top-bar) { background: var(--surface); backdrop-filter: none; }
+@supports not (backdrop-filter: blur(12px)) {
+  .student-shell.studio-shell:not([data-background="default"]) :is(.side-rail, .top-bar) { background: var(--surface); }
+}
+@media (max-width: 1100px) and (min-width: 761px) {
+  .student-shell.studio-shell { grid-template-columns: 224px minmax(0, 1fr); gap: 12px; padding: 12px; }
+  .student-shell.studio-shell > aside.side-rail { top: 12px; height: calc(100dvh - 24px); padding-inline: 12px; }
+  .studio-shell .top-bar { top: 12px; }
+  .studio-shell .search-pill { min-width: 200px; }
+}
+@media (max-width: 760px) {
+  .student-shell.studio-shell { display: block; padding: 12px 12px calc(100px + env(safe-area-inset-bottom)); }
+  .student-shell.studio-shell > aside.side-rail {
+    position: fixed;
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto;
+    height: auto;
+    padding: 8px;
+    overflow: visible;
+    border-radius: 20px;
+    z-index: 10;
+  }
+  .studio-shell .side-nav { gap: 4px; }
+  .studio-shell .nav-link { min-height: 58px; padding: 6px 2px; gap: 4px; font-size: 0.65rem; border-radius: 12px; }
+  .studio-shell .top-bar { top: 12px; gap: 10px; min-height: 60px; padding-inline: 12px; border-radius: 16px; }
+  .studio-shell .search-pill { min-width: 0; padding: 8px 10px; }
+  .studio-shell .mobile-brand { flex: 1; }
+  .studio-shell .main-content:has(.learning-dashboard) { padding-top: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-shell :is(.nav-link, .quick-study-button, .search-pill) { transition: none; transform: none; }
+}

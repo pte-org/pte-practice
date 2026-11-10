@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { AppIcon, ProductMark } from "@/common/components";
+import { AppIcon, LoadingState, ProductMark } from "@/common/components";
+import { SessionSkeleton } from "@/features/practice/session/SessionSkeleton";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
+import { PracticeAccessNotice } from "@/features/practice/PracticeAccessNotice";
+import { PracticeWorkspaceBoundary } from "@/features/workspace/PracticeWorkspace";
 import { usePracticeAccessToast } from "@/features/practice/useAccessToast";
 import { readReadingSize, type DeviceCheckKind } from "@/features/deviceCheck/device-check";
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
@@ -13,24 +16,31 @@ import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { CommandPalette } from "./CommandPalette";
 import { NavIcon, type NavIconName } from "./NavIcon";
-import { useTheme } from "@/common/providers/ThemeProvider";
+import { StudentSettings } from "@/features/settings/StudentSettings";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
+import { PracticeBackground } from "@/features/practice/appearance/PracticeBackground";
+import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
+import { isWorkspaceRoute } from "@/features/workspace/constants";
+import { PipCompanion } from "@/features/mascot/PipCompanion";
+import { ChatLayout } from "@/features/chat/ChatLayout";
+import "./shell-chrome.css";
 
 export function StudentShell({ children }: { children: ReactNode }) {
   usePracticeAccessToast();
   const pathname = usePathname();
   const router = useRouter();
   const { authStatus, signOut } = usePractice();
-  const { theme, toggleTheme } = useTheme();
-  const { t, locale, setLocale } = useTranslation();
+  const { t } = useTranslation();
+  const appearance = usePracticeAppearance();
+  const workspaceRoute = isWorkspaceRoute(pathname);
+  const workspaceBackground = workspaceRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [deviceCheckKind, setDeviceCheckKind] = useState<DeviceCheckKind | null>(null);
 
-  const toggleLocale = () => setLocale(locale === "en" ? "vi" : "en");
 
   // Global shortcut: ⌘K / Ctrl+K toggles the command palette
   useEffect(() => {
@@ -57,19 +67,23 @@ export function StudentShell({ children }: { children: ReactNode }) {
     document.documentElement.dataset.readingSize = readReadingSize();
   }, []);
 
-  if (authStatus === "loading") return <ShellLoading t={t} />;
+  if (authStatus === "loading") return pathname === PRACTICE_ROUTES.practiceSession
+    ? <SessionSkeleton /> : <LoadingState message={t("common.loadingWorkspace")} />;
 
   if (authStatus === "signed-out") {
-    return <ShellLoading t={t} />;
+    return <LoadingState message={t("common.loadingWorkspace")} />;
   }
 
   // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
   if (pathname === PRACTICE_ROUTES.practiceSession) {
-    return <main className="session-page">{children}</main>;
+    return <main className="session-page"><PracticeAccessNotice />{children}</main>;
   }
 
   return (
-    <div className="student-shell">
+    <ChatLayout taskCode={null}>
+    <div className={`student-shell${workspaceRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
+      data-background-blur={appearance.blur} data-glass-opacity={appearance.opacity}>
+      {workspaceBackground !== "default" ? <PracticeBackground value={appearance} /> : null}
       <aside className="side-rail" aria-label="Student navigation">
         <div className="rail-brand">
           <div className="brand-mark" aria-hidden="true"><ProductMark /></div>
@@ -78,10 +92,6 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <span>{t("shell.pteOfficialAIPractice")}</span>
           </div>
         </div>
-        <Link className="quick-study-button" href={PRACTICE_ROUTES.home}>
-          <AppIcon name="bookOpen" size={22} />
-          <span>{t("shell.quickStudy")}</span>
-        </Link>
         <nav className="side-nav">
           {NAV_ITEMS.map((item) => {
             const isActive = item.href === PRACTICE_ROUTES.home
@@ -91,6 +101,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
               <Link
                 className={`nav-link${isActive ? " nav-link-active" : ""}`}
                 href={item.href}
+                prefetch={true}
                 key={item.href}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -101,18 +112,14 @@ export function StudentShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="rail-spacer" />
+        {workspaceRoute ? <PipCompanion /> : null}
         <div className="account-card">
           <div className="account-avatar" aria-hidden="true">S</div>
           <div className="account-copy">
             <strong>{t("shell.student")}</strong>
             <span>{t("shell.account")}</span>
           </div>
-          <button className="icon-button" type="button" onClick={toggleLocale} aria-label="Toggle language" title="Toggle language">
-            {locale.toUpperCase()}
-          </button>
-          <button className="icon-button" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
-            <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
-          </button>
+          <StudentSettings />
           <button className="icon-button" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
@@ -138,12 +145,9 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <span>{t("shell.search")}</span>
             <kbd>⌘ K</kbd>
           </button>
-          <div className="top-context" aria-label="Current practice product">
-            <span>{t("shell.pearsonPTECore")}</span>
-            <AppIcon name="chevronDown" size={17} />
-          </div>
+          <div className="student-settings-mobile"><StudentSettings /></div>
         </header>
-        <main className="main-content" key={pathname}>{children}</main>
+        <main className="main-content"><PracticeAccessNotice /><PracticeWorkspaceBoundary>{children}</PracticeWorkspaceBoundary></main>
       </div>
 
       {searchOpen ? (
@@ -162,17 +166,6 @@ export function StudentShell({ children }: { children: ReactNode }) {
       />
       {practiceModeDialog}
     </div>
-  );
-}
-
-function ShellLoading({ t }: { t?: (k: TranslationKey) => string }) {
-  return (
-    <main className="shell-loading" role="status" aria-live="polite">
-      <div className="loading-panel">
-        <div className="brand-mark" aria-hidden="true"><ProductMark /></div>
-        <span className="loading-dot" aria-hidden="true" />
-        {t ? t("common.loadingWorkspace") : "Loading your practice workspace…"}
-      </div>
-    </main>
+    </ChatLayout>
   );
 }

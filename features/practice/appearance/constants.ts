@@ -1,0 +1,12 @@
+export const APPEARANCE_STORAGE_KEY = "pte.practice.appearance.v1";
+export const APPEARANCE_CHANGE_EVENT = "pte.practice.appearance.changed";
+export const BACKGROUND_OPTIONS = ["default", "ocean", "forest", "dawn", "custom"] as const;
+export const BACKGROUND_BLUR_OPTIONS = [0, 4, 8, 12] as const;
+export const GLASS_OPACITY_OPTIONS = [80, 88, 94] as const;
+export const MAX_BACKGROUND_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_BACKGROUND_DATA_LENGTH = 700_000;
+export const MAX_BACKGROUND_WIDTH = 1600;
+export const MAX_BACKGROUND_HEIGHT = 1000;
+export const MAX_BACKGROUND_PIXELS = 40_000_000;
+export const BACKGROUND_JPEG_QUALITY = 0.78;
+export const BACKGROUND_INPUT_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;

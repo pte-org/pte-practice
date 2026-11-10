@@ -1,7 +1,8 @@
 "use client";
 
 import type { RefObject } from "react";
-import { AppIcon } from "@/common/components";
+import { PipArtwork } from "@/features/mascot/PipArtwork";
+import "@/features/mascot/pip.css";
 import { useTranslation } from "@/common/i18n";
 import { formatChatText } from "./chat-format";
 import { quotaBadge } from "./chat-quota";
@@ -31,7 +32,7 @@ export function ChatToggleButton({ open, quota, buttonRef, onClick }: ChatToggle
       title={`${label} (${CHAT_SHORTCUT_LABEL})`}
       onClick={onClick}
     >
-      <AppIcon name="sparkle" size={18} />
+      <PipArtwork className="pip-chat-avatar" />
       <span className="chat-toggle-label">{t("chat.title")}</span>
       {badge ? <span className="chat-toggle-badge" data-low={badge.low} aria-hidden="true">{badge.text}</span> : null}
     </button>

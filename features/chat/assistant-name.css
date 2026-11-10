@@ -1,0 +1,12 @@
+.assistant-name-editor { display: grid; gap: 10px; }
+.assistant-name-editor label { font-weight: 600; font-size: 0.875rem; }
+.assistant-name-editor input {
+  width: 100%; min-width: 0; min-height: 40px; padding: 8px 12px;
+  border: 1px solid var(--line-strong); border-radius: 10px;
+  background: var(--surface); color: var(--text); font: inherit;
+}
+.assistant-name-editor input:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.assistant-name-editor p { margin: 0; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+.assistant-name-editor .assistant-name-error { color: var(--red); }
+.assistant-name-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.chat-name-settings { flex-shrink: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }

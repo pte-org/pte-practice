@@ -7,7 +7,7 @@ import {
   practiceRequest,
 } from "@/features/practice/api";
 import { API_ERROR_TEXT, API_PATHS } from "@/features/practice/constants";
-import { getPracticeSession, savePracticeSession } from "@/features/practice/session-storage";
+import { clearPracticeSession, getPracticeSession, savePracticeSession } from "@/features/practice/session-storage";
 
 class MemoryStorage {
   private store = new Map<string, string>();
@@ -136,6 +136,43 @@ describe("practiceRequest", () => {
 });
 
 describe("token refresh on 401", () => {
+  it.each([429, 500, 503])("preserves credentials when refresh temporarily fails with %s", async (status) => {
+    signIn();
+    fetchMock.mockResolvedValueOnce(json(401, {})).mockResolvedValueOnce(json(status, {}));
+    await expect(practiceRequest("/x")).rejects.toMatchObject({ status });
+    expect(getPracticeSession()?.refreshToken).toBe("refresh-1");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers on a later request after a network outage during refresh", async () => {
+    signIn();
+    fetchMock.mockResolvedValueOnce(json(401, {})).mockRejectedValueOnce(new TypeError("offline"));
+    await expect(practiceRequest("/x")).rejects.toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+    expect(getPracticeSession()?.refreshToken).toBe("refresh-1");
+    fetchMock.mockResolvedValueOnce(json(401, {}))
+      .mockResolvedValueOnce(json(200, { accessToken: "fresh", refreshToken: "rotated", expiresInSeconds: 900 }))
+      .mockResolvedValueOnce(json(200, { ok: true }));
+    await expect(practiceRequest("/x")).resolves.toEqual({ ok: true });
+    expect(getPracticeSession()?.accessToken).toBe("fresh");
+  });
+
+  it("keeps credentials for an invalid refresh response instead of reporting a lost session", async () => {
+    signIn();
+    fetchMock.mockResolvedValueOnce(json(401, {})).mockResolvedValueOnce(json(200, {}));
+    await expect(practiceRequest("/x")).rejects.toMatchObject({ status: 502, code: "INVALID_REFRESH_RESPONSE" });
+    expect(getPracticeSession()?.refreshToken).toBe("refresh-1");
+  });
+
+  it("does not restore tokens when an in-flight refresh completes after sign-out", async () => {
+    signIn();
+    fetchMock.mockResolvedValueOnce(json(401, {})).mockImplementationOnce(async () => {
+      clearPracticeSession();
+      return json(200, { accessToken: "fresh", refreshToken: "rotated", expiresInSeconds: 900 });
+    });
+    await expect(practiceRequest("/x")).rejects.toMatchObject({ status: 409, code: "SESSION_CHANGED" });
+    expect(getPracticeSession()).toBeNull();
+  });
+
   it("refreshes once, stores the new tokens and retries the original request", async () => {
     signIn("old-access", "refresh-1");
     fetchMock
@@ -190,6 +227,17 @@ describe("token refresh on 401", () => {
 });
 
 describe("createPracticeApiClient", () => {
+  it("omits a stored expired bearer token when exchanging login credentials", async () => {
+    signIn("expired-access", "old-refresh");
+    const tokens = { accessToken: "new-access", refreshToken: "new-refresh", expiresInSeconds: 60 };
+    fetchMock.mockResolvedValue(json(200, { success: true, data: tokens }));
+
+    await expect(createPracticeApiClient().login({ username: "u", password: "p" })).resolves.toEqual(tokens);
+    expect(headersOf(0).has("Authorization")).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getPracticeSession()?.accessToken).toBe("expired-access");
+  });
+
   it("login never refreshes, because a 401 there means a wrong password", async () => {
     signIn();
     fetchMock.mockResolvedValue(json(401, { userMessage: "Wrong password", code: "BAD_CREDENTIALS" }));
@@ -197,6 +245,7 @@ describe("createPracticeApiClient", () => {
     await expect(createPracticeApiClient().login({ username: "u", password: "p" }))
       .rejects.toMatchObject({ status: 401, code: "BAD_CREDENTIALS" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(headersOf(0).has("Authorization")).toBe(false);
   });
 
   it("session mutations carry the idempotency key they are given", async () => {

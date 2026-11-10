@@ -64,6 +64,11 @@ export interface PracticeItemResult {
   score: number | null;
   scoreStatus: string | null;
   subScores: Record<string, number>;
+  /**
+   * Maximum per sub-score, present only when the sub-scores are Pearson trait scores of a rubric version (shown as
+   * achieved / max). Absent for older results, whose sub-scores are raw numbers.
+   */
+  subScoreMax?: Record<string, number>;
   feedback: string | null;
   transcript: string | null;
   failureCode: string | null;
@@ -183,6 +188,7 @@ export function normalizePracticeItemResult(value: unknown): PracticeItemResult 
   const state = record.state === "NONE" || record.state === "SCORING" || record.state === "SCORED"
     || record.state === "FAILED" ? record.state : null;
   if (!itemPublicId || !state) return null;
+  const subScoreMax = normalizeSubScores(record.subScoreMax);
   return {
     itemPublicId,
     taskCode: asString(record.taskCode, ""),
@@ -190,6 +196,7 @@ export function normalizePracticeItemResult(value: unknown): PracticeItemResult 
     score: asNullableNumber(record.score),
     scoreStatus: asNullableString(record.scoreStatus),
     subScores: normalizeSubScores(record.subScores),
+    ...(Object.keys(subScoreMax).length > 0 ? { subScoreMax } : {}),
     feedback: asNullableString(record.feedback),
     transcript: asNullableString(record.transcript),
     failureCode: asNullableString(record.failureCode),

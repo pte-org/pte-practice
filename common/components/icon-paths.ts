@@ -5,6 +5,8 @@ import {
   mdiBullhorn,
   mdiChartTimelineVariant,
   mdiClipboardOutline,
+  mdiContentCopy,
+  mdiChatPlusOutline,
   mdiForumOutline,
   mdiImageArea,
   mdiMessageOutline,
@@ -15,6 +17,7 @@ import {
   mdiCalendarMonthOutline,
   mdiCardTextOutline,
   mdiCheckCircle,
+  mdiCheck,
   mdiCheckCircleOutline,
   mdiCheckboxMultipleMarkedOutline,
   mdiChevronDown,
@@ -56,9 +59,13 @@ import {
   mdiWeatherNight,
   mdiWeatherSunny,
   mdiDragVariant,
+  mdiEmailOutline,
+  mdiEyeOutline,
+  mdiEyeOffOutline,
   mdiGiftOutline,
   mdiTranslate,
   mdiTrophyOutline,
+  mdiCogOutline,
 } from "@mdi/js";
 
 /**
@@ -69,6 +76,7 @@ import {
 export const ICON_PATHS = {
   // Navigation and shell
   home: mdiHomeVariantOutline,
+  settings: mdiCogOutline,
   practice: mdiClipboardOutline,
   studyPack: mdiPackageVariantClosed,
   progress: mdiChartTimelineVariant,
@@ -81,6 +89,10 @@ export const ICON_PATHS = {
   skipNext: mdiSkipNext,
   lock: mdiLockOutline,
   account: mdiAccountOutline,
+  mail: mdiEmailOutline,
+  eye: mdiEyeOutline,
+  eyeOff: mdiEyeOffOutline,
+  tick: mdiCheck,
   play: mdiPlay,
   sparkle: mdiStarFourPointsOutline,
   star: mdiStar,
@@ -96,6 +108,8 @@ export const ICON_PATHS = {
   moon: mdiWeatherNight,
   bookOpen: mdiBookOpenVariant,
   edit: mdiPencilOutline,
+  copy: mdiContentCopy,
+  newChat: mdiChatPlusOutline,
   trophy: mdiTrophyOutline,
   gift: mdiGiftOutline,
   translate: mdiTranslate,

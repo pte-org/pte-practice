@@ -1,0 +1,25 @@
+.student-settings-trigger { flex-shrink: 0; }
+.modal-dialog.student-settings-modal { display: flex; flex-direction: column; max-height: calc(100dvh - 48px); gap: 0; padding: 0; overflow: hidden; }
+.student-settings-modal .modal-header { flex-shrink: 0; padding: 20px 24px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.student-settings-modal .modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.student-settings-mobile { display: none; }
+.student-settings-content { display: grid; gap: 28px; }
+.student-settings-general { display: grid; gap: 24px; }
+.student-settings-general fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.student-settings-general legend { margin-bottom: 12px; font-weight: 650; font-size: 0.9rem; }
+.student-settings-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.student-settings-options label { display: flex; align-items: center; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; font-size: 0.875rem; }
+.student-settings-options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.student-settings-options label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.student-settings-options input { accent-color: var(--accent); }
+.student-settings-appearance { padding-top: 24px; border-top: 1px solid var(--line); }
+.student-settings-appearance h3 { margin: 0 0 12px; font-size: 1rem; }
+.practice-studio-topbar > .student-settings-trigger { width: 44px; height: 44px; border-radius: 14px; background: var(--surface); }
+@media (max-width: 767px) {
+  .student-settings-modal .modal-header { padding: 16px 20px; }
+  .student-settings-modal .modal-body { padding: 20px; }
+  .practice-studio-topbar > .student-settings-trigger { justify-self: end; }
+}
+@media (max-width: 760px) {
+  .student-settings-mobile { display: block; }
+}
