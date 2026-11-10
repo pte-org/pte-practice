@@ -13,10 +13,6 @@ describe("isChatUnavailable", () => {
     expect(isChatUnavailable(error)).toBe(true);
   });
 
-  it("is false when only the privacy notice is missing, which the panel asks for itself", () => {
-    expect(isChatUnavailable(new PracticeApiError("consent", 403, "CHAT_CONSENT_REQUIRED"))).toBe(false);
-  });
-
   it.each([
     new PracticeApiError("offline", 0, "NETWORK_ERROR"),
     new PracticeApiError("server", 500),

@@ -1,19 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "@/features/chat/contracts";
+import { normalizeChatQuota, normalizeChatReply } from "@/features/chat/contracts";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 
 const validQuota = { used: 5, remaining: 15, limit: 20, resetAt: RESET_AT };
-const validReply = {
-  markdown: "**Hello**",
-  onTopic: true,
-  fromCache: false,
-  remaining: 14,
-  limit: 20,
-  resetAt: RESET_AT,
-  sessionId: "0b8f2c3e-6d4a-4f7e-9c1b-2a3d4e5f6a7b",
-};
-const validItem = { question: "What is a gerund?", answer: "A **verb** form.", status: "OK", createdAt: "2026-10-28T10:00:00Z" };
+const validReply = { markdown: "**Hello**", onTopic: true, remaining: 14, limit: 20, resetAt: RESET_AT };
 
 describe("normalizeChatQuota", () => {
   it("accepts a valid quota", () => {
@@ -65,29 +56,28 @@ describe("normalizeChatReply", () => {
     expect(normalizeChatReply(validReply)).toEqual(validReply);
   });
 
-  it("accepts a refused, cached reply", () => {
-    const reply = { ...validReply, onTopic: false, fromCache: true };
+  it("accepts a refused reply", () => {
+    const reply = { ...validReply, onTopic: false };
     expect(normalizeChatReply(reply)).toEqual(reply);
+  });
+
+  it("drops fields that are not part of the contract", () => {
+    expect(normalizeChatReply({ ...validReply, sessionId: "old", fromCache: true })).toEqual(validReply);
   });
 
   it.each([null, undefined, "reply", 7, []])("rejects a non-object value %j", (value) => {
     expect(normalizeChatReply(value)).toBeNull();
   });
 
-  it.each(["markdown", "onTopic", "fromCache", "remaining", "limit", "resetAt", "sessionId"])(
-    "rejects a reply missing %s",
-    (key) => {
-      const copy: Record<string, unknown> = { ...validReply };
-      delete copy[key];
-      expect(normalizeChatReply(copy)).toBeNull();
-    },
-  );
+  it.each(["markdown", "onTopic", "remaining", "limit", "resetAt"])("rejects a reply missing %s", (key) => {
+    const copy: Record<string, unknown> = { ...validReply };
+    delete copy[key];
+    expect(normalizeChatReply(copy)).toBeNull();
+  });
 
   it("rejects wrongly typed fields", () => {
     expect(normalizeChatReply({ ...validReply, markdown: 12 })).toBeNull();
     expect(normalizeChatReply({ ...validReply, onTopic: "true" })).toBeNull();
-    expect(normalizeChatReply({ ...validReply, fromCache: 0 })).toBeNull();
-    expect(normalizeChatReply({ ...validReply, sessionId: 5 })).toBeNull();
   });
 
   it("rejects negative, fractional or non-finite counts", () => {
@@ -98,59 +88,5 @@ describe("normalizeChatReply", () => {
 
   it("rejects an unparseable resetAt", () => {
     expect(normalizeChatReply({ ...validReply, resetAt: "tomorrow-ish" })).toBeNull();
-  });
-});
-
-describe("normalizeLatestSession", () => {
-  it("accepts a session with history", () => {
-    const refused = { ...validItem, question: "Who won the match?", answer: "I can only help with English.", status: "REFUSED" };
-    const failed = { ...validItem, status: "FAILED" };
-    const value = { sessionId: validReply.sessionId, messages: [validItem, refused, failed] };
-    expect(normalizeLatestSession(value)).toEqual(value);
-  });
-
-  it("accepts a student with no session yet", () => {
-    expect(normalizeLatestSession({ sessionId: null, messages: [] })).toEqual({ sessionId: null, messages: [] });
-  });
-
-  it.each([null, undefined, "session", 3, []])("rejects a non-object value %j", (value) => {
-    expect(normalizeLatestSession(value)).toBeNull();
-  });
-
-  it("rejects a sessionId that is neither a string nor null", () => {
-    expect(normalizeLatestSession({ sessionId: 42, messages: [] })).toBeNull();
-    expect(normalizeLatestSession({ sessionId: {}, messages: [] })).toBeNull();
-  });
-
-  it.each([undefined, null, "oops", 5, { 0: validItem }])("treats non-array messages %j as empty", (messages) => {
-    expect(normalizeLatestSession({ sessionId: validReply.sessionId, messages })).toEqual({
-      sessionId: validReply.sessionId,
-      messages: [],
-    });
-  });
-
-  it("drops invalid items but keeps the valid ones in order", () => {
-    const second = { ...validItem, question: "Second?" };
-    const result = normalizeLatestSession({
-      sessionId: validReply.sessionId,
-      messages: [
-        validItem,
-        null,
-        "text",
-        { ...validItem, question: 42 },
-        { question: "no answer", status: "OK", createdAt: validItem.createdAt },
-        { ...validItem, createdAt: undefined },
-        second,
-      ],
-    });
-    expect(result?.messages).toEqual([validItem, second]);
-  });
-
-  it.each(["PENDING", "ok", "", null, 1])("drops an item with unknown status %j", (status) => {
-    const result = normalizeLatestSession({
-      sessionId: validReply.sessionId,
-      messages: [{ ...validItem, status }, validItem],
-    });
-    expect(result?.messages).toEqual([validItem]);
   });
 });

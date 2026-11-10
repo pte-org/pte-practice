@@ -5,15 +5,7 @@ import { createChatApi } from "@/features/chat/api";
 type Request = typeof practiceRequest;
 
 const RESET_AT = "2026-10-29T03:00:00Z";
-const reply = {
-  markdown: "Use *present perfect*.",
-  onTopic: true,
-  fromCache: false,
-  remaining: 19,
-  limit: 20,
-  resetAt: RESET_AT,
-  sessionId: "0b8f2c3e-6d4a-4f7e-9c1b-2a3d4e5f6a7b",
-};
+const reply = { markdown: "Use *present perfect*.", onTopic: true, remaining: 19, limit: 20, resetAt: RESET_AT };
 const quota = { used: 1, remaining: 19, limit: 20, resetAt: RESET_AT };
 
 function fakeRequest(result: unknown) {
@@ -21,7 +13,7 @@ function fakeRequest(result: unknown) {
 }
 
 describe("createChatApi.sendMessage", () => {
-  const input = { sessionId: reply.sessionId, message: "Explain gerunds", taskType: "WRITE_ESSAY", language: "en" as const };
+  const input = { message: "Explain gerunds", taskType: "WRITE_ESSAY", language: "en" as const };
 
   it("posts the message body to the messages endpoint", async () => {
     const request = fakeRequest(reply);
@@ -30,6 +22,17 @@ describe("createChatApi.sendMessage", () => {
     expect(request).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenCalledWith("/api/v1/student/chat/messages", { method: "POST", body: input });
     expect(result).toEqual(reply);
+  });
+
+  it("sends the earlier turns of the conversation along", async () => {
+    const request = fakeRequest(reply);
+    const history = [
+      { role: "user" as const, text: "What is a gerund?" },
+      { role: "assistant" as const, text: "A verb form ending in -ing." },
+    ];
+    await createChatApi(request).sendMessage({ ...input, history });
+
+    expect(request).toHaveBeenCalledWith("/api/v1/student/chat/messages", { method: "POST", body: { ...input, history } });
   });
 
   it("sends a null task type through unchanged", async () => {
@@ -43,8 +46,7 @@ describe("createChatApi.sendMessage", () => {
   });
 
   it("throws CHAT_INVALID_RESPONSE with status 502 when the reply is malformed", async () => {
-    const request = fakeRequest({ markdown: 5 });
-    const error = await createChatApi(request).sendMessage(input).catch((e: unknown) => e);
+    const error = await createChatApi(fakeRequest({ markdown: 5 })).sendMessage(input).catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(PracticeApiError);
     expect((error as PracticeApiError).status).toBe(502);
@@ -88,38 +90,8 @@ describe("createChatApi.getQuota", () => {
   });
 });
 
-describe("createChatApi.getLatestSession", () => {
-  it("reads the latest session endpoint", async () => {
-    const value = {
-      sessionId: reply.sessionId,
-      messages: [{ question: "Q", answer: "A", status: "OK", createdAt: "2026-10-28T10:00:00Z" }],
-    };
-    const request = fakeRequest(value);
-    const result = await createChatApi(request).getLatestSession();
-
-    const [path, options] = (request as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(path).toBe("/api/v1/student/chat/sessions/latest");
-    expect(options?.method ?? "GET").toBe("GET");
-    expect(result).toEqual(value);
-  });
-
-  it("returns an empty session for a new student", async () => {
-    const result = await createChatApi(fakeRequest({ sessionId: null, messages: [] })).getLatestSession();
-    expect(result).toEqual({ sessionId: null, messages: [] });
-  });
-
-  it("throws CHAT_INVALID_RESPONSE with status 502 when the session is malformed", async () => {
-    const error = await createChatApi(fakeRequest("nope")).getLatestSession().catch((e: unknown) => e);
-
-    expect(error).toBeInstanceOf(PracticeApiError);
-    expect((error as PracticeApiError).status).toBe(502);
-    expect((error as PracticeApiError).code).toBe("CHAT_INVALID_RESPONSE");
-  });
-
-  it("propagates request errors unchanged", async () => {
-    const failure = new PracticeApiError("nope", 404, "CHAT_SESSION_NOT_FOUND");
-    const request = vi.fn().mockRejectedValue(failure) as unknown as Request;
-
-    await expect(createChatApi(request).getLatestSession()).rejects.toBe(failure);
+describe("the chat API surface", () => {
+  it("offers only sending a message and reading the quota, because nothing is stored on the server", () => {
+    expect(Object.keys(createChatApi(fakeRequest(null))).sort()).toEqual(["getQuota", "sendMessage"]);
   });
 });

@@ -1,31 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { AppIcon, ProductMark } from "@/common/components";
-import type { IconName } from "@/common/components";
+import Image from "next/image";
+import { Suspense, useState, type ReactElement } from "react";
+import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import type { TranslationKey } from "@/common/i18n";
 import { useTheme } from "@/common/providers/ThemeProvider";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import type { PracticeSessionTokens } from "@/features/practice/contracts";
 import { clearPracticeSession, savePracticeSession } from "@/features/practice/session-storage";
+import { AuthBackdrop } from "./AuthBackdrop";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { BRAND_NAME } from "./constants";
+import { OrbitPanel } from "./OrbitPanel";
 import { SignInForm } from "./SignInForm";
-import { SignInShowcase } from "./SignInShowcase";
+import "./sign-in.css";
 
-const FEATURES: ReadonlyArray<{ icon: IconName; title: TranslationKey; description: TranslationKey }> = [
-  { icon: "bookOpen", title: "auth.featureTasksTitle", description: "auth.featureTasksDescription" },
-  { icon: "sparkle", title: "auth.featureScoringTitle", description: "auth.featureScoringDescription" },
-  { icon: "progress", title: "auth.featureProgressTitle", description: "auth.featureProgressDescription" },
-];
+const LOGO_WIDTH = 482;
+const LOGO_HEIGHT = 567;
 
 interface PendingPasswordChange {
   tokens: PracticeSessionTokens;
   currentPassword: string;
 }
 
-export function SignInView() {
+export const SignInView = (): ReactElement => {
   const { t, locale, setLocale } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [pending, setPending] = useState<PendingPasswordChange | null>(null);
@@ -59,50 +57,67 @@ export function SignInView() {
   }
 
   return (
-    <div className="sign-in-page">
-      <header className="sign-in-top">
-        <div className="sign-in-brand">
-          <span className="brand-mark brand-mark-small" aria-hidden="true"><ProductMark /></span>
-          <span><strong>{BRAND_NAME.prefix}<b>{BRAND_NAME.suffix}</b></strong><small>{t("auth.brandTagline")}</small></span>
+    <main className="sign-in-page">
+      <AuthBackdrop />
+      <div className="sign-in-toolbar">
+        <div className="locale-control">
+          <select className="icon-button locale-button" value={locale}
+            onChange={(event) => setLocale(event.target.value === "vi" ? "vi" : "en")}
+            aria-label={t("auth.toggleLanguage")} title={t("auth.toggleLanguage")}>
+            <option value="vi">VI</option>
+            <option value="en">EN</option>
+          </select>
+          <AppIcon name="chevronDown" size={16} />
         </div>
-        <div className="sign-in-top-actions">
-          <button className="icon-button" type="button" onClick={() => setLocale(locale === "en" ? "vi" : "en")}
-            aria-label={t("auth.toggleLanguage")} title={t("auth.toggleLanguage")}>{locale.toUpperCase()}</button>
-          <button className="icon-button" type="button" onClick={toggleTheme}
-            aria-label={t("auth.toggleTheme")} title={t("auth.toggleTheme")}>
-            <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
-          </button>
-        </div>
-      </header>
+        <button className="icon-button theme-button" type="button" onClick={toggleTheme}
+          aria-label={t("auth.toggleTheme")} title={t("auth.toggleTheme")} aria-pressed={theme === "dark"}>
+          <AppIcon name={theme === "dark" ? "sun" : "moon"} size={18} />
+        </button>
+      </div>
 
-      <main className="sign-in-main">
-        <section className="sign-in-hero" aria-labelledby="sign-in-title">
-          <div className="sign-in-copy">
-            <h1 id="sign-in-title">
-              {t("auth.headingStart")}<span className="sign-in-highlight">{t("auth.headingHighlight")}</span>{t("auth.headingEnd")}
-            </h1>
-            <p className="sign-in-lead">{t("auth.description")}</p>
-            {pending ? (
-              <ChangePasswordForm currentPassword={pending.currentPassword}
-                onChanged={handlePasswordChanged} onCancel={handleCancelChange} />
-            ) : (
-              <SignInForm onSignedIn={handleSignedIn} />
-            )}
-            <p className="auth-footnote sign-in-terms">{t("auth.terms")}</p>
+      <div className="sign-in-stage">
+        <div className="sign-in-card">
+          <OrbitPanel title={t("auth.showcaseLabel")} />
+          <div className="sign-in-column">
+            <div className="sign-in-brand">
+              <Image src="/logo-mark.png" alt="" width={LOGO_WIDTH} height={LOGO_HEIGHT} priority className="sign-in-logo" />
+              <span>
+                <strong>{BRAND_NAME.prefix} {BRAND_NAME.suffix}</strong>
+                <small>{t("auth.brandTagline")}</small>
+              </span>
+            </div>
+            <div className="sign-in-body">
+              {pending ? (
+                <ChangePasswordForm currentPassword={pending.currentPassword}
+                  onChanged={handlePasswordChanged} onCancel={handleCancelChange} />
+              ) : (
+                <>
+                  <div>
+                    <h1 id="sign-in-title">{t("auth.welcomeTitle")}</h1>
+                    <p className="sign-in-lead">{t("auth.description")}</p>
+                  </div>
+                  <SignInForm onSignedIn={handleSignedIn} />
+                </>
+              )}
+            </div>
           </div>
-          <SignInShowcase />
-        </section>
-
-        <section className="sign-in-features">
-          {FEATURES.map((feature) => (
-            <article key={feature.title} className="sign-in-feature">
-              <span className="sign-in-feature-icon" aria-hidden="true"><AppIcon name={feature.icon} size={20} /></span>
-              <h2>{t(feature.title)}</h2>
-              <p>{t(feature.description)}</p>
-            </article>
-          ))}
-        </section>
-      </main>
-    </div>
+        </div>
+      </div>
+      <footer className="sign-in-footer">
+        <nav aria-label={t("auth.footerLabel")}>
+          <ul>
+            <li><Suspense fallback={null}><CopyrightYear /></Suspense></li>
+            <li>{t("auth.footerTerms")}</li>
+            <li>{t("auth.footerPrivacy")}</li>
+            <li>{t("auth.footerSupport")}</li>
+          </ul>
+        </nav>
+      </footer>
+    </main>
   );
-}
+};
+
+const CopyrightYear = (): ReactElement => {
+  const { t } = useTranslation();
+  return <>{t("auth.footerCopyright").replace("{year}", String(new Date().getFullYear()))}</>;
+};

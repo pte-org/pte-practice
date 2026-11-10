@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent } from "react";
-import { AppIcon } from "@/common/components";
+import { useEffect, useRef, type KeyboardEvent, type ReactElement } from "react";
+import { Button } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { ChatApi } from "./api";
 import { ChatComposer } from "./ChatComposer";
-import { ChatConsentGate } from "./ChatConsentGate";
 import { ChatMessageList } from "./ChatMessageList";
-import { ChatPrivacyActions } from "./ChatPrivacyActions";
 import { ChatQuotaNotice } from "./ChatQuotaNotice";
-import { consentBlocksChat } from "./chat-consent";
 import { isQuotaExhausted } from "./chat-quota";
 import type { ChatQuota } from "./contracts";
-import { useChatConsent } from "./useChatConsent";
 import { useChatSession } from "./useChatSession";
+import type { ChatErrorKey } from "./chat-errors";
+import { useChatDrag } from "./useChatDrag";
+import { ChatHeader } from "./ChatHeader";
+import { useAssistantName } from "./useAssistantName";
+import { useChatResize } from "./useChatResize";
 
 const QUOTA_REUSE_MS = 10_000;
 
@@ -22,6 +23,8 @@ interface ChatPanelProps {
   quota: ChatQuota | null;
   setQuota: (quota: ChatQuota) => void;
   refreshQuota: (maxAgeMs?: number) => Promise<void>;
+  unavailable?: boolean;
+  availabilityError?: ChatErrorKey | null;
   open: boolean;
   /** Task being practised, already checked against the server whitelist; null when unknown. */
   taskType: string | null;
@@ -30,47 +33,38 @@ interface ChatPanelProps {
   onClose: () => void;
 }
 
-export function ChatPanel({ api, quota, setQuota, refreshQuota, open, taskType, exercisePrompt, onClose }: ChatPanelProps) {
+export function ChatPanel({ api, quota, setQuota, refreshQuota, unavailable = false, availabilityError = null,
+  open, taskType, exercisePrompt, onClose }: ChatPanelProps): ReactElement {
   const { t, locale } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { state, load, send, setDraft, startNewChat, dismissError } = useChatSession({
+  const panelRef = useRef<HTMLElement>(null);
+  const drag = useChatDrag(panelRef, open);
+  const resize = useChatResize(panelRef, open);
+  const name = useAssistantName() ?? t("chat.title");
+  const { state, send, setDraft, startNewChat } = useChatSession({
     api,
     taskType,
     exercisePrompt,
     language: locale,
     onQuota: setQuota,
   });
-  const consent = useChatConsent(api);
-  const { load: loadConsent, markRequired } = consent;
-  const blocked = consentBlocksChat(consent.state.status);
 
-  // The conversation loads once; the quota is re-read every time the panel is shown again.
-  useEffect(() => {
-    void load();
-  }, [load]);
   useEffect(() => {
     // The layout read the quota when the page opened; do not ask again for a few seconds after that.
     if (open) void refreshQuota(QUOTA_REUSE_MS);
   }, [open, refreshQuota]);
-  useEffect(() => {
-    void loadConsent();
-  }, [loadConsent]);
-  // A send refused for missing consent (the notice changed since the student accepted) goes back to the notice.
-  useEffect(() => {
-    if (state.errorKey === "consentRequired") {
-      markRequired();
-      dismissError();
-    }
-  }, [state.errorKey, markRequired, dismissError]);
 
   // Keyboard users keep their place: focus the input when the panel opens and again after each answer.
   useEffect(() => {
-    if (open && state.loaded && !state.pending) inputRef.current?.focus();
-  }, [open, state.loaded, state.pending]);
+    if (open && !state.pending) {
+      if (panelRef.current?.querySelector(".assistant-name-editor:focus-within")) return;
+      if (unavailable) panelRef.current?.focus();
+      else inputRef.current?.focus();
+    }
+  }, [open, state.pending, unavailable]);
 
-  const retryLoad = () => {
-    dismissError();
-    void load();
+  const sendAnswer = () => {
+    if (!unavailable) void send();
   };
 
   const pickSuggestion = (text: string) => {
@@ -86,67 +80,46 @@ export function ChatPanel({ api, quota, setQuota, refreshQuota, open, taskType, 
   return (
     <aside
       className="chat-panel"
+      ref={panelRef}
+      tabIndex={-1}
       hidden={!open}
-      aria-label={t("chat.title")}
+      aria-label={name}
       onKeyDown={handleKeyDown}
     >
-      <header className="chat-header">
-        <span className="chat-avatar" aria-hidden="true"><AppIcon name="sparkle" size={18} /></span>
-        <div className="chat-heading">
-          <h2 className="chat-title">{t("chat.title")}</h2>
-          <p className="chat-subtitle">{t("chat.subtitle")}</p>
+      <ChatHeader drag={drag} pending={state.pending} onNewChat={startNewChat} onClose={onClose} />
+      <ChatMessageList
+        messages={state.messages}
+        pendingQuestion={state.pendingQuestion}
+        suggestionsEnabled={!unavailable && !isQuotaExhausted(quota)}
+        onPickSuggestion={pickSuggestion}
+      />
+      {availabilityError ? (
+        <div className="chat-notice" data-kind="error" role="alert">
+          <p>{t(`chat.errors.${availabilityError}`)}</p>
+          <Button variant="secondary" size="sm" onClick={() => void refreshQuota()}>{t("common.tryAgain")}</Button>
         </div>
-        <button
-          type="button"
-          className="chat-icon-button"
-          onClick={startNewChat}
-          disabled={state.pending || !state.loaded}
-          aria-label={t("chat.newChat")}
-          title={t("chat.newChat")}
-        >
-          <AppIcon name="edit" size={18} />
-        </button>
-        <button type="button" className="chat-icon-button" onClick={onClose} aria-label={t("chat.toggleClose")} title={t("chat.toggleClose")}>
-          <AppIcon name="close" size={18} />
-        </button>
-      </header>
-      {blocked ? (
-        <ChatConsentGate
-          state={consent.state}
-          onAgeChange={consent.setAgeChecked}
-          onAccept={() => void consent.accept()}
-          onRetry={() => void consent.load()}
-        />
-      ) : (
-        <>
-          <ChatMessageList
-            messages={state.messages}
-            pendingQuestion={state.pendingQuestion}
-            suggestionsEnabled={state.loaded && !isQuotaExhausted(quota)}
-            onPickSuggestion={pickSuggestion}
-          />
-          {state.errorKey ? (
-            <div className="chat-notice" data-kind="error" role="alert">
-              <p>{t(`chat.errors.${state.errorKey}`)}</p>
-              {!state.loaded ? (
-                <button type="button" className="chat-header-button" onClick={retryLoad}>{t("common.tryAgain")}</button>
-              ) : null}
-            </div>
-          ) : null}
-          <ChatQuotaNotice quota={quota} onExpired={refreshQuota} />
-          <ChatComposer
-            draft={state.draft}
-            pending={state.pending}
-            ready={state.loaded}
-            quota={quota}
-            inputRef={inputRef}
-            onDraftChange={setDraft}
-            onSubmit={() => void send()}
-          />
-        </>
-      )}
-      <p className="chat-disclaimer">{t("chat.disclaimer")}</p>
-      {blocked ? null : <ChatPrivacyActions api={api} onWithdrawn={markRequired} onDeleted={startNewChat} />}
+      ) : state.errorKey ? (
+        <div className="chat-notice" data-kind="error" role="alert">
+          <p>{t(`chat.errors.${state.errorKey}`)}</p>
+        </div>
+      ) : null}
+      <ChatQuotaNotice quota={quota} onExpired={refreshQuota} />
+      <ChatComposer
+        draft={state.draft}
+        pending={state.pending}
+        blocked={unavailable}
+        quota={quota}
+        inputRef={inputRef}
+        onDraftChange={setDraft}
+        onSubmit={sendAnswer}
+      />
+      <p className="chat-disclaimer" title={t("chat.disclaimer")}>{t("chat.disclaimerShort")}</p>
+      <button type="button" className="chat-resize-handle" {...resize}
+        aria-label={t("chat.resizeHint")} title={t("chat.resizeHint")}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <path d="m5 13 8-8M10 13l3-3" />
+        </svg>
+      </button>
     </aside>
   );
 }

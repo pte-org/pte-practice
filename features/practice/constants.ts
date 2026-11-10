@@ -15,6 +15,26 @@ export const API_PATHS = {
   mediaObjects: "/api/v1/objects",
 } as const;
 
+/** Between an achieved trait score and its maximum, e.g. "4 / 6". */
+export const SUB_SCORE_MAX_SEPARATOR = " / ";
+
+/**
+ * Labels of the Pearson trait keys a rubric-scored result carries (backend rubric catalog). Keys of older results
+ * (FLUENCY, PROSODY, ACCURACY, COMPLETENESS, ...) are not listed and keep their generic label.
+ */
+export const PEARSON_TRAIT_LABELS: Readonly<Record<string, string>> = {
+  CONTENT: "Content",
+  FORM: "Form",
+  PRONUNCIATION: "Pronunciation",
+  ORAL_FLUENCY: "Oral fluency",
+  GRAMMAR: "Grammar",
+  VOCABULARY: "Vocabulary",
+  VOCABULARY_RANGE: "Vocabulary range",
+  GENERAL_LINGUISTIC_RANGE: "General linguistic range",
+  DEVELOPMENT_STRUCTURE_COHERENCE: "Development, structure and coherence",
+  SPELLING: "Spelling",
+};
+
 export const PRACTICE_ROUTES = {
   home: "/",
   practiceTests: "/practice-tests",
@@ -27,8 +47,8 @@ export const PRACTICE_ROUTES = {
 
 export const NAV_ITEMS: ReadonlyArray<{ href: string; label: string; icon: IconName }> = [
   { href: PRACTICE_ROUTES.home, label: "Home", icon: "home" },
+  { href: PRACTICE_ROUTES.studyPack, label: "Skill practice", icon: "studyPack" },
   { href: PRACTICE_ROUTES.practiceTests, label: "Practice tests", icon: "practice" },
-  { href: PRACTICE_ROUTES.studyPack, label: "Study-Pack", icon: "studyPack" },
   { href: PRACTICE_ROUTES.progress, label: "Progress", icon: "progress" },
 ] as const;
 
@@ -229,6 +249,7 @@ export const PRACTICE_STORAGE_KEYS = {
 export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
 export const DEFAULT_API_BASE_URL = "http://localhost:8080";
 export const ENTITLEMENT_STALE_THRESHOLD_MS = 10_000;
+export const PRACTICE_SESSION_CLEARED_EVENT = "pte-practice-session-cleared";
 
 export const SCORE_TONE_THRESHOLDS = {
   LOW: 40,

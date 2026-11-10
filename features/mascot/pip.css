@@ -1,0 +1,50 @@
+.side-rail .pip-companion { position: relative; display: grid; justify-items: center; gap: 12px; flex-shrink: 0; width: 100%; min-width: 0; padding: 8px 0; }
+.pip-speech-bubble {
+  position: absolute; bottom: calc(100% - 12px); left: 50%; z-index: 20;
+  width: min(232px, 100%); padding: 12px 14px; transform: translateX(-50%);
+  border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 10%, transparent);
+  font-size: 0.8125rem; line-height: 1.5; text-align: center; pointer-events: none;
+}
+.pip-speech-bubble::after {
+  content: ""; position: absolute; top: calc(100% - 5px); left: 50%; width: 10px; height: 10px;
+  transform: translateX(-50%) rotate(45deg); border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.pip-companion-button { display: grid; place-items: center; width: 224px; max-width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 24px; background: transparent; cursor: pointer; touch-action: manipulation; }
+.pip-companion-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+/* Body and head never animate. The transparent canvas includes room for every wing angle. */
+.pip-artwork { display: block; width: 224px; max-width: 100%; min-width: 0; height: auto; aspect-ratio: 5 / 6; overflow: visible; }
+.pip-wing-joint { transform-box: view-box; transform-origin: 55.46875% 55.989583333%; transform: rotate(45deg); }
+.pip-eyelid { transform-box: fill-box; transform: translateY(-110%); }
+.pip-body-fixed { pointer-events: none; }
+.pip-mouth-joint { transform-box: view-box; transform-origin: 39.6875% 42.838541667%; }
+.chat-toggle .pip-chat-avatar { width: 32px; height: auto; flex-shrink: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .pip-speech-bubble { animation: pip-message-pop 180ms ease-out; }
+  @keyframes pip-message-pop {
+    from { opacity: 0; transform: translate(-50%, 6px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .pip-artwork-ready .pip-eyelid { animation: pip-lid-close 2s ease-in-out infinite; }
+  .pip-artwork-ready.pip-artwork-greeting .pip-wing-joint { animation: pip-wing-greeting 1400ms ease-in-out; }
+  .pip-artwork-ready.pip-artwork-greeting .pip-mouth-joint { animation: pip-mouth-speaking 1800ms ease-in-out; }
+  @keyframes pip-lid-close {
+    0%, 88%, 100% { transform: translateY(-110%); }
+    94% { transform: translateY(0); }
+  }
+  @keyframes pip-wing-greeting {
+    0%, 100% { transform: rotate(45deg); }
+    25%, 65% { transform: rotate(-4deg); }
+    45%, 80% { transform: rotate(12deg); }
+  }
+  @keyframes pip-mouth-speaking {
+    0%, 22%, 40%, 58%, 76%, 100% { transform: translateY(0) rotate(0); }
+    12%, 31%, 49%, 67%, 86% { transform: translateY(2px) rotate(-3deg); }
+  }
+}
+@media (max-width: 760px) { .side-rail .pip-companion { display: none; } }
+@media (max-height: 800px) and (min-width: 761px) {
+  .side-rail .pip-companion { padding-block: 8px; }
+  .pip-companion-button, .pip-companion .pip-artwork { width: 192px; }
+}

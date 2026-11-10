@@ -45,6 +45,23 @@ describe("practice item result contract", () => {
     expect(normalizePracticeItemResult(null)).toBeNull();
   });
 
+  it("keeps the trait maxima of a rubric result next to its trait scores", () => {
+    const result = normalizePracticeItemResult({
+      ...scored,
+      taskCode: "WRITE_ESSAY",
+      subScores: { CONTENT: 4, FORM: 1 },
+      subScoreMax: { CONTENT: 6, FORM: 2, broken: "x" },
+    });
+    expect(result?.subScores).toEqual({ CONTENT: 4, FORM: 1 });
+    expect(result?.subScoreMax).toEqual({ CONTENT: 6, FORM: 2 });
+  });
+
+  it("has no trait maxima for an older result or an empty or null maxima map", () => {
+    expect(normalizePracticeItemResult(scored)).not.toHaveProperty("subScoreMax");
+    expect(normalizePracticeItemResult({ ...scored, subScoreMax: null })).not.toHaveProperty("subScoreMax");
+    expect(normalizePracticeItemResult({ ...scored, subScoreMax: {} })).not.toHaveProperty("subScoreMax");
+  });
+
   it("only treats a finite score as a score", () => {
     expect(normalizePracticeItemResult({ ...scored, score: "78" })?.score).toBeNull();
   });

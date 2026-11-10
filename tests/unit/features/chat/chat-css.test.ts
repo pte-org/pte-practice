@@ -161,9 +161,15 @@ describe("chat.css", () => {
 describe("chat.css compact and light style", () => {
   const css = () => readCss();
 
-  it("styles the header avatar, subtitle and data menu", () => {
-    for (const selector of [".chat-avatar", ".chat-subtitle", ".chat-menu", ".chat-menu-list"]) {
+  it("styles the header avatar and subtitle", () => {
+    for (const selector of [".chat-avatar", ".chat-subtitle"]) {
       expect(ruleBodies(css(), selector).length, selector).toBeGreaterThan(0);
+    }
+  });
+
+  it("has no styles left for the consent screen or the data menu", () => {
+    for (const selector of [".chat-consent", ".chat-menu", ".chat-menu-list", ".chat-privacy", ".chat-footer"]) {
+      expect(ruleBodies(css(), selector), selector).toEqual([]);
     }
   });
 

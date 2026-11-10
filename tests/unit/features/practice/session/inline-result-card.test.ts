@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { subScoreLabel } from "@/features/practice/ScoreView";
+import { formatSubScore, subScoreLabel } from "@/features/practice/ScoreView";
 
 describe("InlineResultCard helpers", () => {
   it("formats subScore labels with clean capitalization", () => {
@@ -7,6 +7,28 @@ describe("InlineResultCard helpers", () => {
     expect(subScoreLabel("content")).toBe("Content");
     expect(subScoreLabel("pronunciation")).toBe("Pronunciation");
     expect(subScoreLabel("written_discourse")).toBe("Written discourse");
+  });
+
+  it("names Pearson trait keys by the rubric and keeps the generic label for older keys", () => {
+    expect(subScoreLabel("ORAL_FLUENCY")).toBe("Oral fluency");
+    expect(subScoreLabel("PRONUNCIATION")).toBe("Pronunciation");
+    expect(subScoreLabel("DEVELOPMENT_STRUCTURE_COHERENCE")).toBe("Development, structure and coherence");
+    expect(subScoreLabel("VOCABULARY")).toBe("Vocabulary");
+    expect(subScoreLabel("FLUENCY")).toBe("Fluency");
+    expect(subScoreLabel("PROSODY")).toBe("Prosody");
+    expect(subScoreLabel("COMPLETENESS")).toBe("Completeness");
+  });
+
+  it("shows speaking trait scores against their maximum and Read Aloud content, whose maximum varies, raw", () => {
+    const subScoreMax: Record<string, number> = { PRONUNCIATION: 5, ORAL_FLUENCY: 5 };
+    expect(formatSubScore(3, subScoreMax.ORAL_FLUENCY)).toBe("3 / 5");
+    expect(formatSubScore(27, subScoreMax.CONTENT)).toBe("27");
+  });
+
+  it("shows a Pearson trait score against its maximum and an older score as the raw number", () => {
+    expect(formatSubScore(4, 6)).toBe("4 / 6");
+    expect(formatSubScore(0, 2)).toBe("0 / 2");
+    expect(formatSubScore(70, undefined)).toBe("70");
   });
 
   it("handles score verdict logic accurately", () => {

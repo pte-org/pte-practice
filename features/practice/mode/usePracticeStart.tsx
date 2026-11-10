@@ -29,20 +29,20 @@ function untimed(preference: ModePreference): ModePreference {
  */
 export function usePracticeStart(): PracticeStart {
   const router = useRouter();
-  const { isPracticeUnlocked } = usePractice();
+  const { isPracticeUnlocked, catalogStatus } = usePractice();
   const [target, setTarget] = useState<ModeTarget | null>(null);
 
   const openFor = useCallback((candidate: PracticeCatalogTask) => {
-    if (!isPracticeUnlocked || !canStartPractice("UNLOCKED", candidate)) return;
+    if (!isPracticeUnlocked || catalogStatus !== "ready" || !canStartPractice("UNLOCKED", candidate)) return;
     const pref = readModePreference(preferenceKey(taskTarget(candidate)));
     router.push(practiceSessionUrl(candidate.code, untimed(pref)));
-  }, [isPracticeUnlocked, router]);
+  }, [isPracticeUnlocked, catalogStatus, router]);
 
   const openForSkill = useCallback((section: PracticeCatalogSection, title: string) => {
-    if (!isPracticeUnlocked || runnableTasks(section).length === 0) return;
+    if (!isPracticeUnlocked || catalogStatus !== "ready" || runnableTasks(section).length === 0) return;
     const pref = readModePreference(preferenceKey(skillTarget(section, title)));
     router.push(practiceSkillSessionUrl(section.code, untimed(pref)));
-  }, [isPracticeUnlocked, router]);
+  }, [isPracticeUnlocked, catalogStatus, router]);
 
   const dialog = (
     <PracticeModeDialog target={target} onClose={() => setTarget(null)}

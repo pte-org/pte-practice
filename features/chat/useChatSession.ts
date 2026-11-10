@@ -4,9 +4,9 @@ import { useCallback, useReducer } from "react";
 import type { ChatApi } from "./api";
 import { chatErrorKey } from "./chat-errors";
 import { buildSendInput } from "./chat-exercise";
+import { historyForRequest } from "./chat-history";
 import { validateChatInput } from "./chat-input";
 import { quotaFromError } from "./chat-quota";
-import { createChatSessionId } from "./chat-session-id";
 import { chatReducer, INITIAL_CHAT_STATE } from "./chat-state";
 import type { ChatQuota } from "./contracts";
 
@@ -20,31 +20,25 @@ interface UseChatSessionOptions {
 }
 
 /**
- * One conversation. The server decides which session is the latest on load; this only mints a session id
- * for a student who has none yet, and again when they press "New chat".
+ * One conversation, held in memory only. Each question carries the earlier turns because the server keeps
+ * nothing between requests; "New chat" simply forgets them.
  */
 export function useChatSession({ api, taskType, exercisePrompt, language, onQuota }: UseChatSessionOptions) {
   const [state, dispatch] = useReducer(chatReducer, INITIAL_CHAT_STATE);
 
-  const load = useCallback(async () => {
-    try {
-      const session = await api.getLatestSession();
-      dispatch({ type: "loaded", session, newSessionId: createChatSessionId() });
-    } catch (error) {
-      // Do not mint a session here: "the server has none" and "the server could not be reached" differ, and a
-      // fresh id would silently replace the student's real latest conversation. The composer stays locked
-      // until a retry succeeds.
-      dispatch({ type: "requestFailed", errorKey: chatErrorKey(error) });
-    }
-  }, [api]);
-
   const send = useCallback(async () => {
     const input = validateChatInput(state.draft);
-    if (!input.ok || state.pending || !state.sessionId) return;
+    if (!input.ok || state.pending) return;
     dispatch({ type: "sendStarted", question: input.text });
     try {
       const reply = await api.sendMessage(
-        buildSendInput({ sessionId: state.sessionId, message: input.text, taskType, language, exercisePrompt }),
+        buildSendInput({
+          message: input.text,
+          taskType,
+          language,
+          exercisePrompt,
+          history: historyForRequest(state.messages),
+        }),
       );
       dispatch({ type: "sendSucceeded", question: input.text, reply });
       onQuota({
@@ -58,11 +52,11 @@ export function useChatSession({ api, taskType, exercisePrompt, language, onQuot
       if (exhausted) onQuota(exhausted);
       dispatch({ type: "requestFailed", errorKey: chatErrorKey(error) });
     }
-  }, [api, exercisePrompt, language, onQuota, state.draft, state.pending, state.sessionId, taskType]);
+  }, [api, exercisePrompt, language, onQuota, state.draft, state.messages, state.pending, taskType]);
 
   const setDraft = useCallback((text: string) => dispatch({ type: "draftChanged", text }), []);
-  const startNewChat = useCallback(() => dispatch({ type: "newChat", sessionId: createChatSessionId() }), []);
+  const startNewChat = useCallback(() => dispatch({ type: "newChat" }), []);
   const dismissError = useCallback(() => dispatch({ type: "dismissError" }), []);
 
-  return { state, load, send, setDraft, startNewChat, dismissError };
+  return { state, send, setDraft, startNewChat, dismissError };
 }

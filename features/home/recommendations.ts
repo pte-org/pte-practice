@@ -1,6 +1,8 @@
 import type { TranslationKey } from "@/common/i18n";
 import type { MockTest } from "@/features/mockTests/mock-test-contracts";
-import type { PracticeProgressEntry } from "@/features/practice/contracts";
+import type { PracticeCatalogSection, PracticeProgressEntry } from "@/features/practice/contracts";
+import { orderCatalogSections } from "@/features/practice/catalog-order";
+import { DASHBOARD_RESUME_PREVIEW_ITEMS } from "./constants";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import { practiceMockTestUrl } from "@/features/practice/mode/practice-url";
 import { sessionDisplayName } from "@/features/practice/presentation";
@@ -12,6 +14,7 @@ export type RecommendationTarget = { type: "href"; href: string } | { type: "moc
 
 export interface Recommendation {
   id: string;
+  taskCode?: string;
   title: string;
   description: string;
   itemCount: number | null;
@@ -20,6 +23,41 @@ export interface Recommendation {
   action: "continue" | "start";
   target: RecommendationTarget;
 }
+
+export const selectResumeCards = (cards: Recommendation[], sections: PracticeCatalogSection[],
+  expanded: boolean, selected: string): Recommendation[] => {
+  if (!expanded) return cards.slice(1, DASHBOARD_RESUME_PREVIEW_ITEMS);
+  if (selected === "ALL") return cards;
+  const group = orderCatalogSections(sections).find((section) => section.code === selected);
+  const codes = new Set(group?.taskTypes.map((task) => task.code));
+  return cards.filter((card) => card.taskCode && codes.has(card.taskCode));
+};
+
+/** Home resumes one latest single-task session per task type; mixed-skill sessions stay in history. */
+export const buildTaskRecommendations = (entries: PracticeProgressEntry[],
+  taskName: (code: string) => string, t: (key: TranslationKey) => string): Recommendation[] => {
+  const activityTime = (entry: PracticeProgressEntry): number => {
+    const time = Date.parse(entry.lastActivityAt ?? entry.startedAt ?? "");
+    return Number.isFinite(time) ? time : 0;
+  };
+  const seen = new Set<string>();
+  return entries.filter((entry) => entry.status === "IN_PROGRESS" && entry.sessionStatus === "IN_PROGRESS"
+      && entry.kind !== "MOCK_TEST" && entry.taskCode)
+    .sort((left, right) => activityTime(right) - activityTime(left))
+    .flatMap((entry): Recommendation[] => {
+      const code = entry.taskCode;
+      if (!code || seen.has(code)) return [];
+      seen.add(code);
+      return [{
+        id: `session:${entry.sessionPublicId}`, taskCode: code, title: taskName(code),
+        description: t("presentation.inProgress").replace("{done}", String(entry.answeredItemCount))
+          .replace("{total}", String(entry.totalItemCount)),
+        itemCount: entry.totalItemCount, minutes: null,
+        progress: { done: entry.answeredItemCount, total: entry.totalItemCount }, action: "continue",
+        target: { type: "href", href: `${PRACTICE_ROUTES.practiceSession}?sessionId=${encodeURIComponent(entry.sessionPublicId)}` },
+      }];
+    });
+};
 
 /**
  * Cards for "Recommended for you": practice the student left unfinished first (newest first), then unfinished mock

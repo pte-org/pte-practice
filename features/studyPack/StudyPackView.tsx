@@ -7,24 +7,16 @@ import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import { studySkillRows, totalPracticeQuestions } from "./study-pack-rows";
+import { studySkillRows } from "./study-pack-rows";
 
 export function StudyPackView() {
-  const { catalog, isPracticeUnlocked } = usePractice();
+  const { catalog, catalogStatus, isPracticeUnlocked, accessState } = usePractice();
   const { openForSkill, dialog } = usePracticeStart();
   const { t } = useTranslation();
-  const rows = studySkillRows(orderCatalogSections(catalog.sections), isPracticeUnlocked);
-  const total = totalPracticeQuestions(rows);
+  const rows = studySkillRows(orderCatalogSections(catalog.sections), isPracticeUnlocked && catalogStatus === "ready");
 
   return (
     <div className="page-column" data-testid="study-pack-page">
-      <div className="hint-strip study-pack-summary">
-        <AppIcon name="sparkle" size={22} />
-        <div>
-          <strong>{total} {t("studyPackView.summaryTitle")}</strong>
-          <p>{t("studyPackView.summaryHint")}</p>
-        </div>
-      </div>
       <h2 className="section-title">{rows.length} {t("studyPackView.skillsHeading")}</h2>
       <ul className="card card-flush study-skill-list">
         {rows.map((row) => {
@@ -42,7 +34,7 @@ export function StudyPackView() {
                     : t("studyPackView.noQuestions")}
                 </span>
               </span>
-              {!isPracticeUnlocked ? <LockBadge locked label={t("common.lockedAction")} /> : (
+              {accessState === "locked" ? <LockBadge locked label={t("common.lockedAction")} /> : (
                 <button className="button button-outline button-pill" type="button" disabled={!row.canStart}
                   aria-label={`${t("studyPackView.practice")} ${name}`}
                   onClick={() => openForSkill(row.section, name)}>

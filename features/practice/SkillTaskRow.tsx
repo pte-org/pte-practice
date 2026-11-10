@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type ReactElement } from "react";
+import type { PracticeAccessState } from "./access-state";
 import { AppIcon, LockBadge } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { canStartPractice, type PracticeCatalogTask } from "./contracts";
@@ -11,6 +12,8 @@ import { TaskActionButtons } from "./TaskActionButtons";
 export interface SkillTaskRowProps {
   task: PracticeCatalogTask;
   isPracticeUnlocked: boolean;
+  accessState?: PracticeAccessState;
+  contentState?: "ready" | "loading" | "error";
   activeSession?: {
     sessionPublicId: string;
     answeredItemCount: number;
@@ -30,29 +33,34 @@ export interface SkillTaskRowProps {
  * Unified task row component used in both Trang chủ (Home) and Tiến độ (Progress).
  * Includes icon, title, question counts, in-progress indicator, score/lock badge, and chevron right action.
  */
-export function SkillTaskRow({
+export const SkillTaskRow = ({
   task,
   isPracticeUnlocked,
   activeSession,
   completedSession,
   onStart,
   className,
-}: SkillTaskRowProps) {
+  accessState,
+  contentState = "ready",
+}: SkillTaskRowProps): ReactElement => {
   const { t } = useTranslation();
-  const canStart = isPracticeUnlocked && canStartPractice("UNLOCKED", task);
-  const blockedLabel = isPracticeUnlocked ? t("common.unavailableAction") : t("common.lockedAction");
-  const actionRef = useRef<HTMLButtonElement>(null);
+  const state = accessState ?? (isPracticeUnlocked ? "unlocked" : "locked");
+  const canStart = contentState === "ready" && isPracticeUnlocked && canStartPractice("UNLOCKED", task);
+  const blockedLabel = state === "locked" ? t("common.lockedAction")
+    : state === "error" || contentState === "error" ? t("common.unavailableAction")
+      : state === "loading" || contentState === "loading" ? t("ui.accessChecking") : t("common.unavailableAction");
+  const actionRef = useRef<HTMLDivElement>(null);
 
   const handleRowClick = (e: React.MouseEvent) => {
     if (!canStart) return;
     if (
-      (e.target as HTMLElement).closest(".task-chevron-btn") ||
+      (e.target as HTMLElement).closest(".skill-task-actions") ||
       (e.target as HTMLElement).closest(".modal-backdrop") ||
       (e.target as HTMLElement).closest(".modal-dialog")
     ) {
       return;
     }
-    actionRef.current?.click();
+    actionRef.current?.querySelector<HTMLElement>(".task-chevron-btn")?.click();
   };
 
   return (
@@ -77,7 +85,7 @@ export function SkillTaskRow({
         </span>
       </span>
       {!canStart ? (
-        <LockBadge locked label={blockedLabel} />
+        state === "locked" ? <LockBadge locked label={blockedLabel} /> : <span className="quiet-note" role="status">{blockedLabel}</span>
       ) : task.averageScore !== null && Number.isFinite(task.averageScore) ? (
         <span className={`score-badge score-badge-${scoreTone(task.averageScore)}`}>
           {formatScore(task.averageScore)}
@@ -93,4 +101,4 @@ export function SkillTaskRow({
       />
     </div>
   );
-}
+};

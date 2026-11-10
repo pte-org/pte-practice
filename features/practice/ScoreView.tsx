@@ -1,7 +1,9 @@
 "use client";
 
 import { useTranslation } from "@/common/i18n";
+import { LoadingState } from "@/common/components";
 import type { PracticeApiClient } from "./api";
+import { PEARSON_TRAIT_LABELS, SUB_SCORE_MAX_SEPARATOR } from "./constants";
 import type { PracticeItemResult } from "./contracts";
 import { useItemResult } from "./useItemResult";
 
@@ -31,8 +33,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
   if (!result || result.state === "SCORING") {
     return (
       <div className={className} role="status" aria-live="polite">
-        <span className="loading-dot" />
-        <p>{t("score.scoring")}</p>
+        <LoadingState compact message={t("score.scoring")} />
         <small>{t("score.scoringHint")}</small>
       </div>
     );
@@ -61,7 +62,9 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
       {subScores.length > 0 ? (
         <div className="score-breakdown">
           <h3>{t("score.subScores")}</h3>
-          <ul>{subScores.map(([key, value]) => <li key={key}><span>{subScoreLabel(key)}</span><strong>{value}</strong></li>)}</ul>
+          <ul>{subScores.map(([key, value]) => (
+            <li key={key}><span>{subScoreLabel(key)}</span><strong>{formatSubScore(value, result.subScoreMax?.[key])}</strong></li>
+          ))}</ul>
         </div>
       ) : null}
       {result.feedback ? <div className="score-feedback"><h3>{t("score.feedback")}</h3><p>{result.feedback}</p></div> : null}
@@ -70,8 +73,20 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
   );
 }
 
-/** "oralFluency" / "oral_fluency" -> "Oral fluency". */
+/** "achieved / max" for a Pearson trait score whose maximum is known; the raw number otherwise (older results). */
+export function formatSubScore(value: number, max: number | undefined): string {
+  return max === undefined ? String(value) : `${value}${SUB_SCORE_MAX_SEPARATOR}${max}`;
+}
+
+/**
+ * A Pearson trait key gets its rubric name ("DEVELOPMENT_STRUCTURE_COHERENCE" -> "Development, structure and
+ * coherence"); any other key, including those of older results, is spelled out: "oralFluency" -> "Oral fluency".
+ */
 export function subScoreLabel(key: string): string {
+  const pearsonLabel = PEARSON_TRAIT_LABELS[key];
+  if (pearsonLabel !== undefined) {
+    return pearsonLabel;
+  }
   const words = key.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim().toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }

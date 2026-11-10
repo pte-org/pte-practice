@@ -1,7 +1,7 @@
 import type { ChatErrorKey } from "./chat-errors";
 import { validateChatInput } from "./chat-input";
 import { isQuotaExhausted } from "./chat-quota";
-import type { ChatHistoryItem, ChatLatestSession, ChatQuota, ChatReply } from "./contracts";
+import type { ChatQuota, ChatReply } from "./contracts";
 
 export interface ChatMessageView {
   id: string;
@@ -10,8 +10,8 @@ export interface ChatMessageView {
   refused: boolean;
 }
 
+/** The whole conversation lives here, in the page's memory: closing the tab or pressing "New chat" ends it. */
 export interface ChatState {
-  sessionId: string | null;
   messages: ChatMessageView[];
   pending: boolean;
   /** Shown under the list while the answer is on its way; never added to `messages` until it succeeds. */
@@ -19,26 +19,22 @@ export interface ChatState {
   errorKey: ChatErrorKey | null;
   /** Kept on failure so the student does not retype the question. */
   draft: string;
-  loaded: boolean;
 }
 
 export const INITIAL_CHAT_STATE: ChatState = {
-  sessionId: null,
   messages: [],
   pending: false,
   pendingQuestion: null,
   errorKey: null,
   draft: "",
-  loaded: false,
 };
 
 export type ChatAction =
-  | { type: "loaded"; session: ChatLatestSession; newSessionId: string }
   | { type: "draftChanged"; text: string }
   | { type: "sendStarted"; question: string }
   | { type: "sendSucceeded"; question: string; reply: ChatReply }
   | { type: "requestFailed"; errorKey: ChatErrorKey }
-  | { type: "newChat"; sessionId: string }
+  | { type: "newChat" }
   | { type: "dismissError" };
 
 function exchange(firstIndex: number, question: string, answer: string, refused: boolean): ChatMessageView[] {
@@ -48,22 +44,8 @@ function exchange(firstIndex: number, question: string, answer: string, refused:
   ];
 }
 
-function fromHistory(items: ChatHistoryItem[]): ChatMessageView[] {
-  // FAILED rows have an empty answer and exist only for cost tracking.
-  return items
-    .filter((item) => item.status !== "FAILED")
-    .flatMap((item, index) => exchange(index * 2, item.question, item.answer, item.status === "REFUSED"));
-}
-
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
-    case "loaded":
-      return {
-        ...state,
-        sessionId: action.session.sessionId ?? action.newSessionId,
-        messages: fromHistory(action.session.messages),
-        loaded: true,
-      };
     case "draftChanged":
       return { ...state, draft: action.text };
     case "sendStarted":
@@ -79,13 +61,12 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         pendingQuestion: null,
         draft: "",
         errorKey: null,
-        sessionId: action.reply.sessionId,
       };
     case "requestFailed":
       return { ...state, pending: false, pendingQuestion: null, errorKey: action.errorKey };
     case "newChat":
       if (state.pending) return state;
-      return { ...state, sessionId: action.sessionId, messages: [], draft: "", errorKey: null, pendingQuestion: null };
+      return { ...INITIAL_CHAT_STATE };
     case "dismissError":
       return { ...state, errorKey: null };
   }

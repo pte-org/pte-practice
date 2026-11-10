@@ -5,8 +5,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
 import { chatErrorKey } from "@/features/chat/chat-errors";
 import { quotaFromError } from "@/features/chat/chat-quota";
-import { CHAT_CONSENT_POLICY_VERSION, CHAT_EXERCISE_MAX_CHARS } from "@/features/chat/constants";
-import { normalizeChatConsent, normalizeChatQuota, normalizeChatReply, normalizeLatestSession } from "@/features/chat/contracts";
+import { CHAT_EXERCISE_MAX_CHARS } from "@/features/chat/constants";
+import { normalizeChatQuota, normalizeChatReply } from "@/features/chat/contracts";
 
 /**
  * Reads the contract file the backend's `ChatApiContractTest` checks against its real responses, so this client
@@ -19,13 +19,9 @@ const CONTRACT_PATH = join(
 
 interface ChatApiContract {
   limits: { exercisePromptMaxChars: number };
+  reply: Record<string, unknown>;
   quota: unknown;
-  reply: unknown;
-  latestSession: unknown;
-  consentGranted: unknown;
-  consentMissing: Record<string, unknown>;
   quotaExceededError: { code: string; data: { resetAt: string } };
-  consentRequiredError: { code: string; data: { policyVersion: string } };
 }
 
 describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the backend)", () => {
@@ -45,19 +41,9 @@ describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the 
   });
 
   it("reads a reply", () => {
-    expect(normalizeChatReply(contract.reply)).toEqual(contract.reply);
-  });
-
-  it("reads the latest session with every message", () => {
-    const session = normalizeLatestSession(contract.latestSession);
-
-    expect(session).toEqual(contract.latestSession);
-    expect(session?.messages).toHaveLength(2);
-  });
-
-  it("reads consent when granted and when missing", () => {
-    expect(normalizeChatConsent(contract.consentGranted)).toEqual(contract.consentGranted);
-    expect(normalizeChatConsent(contract.consentMissing)).toEqual({ ...contract.consentMissing, consentedAt: null });
+    // The server also sends fromCache and sessionId; this client reads only the fields below.
+    const { markdown, onTopic, remaining, limit, resetAt } = contract.reply;
+    expect(normalizeChatReply(contract.reply)).toEqual({ markdown, onTopic, remaining, limit, resetAt });
   });
 
   it("builds the exhausted quota from the quota-exceeded error", () => {
@@ -66,12 +52,5 @@ describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the 
 
     expect(quotaFromError(error)).toEqual({ used: 20, remaining: 0, limit: 20, resetAt: data.resetAt });
     expect(chatErrorKey(error)).toBe("quotaExceeded");
-  });
-
-  it("recognises the consent-required error and the version the client sends", () => {
-    const { code, data } = contract.consentRequiredError;
-
-    expect(chatErrorKey(new PracticeApiError("m", 403, code, data))).toBe("consentRequired");
-    expect(data.policyVersion).toBe(CHAT_CONSENT_POLICY_VERSION);
   });
 });

@@ -49,7 +49,7 @@ export function useSessionLifecycle(options: UseSessionLifecycleOptions): { relo
   const mockTestId = searchParams.get("mockTest");
   const restartMockTest = searchParams.get("restart") === "1";
   const sessionId = searchParams.get("sessionId");
-  const timingMode = searchParams.get("mode") === "TIMED" ? "TIMED" : DEFAULT_MODE_PREFERENCE.timingMode;
+  const timingMode = mockTestId && searchParams.get("mode") === "TIMED" ? "TIMED" : "UNTIMED";
   const requestedCount = Number(searchParams.get("count"));
   const questionCount = isQuestionCountOption(requestedCount) ? requestedCount : DEFAULT_MODE_PREFERENCE.questionCount;
   const hasTarget = Boolean(taskCode || skillCode || mockTestId);

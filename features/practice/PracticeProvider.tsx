@@ -3,22 +3,22 @@
 import {
   createContext,
   type ReactNode,
+  type ReactElement,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { COMMON_TEXT } from "@/common/constants";
 import { createPracticeApiClient, PracticeApiError } from "./api";
-import type { EntitlementState, PracticeCatalog, PracticeEntitlement } from "./contracts";
+import type { PracticeCatalog, PracticeEntitlement } from "./contracts";
 import { PREVIEW_CATALOG } from "./preview-catalog";
-import { clearPracticeDrafts, clearPracticeSession, getPracticeSession } from "./session-storage";
-import { ENTITLEMENT_STALE_THRESHOLD_MS } from "./constants";
-
-type AuthStatus = "loading" | "authenticated" | "signed-out";
-type DataStatus = "idle" | "loading" | "ready" | "error";
+import { clearPracticeDrafts, clearPracticeSession } from "./session-storage";
+import { usePracticeLifecycle } from "./usePracticeLifecycle";
+import { accessStateForUi, type PracticeAccessState, type PracticeAuthStatus as AuthStatus,
+  type PracticeDataStatus as DataStatus } from "./access-state";
+export { accessStateForUi } from "./access-state";
 
 interface PracticeContextValue {
   authStatus: AuthStatus;
@@ -28,6 +28,7 @@ interface PracticeContextValue {
   catalog: PracticeCatalog;
   error: PracticeApiError | null;
   isPracticeUnlocked: boolean;
+  accessState: PracticeAccessState;
   refresh: () => Promise<void>;
   refreshEntitlement: () => Promise<void>;
   signOut: () => void;
@@ -35,7 +36,9 @@ interface PracticeContextValue {
 
 const PracticeContext = createContext<PracticeContextValue | null>(null);
 
-export function PracticeProvider({ children }: { children: ReactNode }) {
+interface PracticeProviderProps { children: ReactNode }
+
+export const PracticeProvider = ({ children }: PracticeProviderProps): ReactElement => {
   const [authStatus, setAuthStatus] = useState<AuthStatus>("loading");
   const [entitlementStatus, setEntitlementStatus] = useState<DataStatus>("idle");
   const [catalogStatus, setCatalogStatus] = useState<DataStatus>("idle");
@@ -43,9 +46,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const [catalog, setCatalog] = useState<PracticeCatalog>(PREVIEW_CATALOG);
   const [error, setError] = useState<PracticeApiError | null>(null);
   const lastEntitlementRefresh = useRef(0);
+  const epoch = useRef(0);
+  const entitlementFlight = useRef<Promise<void> | null>(null);
+  const catalogSequence = useRef(0);
 
   // An expired or rejected token ends the session but keeps unsent drafts for the same student's next sign-in.
   const endSession = useCallback(() => {
+    epoch.current += 1;
+    entitlementFlight.current = null;
     clearPracticeSession();
     setAuthStatus("signed-out");
     setEntitlement(null);
@@ -60,87 +68,57 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const refreshEntitlement = useCallback(async () => {
     if (authStatus !== "authenticated") return;
+    if (entitlementFlight.current) return entitlementFlight.current;
+    const generation = epoch.current;
     const api = createPracticeApiClient();
-    setEntitlementStatus("loading");
+    setEntitlementStatus((current) => current === "ready" ? "refreshing" : "loading");
+    const flight = (async (): Promise<void> => {
+      try {
+        const nextEntitlement = await api.getEntitlement();
+        if (generation !== epoch.current) return;
+        setEntitlement(nextEntitlement);
+        setEntitlementStatus("ready");
+        setError(null);
+        lastEntitlementRefresh.current = Date.now();
+      } catch (reason) {
+        if (generation !== epoch.current) return;
+        const apiError = toPracticeApiError(reason);
+        setEntitlementStatus("error");
+        setError(apiError);
+        if (apiError.status === 401) endSession();
+      }
+    })();
+    entitlementFlight.current = flight;
     try {
-      const nextEntitlement = await api.getEntitlement();
-      setEntitlement(nextEntitlement);
-      setEntitlementStatus("ready");
-      setError(null);
-      lastEntitlementRefresh.current = Date.now();
-    } catch (reason) {
-      const apiError = toPracticeApiError(reason);
-      setEntitlementStatus("error");
-      setEntitlement(null);
-      setError(apiError);
-      if (apiError.status === 401) endSession();
+      await flight;
+    } finally {
+      if (entitlementFlight.current === flight) entitlementFlight.current = null;
     }
   }, [authStatus, endSession]);
 
   const refresh = useCallback(async () => {
     if (authStatus !== "authenticated") return;
-    setError(null);
+    const generation = epoch.current;
+    const sequence = ++catalogSequence.current;
     setCatalogStatus("loading");
     const api = createPracticeApiClient();
-    const [entitlementResult, catalogResult] = await Promise.allSettled([
-      api.getEntitlement(),
+    const [, catalogResult] = await Promise.allSettled([
+      refreshEntitlement(),
       api.getCatalog(),
     ]);
-
-    if (entitlementResult.status === "fulfilled") {
-      setEntitlement(entitlementResult.value);
-      setEntitlementStatus("ready");
-      lastEntitlementRefresh.current = Date.now();
-    } else {
-      const apiError = toPracticeApiError(entitlementResult.reason);
-      setEntitlement(null);
-      setEntitlementStatus("error");
-      setError(apiError);
-      if (apiError.status === 401) endSession();
-    }
-
+    if (generation !== epoch.current || sequence !== catalogSequence.current) return;
     if (catalogResult.status === "fulfilled") {
       setCatalog(catalogResult.value);
       setCatalogStatus("ready");
     } else {
-      setCatalog(PREVIEW_CATALOG);
       setCatalogStatus("error");
-      if (entitlementResult.status === "fulfilled") {
-        setError(toPracticeApiError(catalogResult.reason));
-      }
+      const apiError = toPracticeApiError(catalogResult.reason);
+      setError((current) => current ?? apiError);
+      if (apiError.status === 401) endSession();
     }
-  }, [authStatus, endSession]);
+  }, [authStatus, endSession, refreshEntitlement]);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const session = getPracticeSession();
-      setAuthStatus(session ? "authenticated" : "signed-out");
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (authStatus !== "authenticated") return;
-    const timer = window.setTimeout(() => void refresh(), 0);
-    return () => window.clearTimeout(timer);
-  }, [authStatus, refresh]);
-
-  useEffect(() => {
-    if (authStatus !== "authenticated") return;
-
-    const refreshIfStale = () => {
-      if (document.visibilityState !== "visible") return;
-      if (Date.now() - lastEntitlementRefresh.current < ENTITLEMENT_STALE_THRESHOLD_MS) return;
-      void refreshEntitlement();
-    };
-
-    window.addEventListener("focus", refreshIfStale);
-    document.addEventListener("visibilitychange", refreshIfStale);
-    return () => {
-      window.removeEventListener("focus", refreshIfStale);
-      document.removeEventListener("visibilitychange", refreshIfStale);
-    };
-  }, [authStatus, refreshEntitlement]);
+  usePracticeLifecycle({ authStatus, setAuthStatus, endSession, refresh, lastChecked: lastEntitlementRefresh, epoch });
 
   const value = useMemo<PracticeContextValue>(() => ({
     authStatus,
@@ -149,7 +127,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     entitlement,
     catalog,
     error,
-    isPracticeUnlocked: entitlement?.practice.state === "UNLOCKED",
+    accessState: accessStateForUi(authStatus, entitlementStatus, entitlement?.practice.state ?? null),
+    isPracticeUnlocked: accessStateForUi(authStatus, entitlementStatus, entitlement?.practice.state ?? null) === "unlocked",
     refresh,
     refreshEntitlement,
     signOut,
@@ -166,25 +145,12 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   ]);
 
   return <PracticeContext.Provider value={value}>{children}</PracticeContext.Provider>;
-}
+};
 
 export function usePractice(): PracticeContextValue {
   const context = useContext(PracticeContext);
   if (!context) throw new Error("usePractice must be used inside PracticeProvider");
   return context;
-}
-
-export function accessStateForUi(
-  authStatus: AuthStatus,
-  entitlementStatus: DataStatus,
-  entitlementState: EntitlementState | null,
-): "loading" | "unlocked" | "locked" | "error" {
-  if (authStatus === "loading" || entitlementStatus === "loading" || entitlementStatus === "idle") {
-    return "loading";
-  }
-  if (entitlementStatus === "error") return "error";
-  if (entitlementState === "UNLOCKED") return "unlocked";
-  return "locked";
 }
 
 function toPracticeApiError(reason: unknown): PracticeApiError {
