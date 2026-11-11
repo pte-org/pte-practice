@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState, type ReactElement } from "react";
-import { AppIcon, Button, Tabs } from "@/common/components";
+import { AppIcon, Tabs } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import type { PracticeCatalogSection } from "@/features/practice/contracts";
@@ -86,15 +86,16 @@ export const DashboardRecommendations = ({ cards, sections, state }: DashboardRe
           <span className="resume-heading-icon" aria-hidden="true"><AppIcon name="bookOpen" size={22} /></span>
           <div className="resume-heading-copy">
             <div className="resume-heading-title"><h2 id="dashboard-next-title" ref={heading} tabIndex={-1}>{copy.next}</h2>
-              <span className="resume-count">{cards.length}</span></div>
+              <span className="resume-count">{cards.length}</span>
+              {cards.length > DASHBOARD_RESUME_PREVIEW_ITEMS || expanded || collapsed ? <button type="button"
+                className="icon-button resume-toggle" aria-label={expanded ? copy.resumeCollapse : copy.resumeAll}
+                title={expanded ? copy.resumeCollapse : copy.resumeAll} aria-expanded={expanded}
+                aria-controls="dashboard-resume-content" onClick={() => expanded ? collapse() : setDisplay("expanded")}>
+                <AppIcon name="chevronDown" size={18} />
+              </button> : null}</div>
             <p>{copy.nextHint}</p>
           </div>
         </div>
-        {cards.length > DASHBOARD_RESUME_PREVIEW_ITEMS || expanded || collapsed ? <Button variant="secondary" size="sm" className="resume-toggle"
-          rightIcon={<AppIcon name="chevronDown" size={18} />} aria-expanded={expanded}
-          aria-controls="dashboard-resume-content" onClick={() => expanded ? collapse() : setDisplay("expanded")}>
-          {expanded ? copy.resumeCollapse : copy.resumeAll}
-        </Button> : null}
       </div>
       <div id="dashboard-resume-content" className="resume-content" hidden={collapsed}>
         {!collapsed ? <>
