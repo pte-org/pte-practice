@@ -206,6 +206,13 @@ export function PracticeSessionView() {
     }
     router.push(PRACTICE_ROUTES.home);
   };
+  // Leaves without saving the answer in progress: unsaved recordings are dropped, earlier saved answers stay.
+  const exitWithoutSaving = () => {
+    const session = sessionRef.current ?? state.session;
+    if (session) for (const entry of recordingDrafts(session.publicId)) forgetDraft(session.publicId, entry.itemId);
+    closeConfirm();
+    router.replace(PRACTICE_ROUTES.home);
+  };
   const unavailable = () => Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
 
   const begin = () => runMutation("begin", (key) => sessionRef.current
@@ -549,8 +556,8 @@ export function PracticeSessionView() {
         onPause={() => setConfirm("pause")}
       />
       <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
-        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.cancel")}
-        onClose={closeConfirm} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
+        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.exitWithoutSaving")} closeLabel={t("session.cancel")}
+        onClose={closeConfirm} onCancel={exitWithoutSaving} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
       {confirm !== null && typeof confirm === "object" ? (
         <ConfirmDialog open tone="warning" title={t("session.wordsTitle").replace("{n}", String(confirm.words))}
           description={t("session.wordsDescription").replace("{min}", String(confirm.min ?? 0))
