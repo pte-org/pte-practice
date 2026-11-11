@@ -19,6 +19,7 @@ import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
 import { PracticeFrame } from "./PracticeFrame";
+import { AnswerHintCard } from "./AnswerHintCard";
 import { PracticeSupport } from "./PracticeSupport";
 import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "./questionPresentation";
 
@@ -130,7 +131,8 @@ export function SessionTaskView(props: SessionTaskViewProps) {
 
   return (
     <PracticeFrame
-      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode} />}
+      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode}
+        hints={<AnswerHintCard key={task.publicId} content={task.content} />} />}
       header={<SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
         parts={sessionParts(session)} questionNumber={questionNum} questionCount={session.totalItemCount}
         pauseDisabled={locked || recorderBusy}

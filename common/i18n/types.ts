@@ -338,6 +338,7 @@ export interface LocaleDict {
     recordedAnswer: string;
     supportTitle: string;
     supportSubtitle: string;
+    answerHint: string;
     practiceTip: string;
     askAssistant: string;
     askAssistantDescription: string;

@@ -53,6 +53,9 @@ export interface PracticeTaskContent {
   audioUrl?: string | null;
   imageUrl?: string | null;
   options: PracticeTaskContentOption[];
+  /** How to approach the question, never its answer; shown only when the learner asks. */
+  answerHintVi?: string | null;
+  answerHintEn?: string | null;
 }
 
 export type PracticeScoringState = "NONE" | "SCORING" | "SCORED" | "FAILED";
@@ -285,5 +288,7 @@ function normalizePracticeTaskContent(value: unknown): PracticeTaskContent | nul
     audioUrl,
     imageUrl,
     options,
+    answerHintVi: asNullableString(record.answerHintVi),
+    answerHintEn: asNullableString(record.answerHintEn),
   };
 }

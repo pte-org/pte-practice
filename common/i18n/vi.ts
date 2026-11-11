@@ -338,6 +338,7 @@ export const vi: LocaleDict = {
     recordedAnswer: "Câu trả lời ghi âm",
     supportTitle: "Đồng hành cùng bạn",
     supportSubtitle: "Hỗ trợ khi bạn cần",
+    answerHint: "Xem gợi ý trả lời",
     practiceTip: "Mẹo luyện tập",
     askAssistant: "Hỏi AI",
     askAssistantDescription: "Hỏi về dạng bài hoặc nhờ giải thích nội dung câu hỏi.",

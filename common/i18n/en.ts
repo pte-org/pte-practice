@@ -338,6 +338,7 @@ export const en: LocaleDict = {
     recordedAnswer: "Recorded answer",
     supportTitle: "Your practice companion",
     supportSubtitle: "Guidance when you need it",
+    answerHint: "Show answer hint",
     practiceTip: "Practice tip",
     askAssistant: "Ask AI",
     askAssistantDescription: "Ask about the task or get help understanding the exercise.",
