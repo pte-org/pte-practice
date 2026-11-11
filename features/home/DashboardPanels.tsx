@@ -79,7 +79,7 @@ export const DashboardSidebar = ({ entries, state, taskName, organization }: Das
           ))}
         </ul> : state === "loading" ? <LoadingState compact message={copy.loading} />
           : <p>{state === "error" ? copy.error : copy.emptyHint}</p>}
-        <Link className="text-link" href={PRACTICE_ROUTES.progress}>{copy.viewProgress}<AppIcon name="arrowRight" size={16} /></Link>
+        <Link className="button button-ghost button-pill" href={PRACTICE_ROUTES.progress}>{copy.viewProgress}<AppIcon name="arrowRight" size={16} /></Link>
       </section>
     </aside>
   );
