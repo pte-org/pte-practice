@@ -76,7 +76,9 @@ export function MockTestListView() {
                 <span className={`mock-test-icon${action === "CONTINUE" ? " mock-test-icon-ring" : ""}`}>
                   {action === "CONTINUE" && attempt
                     ? <ProgressRing label={`${attempt.answeredItemCount}/${attempt.totalItemCount}`} variant="progress"
-                        value={attempt.answeredItemCount} max={Math.max(1, attempt.totalItemCount)} size={44} />
+                        value={attempt.answeredItemCount} max={Math.max(1, attempt.totalItemCount)} size={44}>
+                        <AppIcon name="practice" size={18} />
+                      </ProgressRing>
                     : <AppIcon name="practice" size={22} />}
                 </span>
                 <span className="mock-test-copy">
