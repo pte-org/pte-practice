@@ -51,6 +51,7 @@ export interface LocaleDict {
     accessLocked: string;
     accessUnavailable: string;
     accessUnknown: string;
+    serverUnreachable: string;
     availableAction: string;
     catalogError: string;
     sessionStarting: string;

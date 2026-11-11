@@ -51,6 +51,7 @@ export const en: LocaleDict = {
     accessLocked: "Practice locked",
     accessUnavailable: "Practice unavailable",
     accessUnknown: "We could not check practice access. Please try again.",
+    serverUnreachable: "We cannot reach the server. Check your connection and try again.",
     availableAction: "Start practice",
     catalogError: "We could not load the practice catalog. Please try again.",
     sessionStarting: "Preparing your practice session...",

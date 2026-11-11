@@ -51,6 +51,7 @@ export const vi: LocaleDict = {
     accessLocked: "Luyện tập đã khóa",
     accessUnavailable: "Luyện tập không khả dụng",
     accessUnknown: "Chưa kiểm tra được quyền luyện tập. Vui lòng thử lại.",
+    serverUnreachable: "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
     availableAction: "Bắt đầu luyện tập",
     catalogError: "Chưa tải được danh sách bài luyện tập. Vui lòng thử lại.",
     sessionStarting: "Đang chuẩn bị phiên luyện tập của bạn...",
