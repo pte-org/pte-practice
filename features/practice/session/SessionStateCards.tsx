@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AppIcon } from "@/common/components";
+import { AppIcon, ErrorPage } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
@@ -25,17 +25,8 @@ interface SessionErrorCardProps {
 export function SessionErrorCard({ message, hasRetryAction, onRetry, onBackHome }: SessionErrorCardProps) {
   const { t } = useTranslation();
   return (
-    <section className="session-state-card" data-testid="practice-session-error">
-      <AppIcon name="info" size={28} />
-      <h1>{t("common.genericErrorTitle")}</h1>
-      <p>{message ?? t("ui.sessionError")}</p>
-      <div className="session-actions">
-        <button className="button button-outline button-pill" type="button" onClick={onRetry}>
-          {hasRetryAction ? t("ui.sessionRetryAction") : t("common.tryAgain")}
-        </button>
-        <button className="button button-outline button-pill" type="button" onClick={onBackHome}>{t("ui.backHome")}</button>
-      </div>
-    </section>
+    <ErrorPage testId="practice-session-error" description={message ?? t("ui.sessionError")} onRetry={onRetry}
+      retryLabel={hasRetryAction ? t("ui.sessionRetryAction") : undefined} onHome={onBackHome} />
   );
 }
 

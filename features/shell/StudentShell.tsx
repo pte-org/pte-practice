@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { AppIcon, LoadingState, ProductMark } from "@/common/components";
+import { AppIcon, ErrorPage, LoadingState, ProductMark } from "@/common/components";
+import { signInHref } from "@/features/auth/return-path";
 import { SessionSkeleton } from "@/features/practice/session/SessionSkeleton";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
@@ -39,6 +40,12 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
 
   const [searchOpen, setSearchOpen] = useState(false);
+  // Set by the sign-out button: that student goes straight to sign-in instead of seeing the 401 page.
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = () => {
+    setSigningOut(true);
+    signOut();
+  };
   const [deviceCheckKind, setDeviceCheckKind] = useState<DeviceCheckKind | null>(null);
 
 
@@ -59,8 +66,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
     : pathname.startsWith(item.href));
 
   useEffect(() => {
-    if (authStatus === "signed-out") router.replace(PRACTICE_ROUTES.signIn);
-  }, [authStatus, router]);
+    if (authStatus === "signed-out" && signingOut) router.replace(PRACTICE_ROUTES.signIn);
+  }, [authStatus, router, signingOut]);
 
   // The text size the student picked in the reading check applies to every practice page.
   useEffect(() => {
@@ -71,7 +78,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
     ? <SessionSkeleton /> : <LoadingState message={t("common.loadingWorkspace")} />;
 
   if (authStatus === "signed-out") {
-    return <LoadingState message={t("common.loadingWorkspace")} />;
+    return signingOut ? <LoadingState message={t("common.loadingWorkspace")} />
+      : <ErrorPage kind="unauthorized" fullScreen action={{ href: signInHref(pathname), label: t("errorPage.signIn") }} />;
   }
 
   // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
@@ -120,7 +128,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <span>{t("shell.account")}</span>
           </div>
           <StudentSettings />
-          <button className="icon-button" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+          <button className="icon-button" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
         </div>

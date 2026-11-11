@@ -350,6 +350,7 @@ export interface LocaleDict {
     pause: string;
     pauseTitle: string;
     pauseDescription: string;
+    exitWithoutSaving: string;
     pauseConfirm: string;
     cancel: string;
     skip: string;
@@ -614,5 +615,24 @@ export interface LocaleDict {
       unavailable: string;
       generic: string;
     };
+  };
+  errorPage: {
+    notFoundTitle: string;
+    notFoundDescription: string;
+    unauthorizedTitle: string;
+    unauthorizedDescription: string;
+    forbiddenTitle: string;
+    forbiddenDescription: string;
+    serverTitle: string;
+    serverDescription: string;
+    unavailableTitle: string;
+    unavailableDescription: string;
+    networkTitle: string;
+    networkDescription: string;
+    genericTitle: string;
+    genericDescription: string;
+    retry: string;
+    home: string;
+    signIn: string;
   };
 }
