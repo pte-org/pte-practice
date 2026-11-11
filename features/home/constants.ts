@@ -10,7 +10,7 @@ export const DASHBOARD_COPY = {
   en: {
     welcome: "Welcome back, ready for your next step?",
     intro: "A little practice today. More confidence on exam day.",
-    workspace: "Your learning space", next: "Task types in progress",
+    next: "Task types in progress",
     nextHint: "Your latest unfinished session for each task type.",
     resumeLatest: "Most recent", resumeAll: "View all", resumeCollapse: "Show less",
     resumeFilterEmpty: "No task practice in progress for this skill.",
@@ -26,7 +26,7 @@ export const DASHBOARD_COPY = {
   vi: {
     welcome: "Chào bạn, sẵn sàng tiến thêm một bước?",
     intro: "Luyện tập một chút hôm nay. Tự tin hơn trong ngày thi.",
-    workspace: "Không gian học tập của bạn", next: "Dạng bài đang làm",
+    next: "Dạng bài đang làm",
     nextHint: "Tiếp tục phiên luyện tập gần nhất của từng dạng bài.",
     resumeLatest: "Gần đây nhất", resumeAll: "Xem tất cả", resumeCollapse: "Thu gọn",
     resumeFilterEmpty: "Chưa có dạng bài đang làm thuộc kỹ năng này.",
