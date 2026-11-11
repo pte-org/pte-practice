@@ -20,6 +20,8 @@ export const API_PATHS = {
 
 /** Between an achieved trait score and its maximum, e.g. "4 / 6". */
 export const SUB_SCORE_MAX_SEPARATOR = " / ";
+/** A mock test's speaking and writing answers are scored together, once the whole test is submitted. */
+export const MOCK_TEST_KIND = "MOCK_TEST";
 
 /**
  * Labels of the Pearson trait keys a rubric-scored result carries (backend rubric catalog). Keys of older results

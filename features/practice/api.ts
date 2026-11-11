@@ -23,6 +23,7 @@ import {
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 import { refreshOnce } from "./token-refresh";
+import { scoringRequests } from "./scoring-api";
 import type { ChangePasswordBody } from "../auth/change-password-body";
 
 export class PracticeApiError extends Error {
@@ -127,6 +128,7 @@ export function createPracticeApiClient() {
       requireItemResult(await request<unknown>(
         `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/scoring/retry`,
         { method: "POST", headers: { "Idempotency-Key": idempotencyKey } })),
+    ...scoringRequests(request, (code) => new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, code)),
     getReview: async (sessionPublicId: string): Promise<PracticeReview> =>
       normalizeReview(await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`), sessionPublicId),
     requestResponseAudio: (body: {

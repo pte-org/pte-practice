@@ -2,6 +2,7 @@ import { normalizeCatalogSection, type PracticeCatalogSection } from "./catalog-
 import {
   asArray, asNullableNumber, asNullableString, asNumber, asRecord, asString, humanize,
 } from "./contract-helpers";
+import { normalizeAnswerFeedback, type PracticeAnswerFeedback } from "./feedback-contracts";
 import { allowlistedRendererKey } from "./renderer-allowlist";
 
 export type PracticeSessionStatus = "OVERVIEW" | "IN_PROGRESS" | "COMPLETED" | "DISCARDED" | "EXPIRED";
@@ -77,6 +78,8 @@ export interface PracticeItemResult {
   failureCode: string | null;
   retryable: boolean;
   scoredAt: string | null;
+  /** Reasons, tips and word marks of a scored answer; absent when the scorer wrote none. */
+  feedbackDetail?: PracticeAnswerFeedback;
 }
 
 export interface PracticeTaskResponse {
@@ -192,6 +195,7 @@ export function normalizePracticeItemResult(value: unknown): PracticeItemResult 
     || record.state === "FAILED" ? record.state : null;
   if (!itemPublicId || !state) return null;
   const subScoreMax = normalizeSubScores(record.subScoreMax);
+  const feedbackDetail = normalizeAnswerFeedback(record.feedbackDetail);
   return {
     itemPublicId,
     taskCode: asString(record.taskCode, ""),
@@ -205,6 +209,7 @@ export function normalizePracticeItemResult(value: unknown): PracticeItemResult 
     failureCode: asNullableString(record.failureCode),
     retryable: Boolean(record.retryable),
     scoredAt: asNullableString(record.scoredAt),
+    ...(feedbackDetail ? { feedbackDetail } : {}),
   };
 }
 

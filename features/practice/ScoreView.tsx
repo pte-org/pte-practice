@@ -1,11 +1,16 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslation } from "@/common/i18n";
 import { LoadingState } from "@/common/components";
 import type { PracticeApiClient } from "./api";
-import { PEARSON_TRAIT_LABELS, SUB_SCORE_MAX_SEPARATOR } from "./constants";
 import type { PracticeItemResult } from "./contracts";
+import { formatSubScore, subScoreLabel } from "./score-labels";
+import { AnswerFeedback } from "./feedback/AnswerFeedback";
+import { ScoringRequest } from "./feedback/ScoringRequest";
 import { useItemResult } from "./useItemResult";
+
+export { formatSubScore, subScoreLabel };
 
 interface ScoreViewProps {
   api: PracticeApiClient;
@@ -14,12 +19,20 @@ interface ScoreViewProps {
   initial: PracticeItemResult | null;
   /** Compact layout for the review list; the session view uses the full card. */
   compact?: boolean;
+  /** False in a mock test, whose answers are scored together from the report's own button. */
+  canRequestScoring?: boolean;
+  /** Told about every newer result, so a parent that remounts this view can start from it. */
+  onResultChange?: (result: PracticeItemResult) => void;
 }
 
 /** Score of one answered item: waits for scoring, then shows score, breakdown, feedback and transcript. */
-export function ScoreView({ api, sessionId, itemId, initial, compact = false }: ScoreViewProps) {
+export function ScoreView({ api, sessionId, itemId, initial, compact = false, canRequestScoring = true, onResultChange }: ScoreViewProps) {
   const { t } = useTranslation();
-  const { result, watch, retrying, retryError, recheck, retryScoring } = useItemResult(api, sessionId, itemId, initial);
+  const { result, watch, retrying, retryError, recheck, retryScoring, requestScoring } =
+    useItemResult(api, sessionId, itemId, initial);
+  useEffect(() => {
+    if (result && result !== initial) onResultChange?.(result);
+  }, [result, initial, onResultChange]);
   const className = `score-panel${compact ? " score-panel-compact" : ""}`;
 
   if (watch === "timeout" || watch === "error") {
@@ -51,13 +64,22 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
       </div>
     );
   }
-  if (result.state === "NONE" || result.score === null) {
+  if (result.state === "NONE") {
+    return (
+      <div className={className}>
+        <ScoringRequest canRequest={canRequestScoring} requesting={retrying} error={retryError}
+          onRequest={requestScoring} />
+      </div>
+    );
+  }
+  if (result.score === null) {
     return <div className={className}><p>{t("score.notScoredYet")}</p></div>;
   }
 
   const subScores = Object.entries(result.subScores);
   return (
     <div className={className} data-testid="practice-score">
+      {result.transcript ? <div className="score-transcript"><h3>{t("score.transcript")}</h3><p>{result.transcript}</p></div> : null}
       <p className="score-value"><strong>{result.score}</strong> <span>{t("score.outOf")}</span></p>
       {subScores.length > 0 ? (
         <div className="score-breakdown">
@@ -68,25 +90,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false }: 
         </div>
       ) : null}
       {result.feedback ? <div className="score-feedback"><h3>{t("score.feedback")}</h3><p>{result.feedback}</p></div> : null}
-      {result.transcript ? <div className="score-transcript"><h3>{t("score.transcript")}</h3><p>{result.transcript}</p></div> : null}
+      <AnswerFeedback result={result} />
     </div>
   );
-}
-
-/** "achieved / max" for a Pearson trait score whose maximum is known; the raw number otherwise (older results). */
-export function formatSubScore(value: number, max: number | undefined): string {
-  return max === undefined ? String(value) : `${value}${SUB_SCORE_MAX_SEPARATOR}${max}`;
-}
-
-/**
- * A Pearson trait key gets its rubric name ("DEVELOPMENT_STRUCTURE_COHERENCE" -> "Development, structure and
- * coherence"); any other key, including those of older results, is spelled out: "oralFluency" -> "Oral fluency".
- */
-export function subScoreLabel(key: string): string {
-  const pearsonLabel = PEARSON_TRAIT_LABELS[key];
-  if (pearsonLabel !== undefined) {
-    return pearsonLabel;
-  }
-  const words = key.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim().toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
 }

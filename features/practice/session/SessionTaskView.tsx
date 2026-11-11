@@ -14,6 +14,7 @@ import { getCanonicalTaskInstruction } from "../task-instructions";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
 import { FieldWarning } from "./FieldWarning";
+import { MOCK_TEST_KIND } from "../constants";
 import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
@@ -176,6 +177,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
             itemId={task.publicId}
             initialResult={result}
             timeSpentSeconds={timeSpentSeconds}
+            canRequestScoring={session.kind !== MOCK_TEST_KIND}
             onResultSettled={props.onResultSettled}
           />
         ) : null}
