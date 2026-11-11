@@ -14,11 +14,19 @@ interface ConfirmDialogProps {
   description: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
-  tone?: "primary" | "danger" | "warning";
+  /** "accent" fills the confirm button with the common primary colour; the others keep it outlined. */
+  tone?: "primary" | "accent" | "danger" | "warning";
   isConfirming?: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }
+
+const CONFIRM_CLASS = {
+  primary: "button-outline",
+  accent: "button-primary",
+  danger: "button-danger",
+  warning: "button-outline",
+} as const;
 
 export const ConfirmDialog = ({
   open,
@@ -48,7 +56,7 @@ export const ConfirmDialog = ({
             {cancelLabel}
           </button>
           <button
-            className={`button button-pill ${tone === "danger" ? "button-danger" : "button-outline"}`}
+            className={`button button-pill ${CONFIRM_CLASS[tone]}`}
             type="button"
             disabled={isConfirming}
             aria-busy={isConfirming}

@@ -548,7 +548,7 @@ export function PracticeSessionView() {
         onSubmit={handleNext}
         onPause={() => setConfirm("pause")}
       />
-      <ConfirmDialog open={confirm === "pause"} title={t("session.pauseTitle")} description={t("session.pauseDescription")}
+      <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
         confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.cancel")}
         onClose={closeConfirm} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
       {confirm !== null && typeof confirm === "object" ? (
