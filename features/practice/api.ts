@@ -1,4 +1,4 @@
-import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL } from "./constants";
+import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL, NETWORK_ERROR_CODE } from "./constants";
 import type {
   PracticeCatalog,
   PracticeEntitlement,
@@ -203,7 +203,7 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new PracticeApiError(API_ERROR_TEXT.network, 0, "NETWORK_ERROR");
+    throw new PracticeApiError(API_ERROR_TEXT.network, 0, NETWORK_ERROR_CODE);
   }
 
   if (response.status === 401 && allowRefresh && session?.refreshToken) {
@@ -244,7 +244,7 @@ async function refreshSession(refreshToken: string): Promise<boolean> {
       body: JSON.stringify({ refreshToken }),
     });
   } catch {
-    throw new PracticeApiError(API_ERROR_TEXT.network, 0, "NETWORK_ERROR");
+    throw new PracticeApiError(API_ERROR_TEXT.network, 0, NETWORK_ERROR_CODE);
   }
   // Only an explicit authentication refusal invalidates credentials. Outages remain retryable.
   if (response.status === 401 || response.status === 403) return false;
