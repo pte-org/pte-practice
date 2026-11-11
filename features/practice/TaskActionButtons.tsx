@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactElement, Ref } from "react";
 import { AppIcon, Button } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { PRACTICE_ROUTES } from "./constants";
 import type { PracticeCatalogTask } from "./contracts";
+import { reviewHref } from "./review-return";
 
 export interface TaskActionButtonsProps {
   task: PracticeCatalogTask;
@@ -18,6 +20,7 @@ export interface TaskActionButtonsProps {
 }
 
 export const TaskActionButtons = ({ task, activeSession, completedSession, canStart, onStart, className, ref }: TaskActionButtonsProps): ReactElement => {
+  const pathname = usePathname();
   const { t } = useTranslation();
   const label = t(activeSession ? "progress.resume" : "progress.practise");
   return (
@@ -35,7 +38,7 @@ export const TaskActionButtons = ({ task, activeSession, completedSession, canSt
         disabled={!canStart} onClick={() => onStart(task)} leftIcon={<AppIcon name="retake" size={16} />}>
         {t("progress.startNewSetAction")}
       </Button> : null}
-      {!activeSession && completedSession && canStart ? <Link className="text-link" href={`${PRACTICE_ROUTES.practiceReview}?sessionId=${encodeURIComponent(completedSession.sessionPublicId)}`}>{t("progress.review")}</Link> : null}
+      {!activeSession && completedSession && canStart ? <Link className="text-link" href={reviewHref(completedSession.sessionPublicId, pathname)}>{t("progress.review")}</Link> : null}
     </div>
   );
 };

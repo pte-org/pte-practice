@@ -22,7 +22,7 @@ import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import { PracticeBackground } from "@/features/practice/appearance/PracticeBackground";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
-import { isWorkspaceRoute } from "@/features/workspace/constants";
+import { isStudioRoute, isWorkspaceRoute } from "@/features/workspace/constants";
 import { PipCompanion } from "@/features/mascot/PipCompanion";
 import { ChatLayout } from "@/features/chat/ChatLayout";
 import "./shell-chrome.css";
@@ -35,7 +35,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const appearance = usePracticeAppearance();
   const workspaceRoute = isWorkspaceRoute(pathname);
-  const workspaceBackground = workspaceRoute && !appearance.focus ? appearance.background : "default";
+  const studioRoute = isStudioRoute(pathname);
+  const workspaceBackground = studioRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
 
@@ -89,7 +90,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 
   return (
     <ChatLayout taskCode={null}>
-    <div className={`student-shell${workspaceRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
+    <div className={`student-shell${studioRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
       data-background-blur={appearance.blur} data-glass-opacity={appearance.opacity}>
       {workspaceBackground !== "default" ? <PracticeBackground value={appearance} /> : null}
       <aside className="side-rail" aria-label="Student navigation">
