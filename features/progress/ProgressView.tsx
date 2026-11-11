@@ -1,17 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactElement } from "react";
 import { AppIcon, Skeleton, TabPanel, Tabs } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
-import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import { iconForSection } from "@/features/practice/icon-mapping";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
-import { formatScore, scoreTone, sessionDisplayName, skillKey, taskDisplayName } from "@/features/practice/presentation";
+import { formatScore, skillKey, taskDisplayName } from "@/features/practice/presentation";
 import { SkillTaskRow } from "@/features/practice/SkillTaskRow";
 import { latestActiveTaskSession } from "@/features/practice/task-session";
+import { HistorySection } from "./HistorySection";
 import { progressMetrics } from "./progress-summary";
 import { useWorkspaceProgress } from "@/features/workspace/WorkspaceProgressProvider";
 
@@ -90,41 +89,8 @@ export const ProgressView = (): ReactElement => {
         </div>
       </section>
 
-      <section className="home-section" aria-labelledby="history-title">
-        <h2 id="history-title" className="section-title">{t("progress.history")}</h2>
-        {loadState === "ready" && progress.entries.length === 0 ? <p className="catalog-note">{t("progress.empty")}</p> : null}
-        {progress.entries.length ? (
-          <ul className="card card-flush history-list">
-            {progress.entries.map((entry) => {
-              const inProgress = entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS";
-              const targetUrl = inProgress
-                ? `${PRACTICE_ROUTES.practiceSession}?sessionId=${entry.sessionPublicId}`
-                : `${PRACTICE_ROUTES.practiceReview}?sessionId=${entry.sessionPublicId}`;
-              return (
-                <li className="history-row" key={entry.sessionPublicId}>
-                  <Link className="history-copy history-row-link" href={targetUrl}>
-                    <strong>{sessionDisplayName(entry, taskName, t)}</strong>
-                    <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
-                  </Link>
-                  {entry.score !== null && Number.isFinite(entry.score) ? (
-                    <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
-                  ) : null}
-                  <Link className="button button-outline button-pill" href={targetUrl}>
-                    {inProgress ? t("progress.resume") : t("progress.review")}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        ) : null}
-      </section>
+      <HistorySection entries={progress.entries} ready={loadState === "ready"} taskName={taskName} />
       {dialog}
     </div>
   );
 };
-
-function formatDate(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
-}
