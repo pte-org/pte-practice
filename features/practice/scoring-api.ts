@@ -28,6 +28,9 @@ export function scoringRequests(request: PracticeRequest, invalid: (code: string
     /** The criteria (traits and level descriptions) a task type is scored against; empty for objective tasks. */
     getRubric: async (taskType: string): Promise<PracticeRubric> => normalizeRubric(
       await request<unknown>(`${API_PATHS.catalog}/rubrics/${encodeURIComponent(taskType)}`)),
+    /** "Thoát không lưu": drops the session when nothing was answered; true when it was dropped. */
+    discardSession: async (sessionPublicId: string): Promise<boolean> =>
+      (await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/discard`, { method: "POST" })) === true,
     requestMockTestScoring: async (sessionPublicId: string): Promise<MockTestScoringStart> => {
       const response = await request<{ queuedCount?: unknown; scoringCount?: unknown }>(
         `${API_PATHS.practiceSessions}/${sessionPublicId}/scoring`, { method: "POST" });
