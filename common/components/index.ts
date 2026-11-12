@@ -1,5 +1,6 @@
 export { AppIcon, ProductMark } from "./AppIcon";
 export type { IconName } from "./AppIcon";
+export { ArrowAction } from "./ArrowAction";
 export { Checkbox } from "./Checkbox";
 export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonAppearance, ButtonSize } from "./Button";
@@ -10,8 +11,8 @@ export { Tabs, TabPanel } from "./Tabs";
 export type { TabItem, TabsProps, TabPanelProps } from "./Tabs";
 export { CountdownTimer } from "./CountdownTimer";
 export type { CountdownTimerProps } from "./CountdownTimer";
-export { ErrorIllustration } from "./ErrorIllustration";
 export { ErrorBanner } from "./ErrorBanner";
+export { ErrorIllustration } from "./ErrorIllustration";
 export { ErrorPage, errorPageKindOf } from "./ErrorPage";
 export type { ErrorPageKind } from "./ErrorPage";
 export { LoadingState } from "./LoadingState";

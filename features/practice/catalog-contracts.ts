@@ -23,6 +23,8 @@ export interface PracticeCatalogTask {
   timedUnavailableReason: string | null;
   /** Distinct questions of this task type the student has answered; 0 when the server did not say. */
   answeredQuestionCount: number;
+  /** Published questions of this task type the student can practise; 0 when the server did not say. */
+  availableQuestionCount: number;
   /** Mean score (0-100) of the student's scored answers; null while none is scored. */
   averageScore: number | null;
 }
@@ -111,6 +113,7 @@ function normalizeCatalogTask(value: unknown): PracticeCatalogTask | null {
     timedAvailable: record.timedAvailable === true,
     timedUnavailableReason: asNullableString(record.timedUnavailableReason),
     answeredQuestionCount: Math.max(0, asNumber(record.answeredQuestionCount, 0)),
+    availableQuestionCount: Math.max(0, asNumber(record.availableQuestionCount, 0)),
     averageScore: asNullableNumber(record.averageScore),
   };
 }

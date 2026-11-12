@@ -300,6 +300,7 @@ export interface LocaleDict {
     statusAnswered: string;
     statusSkipped: string;
     statusPending: string;
+    answeredOfTotal: string;
     answers: string;
     viewAll: string;
     continue: string;
@@ -457,6 +458,8 @@ export interface LocaleDict {
     historyFilterAll: string;
     historyFilterInProgress: string;
     historyFilterCompleted: string;
+    practiseRemaining: string;
+    practiseNewSet: string;
     historyFilterAwaitingScore: string;
     historyFilterEmpty: string;
     historyShowMore: string;

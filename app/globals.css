@@ -1821,33 +1821,6 @@ div.skill-task-row { cursor: default; }
 .skill-task-row:hover:not(:disabled) { background: var(--surface-raised); }
 .skill-task-row:disabled { cursor: default; opacity: 0.7; }
 .skill-task-copy strong { font-size: 0.95rem; font-weight: 600; }
-.task-chevron-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-left: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
-  flex-shrink: 0;
-}
-.task-chevron-btn:hover:not(:disabled),
-.skill-task-row:hover .task-chevron-btn:not(:disabled) {
-  color: var(--text);
-  background: var(--surface-soft);
-  transform: translateX(3px);
-}
-.task-chevron-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 /* Practice Session Choice Modal (Direct-action cards) */
 .session-choice-dialog {
   max-width: 440px;
