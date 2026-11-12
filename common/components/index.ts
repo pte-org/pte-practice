@@ -11,6 +11,7 @@ export type { TabItem, TabsProps, TabPanelProps } from "./Tabs";
 export { CountdownTimer } from "./CountdownTimer";
 export type { CountdownTimerProps } from "./CountdownTimer";
 export { ErrorIllustration } from "./ErrorIllustration";
+export { ErrorBanner } from "./ErrorBanner";
 export { ErrorPage, errorPageKindOf } from "./ErrorPage";
 export type { ErrorPageKind } from "./ErrorPage";
 export { LoadingState } from "./LoadingState";

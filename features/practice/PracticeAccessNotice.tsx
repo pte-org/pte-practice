@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactElement } from "react";
+import { ErrorBanner } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { usePractice } from "./PracticeProvider";
 import { NETWORK_ERROR_CODE } from "./constants";
@@ -11,15 +12,13 @@ export const PracticeAccessNotice = (): ReactElement | null => {
   const failed = accessState === "error" || catalogStatus === "error";
   const busy = entitlementStatus === "loading" || entitlementStatus === "refreshing" || catalogStatus === "loading";
   if (!failed && accessState !== "loading") return null;
+  if (!failed) {
+    return <div className="hint-strip" role="status" aria-live="polite"><p>{t("ui.accessChecking")}</p></div>;
+  }
   return (
-    <div className="hint-strip" role="status" aria-live="polite">
-      <p>{t(!failed ? "ui.accessChecking"
-        // The session is kept on an outage, so name the outage instead of suggesting an access problem.
-        : error?.code === NETWORK_ERROR_CODE ? "ui.serverUnreachable"
-        : accessState === "error" ? "ui.accessUnknown" : "ui.catalogError")}</p>
-      {failed ? <button className="button button-outline" type="button" disabled={busy} onClick={() => void refresh()}>
-        {t("common.tryAgain")}
-      </button> : null}
-    </div>
+    <ErrorBanner retryLabel={t("common.tryAgain")} retryDisabled={busy} onRetry={() => void refresh()}
+      // The session is kept on an outage, so name the outage instead of suggesting an access problem.
+      message={t(error?.code === NETWORK_ERROR_CODE ? "ui.serverUnreachable"
+        : accessState === "error" ? "ui.accessUnknown" : "ui.catalogError")} />
   );
 };

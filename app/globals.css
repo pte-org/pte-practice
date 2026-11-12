@@ -712,8 +712,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .metric-cell strong { font-size: 0.85rem; }
 .metric-empty { color: var(--muted); font-weight: 500; }
 .metric-value { color: var(--text); font-weight: 600; }
-.progress-load-state, .progress-error { margin: 0 24px 16px; padding: 10px 12px; border-radius: 8px; color: var(--muted-strong); font-size: 0.78rem; }
-.progress-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(224, 100, 106, 0.12); color: #f39a9f; }
+.progress-load-state { margin: 0 24px 16px; padding: 10px 12px; border-radius: 8px; color: var(--muted-strong); font-size: 0.78rem; }
 .progress-history { display: grid; gap: 12px; }
 .progress-history-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .progress-history-heading h2 { font-size: 1.05rem; }
@@ -2846,7 +2845,6 @@ html[data-theme="dark"] .media-player {
 .metric-card { display: grid; gap: 6px; padding: 18px; }
 .metric-card span { color: var(--muted); font-size: 0.8rem; }
 .metric-card strong { font-size: 1.5rem; font-weight: 600; }
-.progress-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .tabs-list { display: flex; gap: 4px; overflow-x: auto; padding: 0 12px; border-bottom: 1px solid var(--line); }
 .tabs-trigger { display: inline-flex; align-items: center; gap: 8px; padding: 14px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .tabs-trigger-selected { border-bottom-color: var(--accent); color: var(--text); }

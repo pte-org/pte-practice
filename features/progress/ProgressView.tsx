@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactElement } from "react";
-import { AppIcon, Skeleton, TabPanel, Tabs } from "@/common/components";
+import { AppIcon, ErrorBanner, Skeleton, TabPanel, Tabs } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { orderCatalogSections } from "@/features/practice/catalog-order";
 import { iconForSection } from "@/features/practice/icon-mapping";
@@ -39,10 +39,7 @@ export const ProgressView = (): ReactElement => {
     <div className="page-column" data-testid="progress-page">
       <h2 className="section-title">{t("progress.title")}</h2>
       {loadState === "error" ? (
-        <div className="card progress-error" role="alert">
-          <span>{t("progress.loadError")}</span>
-          <button className="text-button" type="button" onClick={() => void loadProgress()}>{t("common.tryAgain")}</button>
-        </div>
+        <ErrorBanner message={t("progress.loadError")} retryLabel={t("common.tryAgain")} onRetry={() => void loadProgress()} />
       ) : null}
       <div className="metric-grid" aria-busy={loadState === "loading"}>
         {cells.map((cell) => (
