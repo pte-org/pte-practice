@@ -91,8 +91,6 @@ html[data-theme="light"] {
 }
 .button.button-ghost:not(:disabled) { background: transparent; color: var(--action); }
 .button.button-ghost:hover:not(:disabled) { background: var(--action-tint); }
-.skill-task-actions .task-chevron-btn:not(:disabled) { color: var(--action); }
-.skill-task-actions .task-chevron-btn:hover:not(:disabled) { background: var(--action-tint); }
 .pte-button:focus-visible, .button:focus-visible, .student-shell .nav-link:focus-visible { outline: 2px solid color-mix(in srgb, var(--button-ring) 35%, transparent); outline-offset: 2px; }
 .pte-button-spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; }
 @media (prefers-reduced-motion: no-preference) { .pte-button-spinner { animation: pte-button-spin 700ms linear infinite; } @keyframes pte-button-spin { to { transform: rotate(360deg); } } }

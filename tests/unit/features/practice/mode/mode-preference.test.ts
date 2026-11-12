@@ -9,19 +9,19 @@ function fakeStorage(initial: Record<string, string> = {}): PreferenceStorage & 
 }
 
 describe("parseModePreference", () => {
-  it("defaults to untimed with ten questions when nothing is stored", () => {
-    expect(parseModePreference(null)).toEqual({ timingMode: "UNTIMED", questionCount: 10 });
+  it("defaults to untimed with every question when nothing is stored", () => {
+    expect(parseModePreference(null)).toEqual({ timingMode: "UNTIMED", questionCount: 0 });
   });
 
-  it("keeps a valid stored choice", () => {
-    expect(parseModePreference('{"timingMode":"TIMED","questionCount":5}')).toEqual({ timingMode: "TIMED", questionCount: 5 });
-    expect(parseModePreference('{"timingMode":"UNTIMED","questionCount":50}')).toEqual({ timingMode: "UNTIMED", questionCount: 50 });
+  it("keeps the stored timing and always uses every question", () => {
+    expect(parseModePreference('{"timingMode":"TIMED","questionCount":5}')).toEqual({ timingMode: "TIMED", questionCount: 0 });
+    expect(parseModePreference('{"timingMode":"UNTIMED","questionCount":50}')).toEqual({ timingMode: "UNTIMED", questionCount: 0 });
   });
 
   it("ignores a corrupt or unknown value field by field", () => {
     expect(parseModePreference("not json")).toEqual(DEFAULT_MODE_PREFERENCE);
     expect(parseModePreference('{"timingMode":"FAST","questionCount":7}')).toEqual(DEFAULT_MODE_PREFERENCE);
-    expect(parseModePreference('{"timingMode":"TIMED","questionCount":"10"}')).toEqual({ timingMode: "TIMED", questionCount: 10 });
+    expect(parseModePreference('{"timingMode":"TIMED","questionCount":"10"}')).toEqual({ timingMode: "TIMED", questionCount: 0 });
     expect(parseModePreference("42")).toEqual(DEFAULT_MODE_PREFERENCE);
   });
 });
@@ -30,10 +30,10 @@ describe("read and write", () => {
   it("remembers the choice per task type", () => {
     const storage = fakeStorage();
     writeModePreference("READ_ALOUD", { timingMode: "TIMED", questionCount: 5 }, storage);
-    writeModePreference("WRITE_ESSAY", { timingMode: "UNTIMED", questionCount: 50 }, storage);
+    writeModePreference("WRITE_ESSAY", { timingMode: "UNTIMED", questionCount: 0 }, storage);
 
-    expect(readModePreference("READ_ALOUD", storage)).toEqual({ timingMode: "TIMED", questionCount: 5 });
-    expect(readModePreference("WRITE_ESSAY", storage)).toEqual({ timingMode: "UNTIMED", questionCount: 50 });
+    expect(readModePreference("READ_ALOUD", storage)).toEqual({ timingMode: "TIMED", questionCount: 0 });
+    expect(readModePreference("WRITE_ESSAY", storage)).toEqual({ timingMode: "UNTIMED", questionCount: 0 });
     expect(readModePreference("REPEAT_SENTENCE", storage)).toEqual(DEFAULT_MODE_PREFERENCE);
   });
 

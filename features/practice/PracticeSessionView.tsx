@@ -11,7 +11,7 @@ import { countPracticeWords } from "./media/text-utils";
 import { sessionDisplayName } from "./presentation";
 import { useLeaveGuard } from "./session/useLeaveGuard";
 import { createPracticeApiClient, PracticeApiError } from "./api";
-import { PRACTICE_ROUTES } from "./constants";
+import { MOCK_TEST_KIND, PRACTICE_ROUTES } from "./constants";
 import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "./contracts";
 import type { PracticeTaskFixture } from "./fixtures";
 import { uploadPracticeRecording } from "./media/api";
@@ -23,6 +23,7 @@ import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
+import { FinishSessionButton } from "./session/FinishSessionButton";
 import { SessionTaskView, type MissingField } from "./session/SessionTaskView";
 import { useHeartbeat } from "./session/useHeartbeat";
 import { useSessionDraft } from "./session/useSessionDraft";
@@ -205,6 +206,16 @@ export function PracticeSessionView() {
       return;
     }
     router.push(PRACTICE_ROUTES.home);
+  };
+  // Leaves without saving the answer in progress: unsaved recordings are dropped, earlier saved answers stay. A
+  // session with nothing saved is dropped on the server too, so Home does not list it as in progress.
+  const exitWithoutSaving = async () => {
+    const session = sessionRef.current ?? state.session;
+    if (session) for (const entry of recordingDrafts(session.publicId)) forgetDraft(session.publicId, entry.itemId);
+    closeConfirm();
+    // A failed discard only leaves the empty session listed; leaving must still work.
+    if (session) await api.discardSession(session.publicId).catch(() => false);
+    router.replace(PRACTICE_ROUTES.home);
   };
   const unavailable = () => Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
 
@@ -546,11 +557,18 @@ export function PracticeSessionView() {
         onActivityChange={setRecorderBusy}
         onRefreshPrompt={refreshPrompt}
         onSubmit={handleNext}
-        onPause={() => setConfirm("pause")}
+        onPause={() => {
+          // Nothing done yet means nothing to save: leave at once (the server drops the empty session), no dialog.
+          const untouched = session.answeredItemCount === 0 && !hasRecordingDrafts
+            && !hasAnswer(effectiveDraft(currentTask, draftTaskId, draft));
+          if (untouched) void exitWithoutSaving(); else setConfirm("pause");
+        }}
+        finishAction={session.kind === MOCK_TEST_KIND ? undefined : <FinishSessionButton api={api} sessionId={session.publicId}
+          answeredCount={session.answeredItemCount} totalCount={session.totalItemCount} disabled={state.phase === "submitting" || recorderBusy || !online} />}
       />
-      <ConfirmDialog open={confirm === "pause"} title={t("session.pauseTitle")} description={t("session.pauseDescription")}
-        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.cancel")}
-        onClose={closeConfirm} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
+      <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
+        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.exitWithoutSaving")} closeLabel={t("session.cancel")}
+        onClose={closeConfirm} onCancel={() => void exitWithoutSaving()} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
       {confirm !== null && typeof confirm === "object" ? (
         <ConfirmDialog open tone="warning" title={t("session.wordsTitle").replace("{n}", String(confirm.words))}
           description={t("session.wordsDescription").replace("{min}", String(confirm.min ?? 0))

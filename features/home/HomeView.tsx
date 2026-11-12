@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactElement } from "react";
+import { ErrorBanner } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
 import { usePractice } from "@/features/practice/PracticeProvider";
@@ -19,7 +20,7 @@ export const HomeView = (): ReactElement => {
       <DashboardTaskTypes sections={catalog.sections} unlocked={isPracticeUnlocked}
         accessState={accessState} contentState={catalogStatus === "error" ? "error" : "loading"}
         ready={dataReady} entries={progress.entries} onStart={openFor} />
-      {catalogStatus === "error" ? <p role="alert">{t("home.accessActiveContentNotReady")}</p> : null}
+      {catalogStatus === "error" ? <ErrorBanner message={t("home.accessActiveContentNotReady")} /> : null}
       {!isPracticeUnlocked ? <p className="quiet-note">{t("home.explorePracticeAreas")}</p> : null}
       {modeDialog}
     </div>

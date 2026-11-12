@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
@@ -14,11 +14,13 @@ import { getCanonicalTaskInstruction } from "../task-instructions";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
 import { FieldWarning } from "./FieldWarning";
+import { MOCK_TEST_KIND } from "../constants";
 import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
 import { PracticeFrame } from "./PracticeFrame";
+import { AnswerHintCard } from "./AnswerHintCard";
 import { PracticeSupport } from "./PracticeSupport";
 import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "./questionPresentation";
 
@@ -49,6 +51,7 @@ interface SessionTaskViewProps {
   onSubmit: () => void;
   onSkip?: () => void;
   onPause: () => void;
+  finishAction?: ReactNode;
   /** Current question has been submitted and is displaying results inline. */
   isSubmitted?: boolean;
   result?: PracticeItemResult | null;
@@ -130,11 +133,13 @@ export function SessionTaskView(props: SessionTaskViewProps) {
 
   return (
     <PracticeFrame
-      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode} />}
+      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode}
+        hints={<AnswerHintCard key={task.publicId} content={task.content} />} />}
       header={<SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
         parts={sessionParts(session)} questionNumber={questionNum} questionCount={session.totalItemCount}
         pauseDisabled={locked || recorderBusy}
-        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />}
+        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause}
+        finishAction={props.finishAction} />}
       footer={<SessionFooter
         busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={locked || recorderBusy || prevDisabled}
         showSkip={props.showSkip} skipDisabled={locked || recorderBusy} onSkip={props.onSkip}
@@ -174,6 +179,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
             itemId={task.publicId}
             initialResult={result}
             timeSpentSeconds={timeSpentSeconds}
+            canRequestScoring={session.kind !== MOCK_TEST_KIND}
             onResultSettled={props.onResultSettled}
           />
         ) : null}

@@ -1,7 +1,12 @@
 "use client";
 
-import { ErrorState } from "@/common/components";
+import { ErrorPage, errorPageKindOf } from "@/common/components";
 
-export default function StudentError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  return <ErrorState reset={reset} />;
+interface StudentErrorProps {
+  error: Error & { digest?: string };
+  unstable_retry: () => void;
+}
+
+export default function StudentError({ error, unstable_retry }: StudentErrorProps) {
+  return <ErrorPage kind={errorPageKindOf(error)} onRetry={unstable_retry} />;
 }

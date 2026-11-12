@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { AppIcon, LoadingState, ProductMark } from "@/common/components";
+import { AppIcon, ErrorPage, LoadingState, ProductMark } from "@/common/components";
+import { signInHref } from "@/features/auth/return-path";
 import { SessionSkeleton } from "@/features/practice/session/SessionSkeleton";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
 import { usePractice } from "@/features/practice/PracticeProvider";
@@ -21,7 +22,7 @@ import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import { PracticeBackground } from "@/features/practice/appearance/PracticeBackground";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
-import { isWorkspaceRoute } from "@/features/workspace/constants";
+import { isStudioRoute, isWorkspaceRoute } from "@/features/workspace/constants";
 import { PipCompanion } from "@/features/mascot/PipCompanion";
 import { ChatLayout } from "@/features/chat/ChatLayout";
 import "./shell-chrome.css";
@@ -34,11 +35,18 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const appearance = usePracticeAppearance();
   const workspaceRoute = isWorkspaceRoute(pathname);
-  const workspaceBackground = workspaceRoute && !appearance.focus ? appearance.background : "default";
+  const studioRoute = isStudioRoute(pathname);
+  const workspaceBackground = studioRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
 
   const [searchOpen, setSearchOpen] = useState(false);
+  // Set by the sign-out button: that student goes straight to sign-in instead of seeing the 401 page.
+  const [signingOut, setSigningOut] = useState(false);
+  const handleSignOut = () => {
+    setSigningOut(true);
+    signOut();
+  };
   const [deviceCheckKind, setDeviceCheckKind] = useState<DeviceCheckKind | null>(null);
 
 
@@ -59,8 +67,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
     : pathname.startsWith(item.href));
 
   useEffect(() => {
-    if (authStatus === "signed-out") router.replace(PRACTICE_ROUTES.signIn);
-  }, [authStatus, router]);
+    if (authStatus === "signed-out" && signingOut) router.replace(PRACTICE_ROUTES.signIn);
+  }, [authStatus, router, signingOut]);
 
   // The text size the student picked in the reading check applies to every practice page.
   useEffect(() => {
@@ -71,7 +79,8 @@ export function StudentShell({ children }: { children: ReactNode }) {
     ? <SessionSkeleton /> : <LoadingState message={t("common.loadingWorkspace")} />;
 
   if (authStatus === "signed-out") {
-    return <LoadingState message={t("common.loadingWorkspace")} />;
+    return signingOut ? <LoadingState message={t("common.loadingWorkspace")} />
+      : <ErrorPage kind="unauthorized" fullScreen action={{ href: signInHref(pathname), label: t("errorPage.signIn") }} />;
   }
 
   // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
@@ -81,7 +90,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 
   return (
     <ChatLayout taskCode={null}>
-    <div className={`student-shell${workspaceRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
+    <div className={`student-shell${studioRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
       data-background-blur={appearance.blur} data-glass-opacity={appearance.opacity}>
       {workspaceBackground !== "default" ? <PracticeBackground value={appearance} /> : null}
       <aside className="side-rail" aria-label="Student navigation">
@@ -120,7 +129,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <span>{t("shell.account")}</span>
           </div>
           <StudentSettings />
-          <button className="icon-button" type="button" onClick={signOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+          <button className="icon-button" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
         </div>

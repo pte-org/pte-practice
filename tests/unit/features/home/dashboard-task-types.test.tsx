@@ -19,7 +19,7 @@ describe("home task-type practice", () => {
     const html = renderToStaticMarkup(<LocaleProvider><SkillTaskList sections={sections}
       sectionCode="SPEAKING" isPracticeUnlocked onStartIntent={vi.fn()} /></LocaleProvider>);
     expect(html.match(/class="card card-flush skill-group"/g)).toHaveLength(1);
-    expect(html.match(/class="task-chevron-btn"/g)).toHaveLength(7);
+    expect(html.match(/arrow-action task-primary-action"/g)).toHaveLength(7);
     expect(html).toContain("Read Aloud");
     expect(html).not.toContain("Write Essay");
   });
@@ -27,7 +27,7 @@ describe("home task-type practice", () => {
     const html = render(true);
     expect(html).toContain("Read Aloud");
     expect(html).toContain("Write Essay");
-    expect(html.match(/class="task-chevron-btn"/g)).toHaveLength(22);
+    expect(html.match(/arrow-action task-primary-action"/g)).toHaveLength(22);
     expect(html.match(/role="tab"/g)).toHaveLength(5);
     expect(html).toContain('aria-labelledby="dashboard-tasks-tab-ALL"');
     expect(html.match(/class="skill-group-head"/g)).toHaveLength(4);
@@ -42,7 +42,7 @@ describe("home task-type practice", () => {
 
   it.each([[false, true], [true, false]])("disables every task start when unlocked=%s and ready=%s", (unlocked, ready) => {
     const html = render(unlocked, ready);
-    expect(html.match(/class="task-chevron-btn"[^>]*disabled=""/g)).toHaveLength(22);
+    expect(html.match(/arrow-action task-primary-action"[^>]*disabled=""/g)).toHaveLength(22);
   });
 
   it("does not label catalog reloading as a revoked practice grant", () => {

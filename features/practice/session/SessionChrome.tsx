@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { AppIcon, SegmentedProgress } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { SessionParts } from "./session-chrome";
@@ -15,6 +16,8 @@ interface SessionHeaderProps {
   pauseDisabled: boolean;
   pauseLabel: string;
   onPause: () => void;
+  /** "Nộp bài", next to pause; absent for a mock test. */
+  finishAction?: ReactNode;
 }
 
 /** Top of the session page, as in the Pearson practice session: title, part and question, "Pause session". */
@@ -35,6 +38,7 @@ export function SessionHeader(props: SessionHeaderProps) {
         <button className="button button-outline button-pill session-pause-btn" type="button" disabled={props.pauseDisabled} onClick={props.onPause}>
           {props.pauseLabel}
         </button>
+        {props.finishAction}
       </div>
       <SegmentedProgress segments={parts.segments} label={t("ui.sessionProgress")} />
     </header>

@@ -712,8 +712,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .metric-cell strong { font-size: 0.85rem; }
 .metric-empty { color: var(--muted); font-weight: 500; }
 .metric-value { color: var(--text); font-weight: 600; }
-.progress-load-state, .progress-error { margin: 0 24px 16px; padding: 10px 12px; border-radius: 8px; color: var(--muted-strong); font-size: 0.78rem; }
-.progress-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(224, 100, 106, 0.12); color: #f39a9f; }
+.progress-load-state { margin: 0 24px 16px; padding: 10px 12px; border-radius: 8px; color: var(--muted-strong); font-size: 0.78rem; }
 .progress-history { display: grid; gap: 12px; }
 .progress-history-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .progress-history-heading h2 { font-size: 1.05rem; }
@@ -789,7 +788,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .recording-indicator-uploading { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
 .recording-indicator-recorded { background: var(--green); }
 .task-recording-duration { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
-.task-recording-message { padding: 10px 12px; border: 1px solid rgb(228 94 104 / 28%); border-radius: 9px; background: var(--red-soft); color: #ffc1c6; font-size: 0.8rem; }
+.task-recording-message { padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--red) 28%, transparent); border-radius: 9px; background: var(--red-soft); color: var(--red); font-size: 0.82rem; font-weight: 600; }
 .task-recording-actions { display: flex; align-items: center; gap: 12px; }
 .task-recording-ready { color: var(--green); font-size: 0.78rem; }
 .task-unsupported { display: grid; gap: 8px; padding: 22px; border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 11px; background: var(--surface-soft); color: var(--muted-strong); }
@@ -814,7 +813,9 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .session-state-card h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); }
 .session-state-card > p { max-width: 480px; color: var(--muted); }
 .session-state-card > svg { color: var(--accent); }
-.practice-review { max-width: 1100px; margin-inline: auto; }
+.practice-review { width: 100%; max-width: none; margin: 0; padding: 20px; border: 0.5px solid var(--auth-shell-border); border-radius: 12px; background: var(--auth-surface-card); }
+.practice-review .page-heading h1 { font-size: 1.5rem; }
+.practice-review .page-heading p:not(.eyebrow) { font-size: 0.9rem; }
 .review-list { display: grid; gap: 14px; }
 .review-card { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
 .review-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -870,9 +871,11 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
   }
-  .study-skill-list {
+  /* .card.study-skill-list: the list also carries .card, whose later rule would repaint the frame behind the grid. */
+  .card.study-skill-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+    border: 0;
     background: transparent;
     overflow: visible;
   }
@@ -1818,33 +1821,6 @@ div.skill-task-row { cursor: default; }
 .skill-task-row:hover:not(:disabled) { background: var(--surface-raised); }
 .skill-task-row:disabled { cursor: default; opacity: 0.7; }
 .skill-task-copy strong { font-size: 0.95rem; font-weight: 600; }
-.task-chevron-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-left: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
-  flex-shrink: 0;
-}
-.task-chevron-btn:hover:not(:disabled),
-.skill-task-row:hover .task-chevron-btn:not(:disabled) {
-  color: var(--text);
-  background: var(--surface-soft);
-  transform: translateX(3px);
-}
-.task-chevron-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 /* Practice Session Choice Modal (Direct-action cards) */
 .session-choice-dialog {
   max-width: 440px;
@@ -2298,6 +2274,8 @@ div.skill-task-row { cursor: default; }
 .session-header-title span { color: var(--muted); font-size: 0.85rem; }
 .session-header-meta { display: grid; justify-items: end; padding-right: 20px; border-right: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
 .session-header-meta strong { color: var(--text); font-size: 0.95rem; font-weight: 500; }
+/* "Nộp bài" sits right after "Tạm dừng phiên", closer than the bar's 24px gap. */
+.session-finish-btn { min-height: 38px; margin-left: -12px; padding: 6px 20px; font-size: 0.88rem; }
 .session-pause-btn {
   min-height: 38px;
   padding: 6px 20px;
@@ -2813,6 +2791,9 @@ html[data-theme="dark"] .media-player {
 .collapsible-toggle { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .collapsible-toggle span { flex: 1; }
 .collapsible-toggle[aria-expanded="true"] svg:last-child { transform: rotate(180deg); }
+.icon-button.resume-toggle { border: 0; }
+.resume-toggle svg { transition: transform 0.15s ease; }
+.resume-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
 .collapsible-subtitle { color: var(--muted); font-size: 0.8rem; }
 .audio-check { display: grid; gap: 14px; }
 .audio-check-help { padding: 12px 14px; border-radius: 10px; background: var(--surface-raised); }
@@ -2839,7 +2820,6 @@ html[data-theme="dark"] .media-player {
 .metric-card { display: grid; gap: 6px; padding: 18px; }
 .metric-card span { color: var(--muted); font-size: 0.8rem; }
 .metric-card strong { font-size: 1.5rem; font-weight: 600; }
-.progress-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .tabs-list { display: flex; gap: 4px; overflow-x: auto; padding: 0 12px; border-bottom: 1px solid var(--line); }
 .tabs-trigger { display: inline-flex; align-items: center; gap: 8px; padding: 14px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .tabs-trigger-selected { border-bottom-color: var(--accent); color: var(--text); }
@@ -2848,6 +2828,8 @@ html[data-theme="dark"] .media-player {
 .skill-task-actions .task-new-set-button { min-height: 36px; padding: 8px 12px; gap: 6px; border-width: 1px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; text-decoration: none; }
 .active-session-indicator { color: var(--accent); font-weight: 500; }
 .history-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.history-section .collapsible-toggle { flex: 0 1 auto; }
+.history-section .collapsible-toggle span { flex: 0 1 auto; }
 .history-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; transition: background 0.15s ease; }
 .history-row:hover { background: var(--surface-raised); }
 .history-row + .history-row { border-top: 1px solid var(--line); }
@@ -3044,3 +3026,41 @@ html { scrollbar-gutter: stable; }
 }
 
 
+
+/* Error pages (route errors, 404, global failure, session errors): one card with the peeking-face illustration. */
+.error-page-shell { display: flex; width: 100%; min-height: 60vh; align-items: center; justify-content: center; padding: 24px 16px; }
+.error-page-shell-full { min-height: 100vh; background: var(--bg); }
+.error-page-card { display: flex; width: 100%; max-width: 900px; flex-direction: column; align-items: center; padding: 40px 20px 64px; }
+.error-page-art { display: flex; width: 100%; max-width: 500px; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; }
+.error-page-illustration { display: block; width: 100%; height: auto; }
+.error-page-text { display: flex; margin-top: 48px; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.error-page-code { color: var(--accent); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.2em; }
+.error-page-text h1 { color: var(--text); font-size: clamp(1.9rem, 4vw, 2.25rem); font-weight: 700; }
+.error-page-text p:last-child { max-width: 28rem; color: var(--muted); font-size: 0.875rem; }
+.error-page-actions { display: flex; margin-top: 24px; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+.error-page-actions .button { gap: 6px; }
+
+/* AI feedback of a scored answer: reason per trait, word check of read-out tasks, tips. */
+.answer-feedback { display: grid; gap: 10px; }
+.answer-feedback-reasons, .answer-feedback-tips { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.answer-feedback-reasons li { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: baseline; }
+.answer-feedback-reasons strong { color: var(--text); font-size: 0.88rem; }
+.answer-feedback-band { justify-self: start; color: var(--accent); font-size: 0.82rem; font-weight: 700; }
+.answer-feedback-reasons p { grid-column: 1 / -1; margin: 0; color: var(--muted-strong); font-size: 0.9rem; line-height: 1.5; }
+.answer-feedback-tips li { position: relative; padding-left: 16px; color: var(--muted-strong); font-size: 0.9rem; line-height: 1.5; }
+.answer-feedback-tips li::before { content: "•"; position: absolute; left: 2px; color: var(--accent); }
+.answer-feedback-words { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.answer-feedback-words-label { color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+.answer-feedback-word { padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+.answer-feedback-word-omitted { background: var(--red-soft); color: var(--red); text-decoration: line-through; }
+.answer-feedback-word-inserted { background: var(--accent-soft); color: var(--accent); }
+.scoring-request { display: grid; gap: 10px; justify-items: start; }
+.scoring-request p { margin: 0; color: var(--muted-strong); font-size: 0.9rem; }
+.mock-scoring-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.mock-scoring-bar p { margin: 0; color: var(--muted-strong); font-size: 0.92rem; }
+.history-section .history-filters { margin-bottom: 12px; }
+.history-scoring { padding: 4px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 650; white-space: nowrap; }
+.history-scoring-warn { background: var(--amber-soft); color: var(--amber); }
+.history-scoring-info { background: var(--accent-soft); color: var(--accent); }
+.history-scoring-error { background: var(--red-soft); color: var(--red); }
+.history-more { justify-self: center; margin: 12px auto 0; display: flex; }
