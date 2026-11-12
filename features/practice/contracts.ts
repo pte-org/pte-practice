@@ -1,6 +1,6 @@
 import { asArray, asNullableNumber, asNullableString, asNumber, asRecord, asString } from "./contract-helpers";
 import { normalizeSessionStatus, type PracticeSessionItemStatus, type PracticeSessionStatus } from "./session-contracts";
-import type { PracticeTaskContentOption } from "./session-contracts";
+import type { PracticeItemResult, PracticeTaskContentOption } from "./session-contracts";
 import type { EstimatedScores } from "../mockTests/mock-test-contracts";
 
 // Catalog and session contracts live in their own files; they are re-exported so existing imports keep working.
@@ -50,6 +50,10 @@ export interface PracticeReviewItem {
   options: PracticeTaskContentOption[];
   /** AI score, else the objective score (0-100); null while unscored. */
   score: number | null;
+  /** Scoring state and feedback of a submitted answer; null for one never submitted. */
+  result: PracticeItemResult | null;
+  /** CEFR level of the source question; null when unclassified. */
+  cefrLevel: string | null;
 }
 
 export interface PracticeReview {
@@ -57,6 +61,8 @@ export interface PracticeReview {
   items: PracticeReviewItem[];
   /** Reference 10-90 estimate; only a finished mock test has one. */
   estimatedScores: EstimatedScores | null;
+  /** TASK, SKILL or MOCK_TEST; null from servers that predate kinds. */
+  kind: string | null;
 }
 
 export interface PracticeProgressEntry {
@@ -82,6 +88,12 @@ export interface PracticeProgressEntry {
   skillCode: string | null;
   /** The task type when the session covers exactly one. */
   taskCode: string | null;
+  /** Answered speaking/writing items still waiting for the student's "Chấm điểm" request. */
+  unscoredAiCount: number;
+  /** Items queued or being scored by the AI. */
+  scoringCount: number;
+  /** Items whose AI scoring failed and can be retried. */
+  scoringFailedCount: number;
 }
 
 export interface PracticeProgress {
@@ -181,5 +193,8 @@ function normalizeProgressEntry(value: unknown): PracticeProgressEntry | null {
     kind: asNullableString(record.kind),
     skillCode: asNullableString(record.skillCode),
     taskCode: asNullableString(record.taskCode),
+    unscoredAiCount: asNumber(record.unscoredAiCount, 0),
+    scoringCount: asNumber(record.scoringCount, 0),
+    scoringFailedCount: asNumber(record.scoringFailedCount, 0),
   };
 }

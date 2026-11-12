@@ -8,7 +8,7 @@ export interface SavedAnswerEntry {
 
 export type SavedAnswer =
   | { kind: "empty" }
-  | { kind: "audio"; seconds: number | null }
+  | { kind: "audio"; mediaPublicId: string; seconds: number | null }
   | { kind: "text"; text: string }
   | { kind: "entries"; entries: SavedAnswerEntry[] }
   | { kind: "raw"; text: string };
@@ -22,7 +22,7 @@ export function describeSavedAnswer(payload: string | null, promptText: string |
 
   if (typeof value.text === "string") return { kind: "text", text: value.text };
   if (typeof value.mediaPublicId === "string") {
-    return { kind: "audio", seconds: typeof value.durationSeconds === "number" ? value.durationSeconds : null };
+    return { kind: "audio", mediaPublicId: value.mediaPublicId, seconds: typeof value.durationSeconds === "number" ? value.durationSeconds : null };
   }
 
   const optionText = (id: string) => options.find((option) => String(option.orderIndex) === id)?.text ?? id;

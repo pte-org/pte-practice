@@ -12,9 +12,11 @@ describe("describeSavedAnswer", () => {
     expect(describeSavedAnswer(null, null, [])).toEqual({ kind: "empty" });
   });
 
-  it("describes a recorded answer by its length, never by the media id", () => {
+  it("keeps a recorded answer's media id for playback and its length for display", () => {
     const payload = JSON.stringify({ mediaPublicId: "0facdef9-3dab-44c7-b42c-ecb6a76f1b8d", durationSeconds: 35 });
-    expect(describeSavedAnswer(payload, null, [])).toEqual({ kind: "audio", seconds: 35 });
+    expect(describeSavedAnswer(payload, null, [])).toEqual({
+      kind: "audio", mediaPublicId: "0facdef9-3dab-44c7-b42c-ecb6a76f1b8d", seconds: 35,
+    });
   });
 
   it("returns written answers as plain text", () => {

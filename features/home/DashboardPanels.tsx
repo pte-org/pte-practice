@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactElement } from "react";
-import { AppIcon, LoadingState, Tabs } from "@/common/components";
+import { AppIcon, ArrowAction, LoadingState, Tabs } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeCatalogSection, PracticeCatalogTask, PracticeProgressEntry } from "@/features/practice/contracts";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
@@ -79,7 +78,7 @@ export const DashboardSidebar = ({ entries, state, taskName, organization }: Das
           ))}
         </ul> : state === "loading" ? <LoadingState compact message={copy.loading} />
           : <p>{state === "error" ? copy.error : copy.emptyHint}</p>}
-        <Link className="text-link" href={PRACTICE_ROUTES.progress}>{copy.viewProgress}<AppIcon name="arrowRight" size={16} /></Link>
+        <ArrowAction label={copy.viewProgress} href={PRACTICE_ROUTES.progress} />
       </section>
     </aside>
   );

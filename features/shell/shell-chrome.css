@@ -1,4 +1,4 @@
-/* The overview routes share one shell; delivery and review keep their existing chrome. */
+/* The overview routes and answer review share one shell; delivery keeps its own chrome. */
 .student-shell.studio-shell {
   grid-template-columns: 248px minmax(0, 1fr);
   align-items: start;

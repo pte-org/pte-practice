@@ -6,7 +6,7 @@ const entry = (overrides: Partial<PracticeProgressEntry> = {}): PracticeProgress
   sessionPublicId: "live", productCode: "PTE_CORE", title: "Read Aloud", status: "IN_PROGRESS",
   sessionStatus: "IN_PROGRESS", startedAt: "2026-11-07T01:00:00Z", lastActivityAt: null,
   completedAt: null, answeredItemCount: 0, draftItemCount: 0, skippedItemCount: 0,
-  totalItemCount: 10, lowConfidenceCount: 0, mediumConfidenceCount: 0, highConfidenceCount: 0,
+  totalItemCount: 10, lowConfidenceCount: 0, mediumConfidenceCount: 0, highConfidenceCount: 0, unscoredAiCount: 0, scoringCount: 0, scoringFailedCount: 0,
   score: null, kind: "TASK", skillCode: "SPEAKING", taskCode: "READ_ALOUD", ...overrides,
 });
 
