@@ -11,7 +11,7 @@ import { countPracticeWords } from "./media/text-utils";
 import { sessionDisplayName } from "./presentation";
 import { useLeaveGuard } from "./session/useLeaveGuard";
 import { createPracticeApiClient, PracticeApiError } from "./api";
-import { PRACTICE_ROUTES } from "./constants";
+import { MOCK_TEST_KIND, PRACTICE_ROUTES } from "./constants";
 import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "./contracts";
 import type { PracticeTaskFixture } from "./fixtures";
 import { uploadPracticeRecording } from "./media/api";
@@ -23,6 +23,7 @@ import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
+import { FinishSessionButton } from "./session/FinishSessionButton";
 import { SessionTaskView, type MissingField } from "./session/SessionTaskView";
 import { useHeartbeat } from "./session/useHeartbeat";
 import { useSessionDraft } from "./session/useSessionDraft";
@@ -556,7 +557,14 @@ export function PracticeSessionView() {
         onActivityChange={setRecorderBusy}
         onRefreshPrompt={refreshPrompt}
         onSubmit={handleNext}
-        onPause={() => setConfirm("pause")}
+        onPause={() => {
+          // Nothing done yet means nothing to save: leave at once (the server drops the empty session), no dialog.
+          const untouched = session.answeredItemCount === 0 && !hasRecordingDrafts
+            && !hasAnswer(effectiveDraft(currentTask, draftTaskId, draft));
+          if (untouched) void exitWithoutSaving(); else setConfirm("pause");
+        }}
+        finishAction={session.kind === MOCK_TEST_KIND ? undefined : <FinishSessionButton api={api} sessionId={session.publicId}
+          answeredCount={session.answeredItemCount} totalCount={session.totalItemCount} disabled={state.phase === "submitting" || recorderBusy || !online} />}
       />
       <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
         confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.exitWithoutSaving")} closeLabel={t("session.cancel")}

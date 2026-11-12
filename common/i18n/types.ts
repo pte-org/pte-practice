@@ -360,6 +360,10 @@ export interface LocaleDict {
     keepRecording: string;
     pause: string;
     pauseTitle: string;
+    finish: string;
+    finishTitle: string;
+    finishDescription: string;
+    finishError: string;
     pauseDescription: string;
     exitWithoutSaving: string;
     pauseConfirm: string;
@@ -454,12 +458,12 @@ export interface LocaleDict {
     metricAverage: string;
     bySkill: string;
     practise: string;
+    practiseRemaining: string;
+    practiseNewSet: string;
     history: string;
     historyFilterAll: string;
     historyFilterInProgress: string;
     historyFilterCompleted: string;
-    practiseRemaining: string;
-    practiseNewSet: string;
     historyFilterAwaitingScore: string;
     historyFilterEmpty: string;
     historyShowMore: string;

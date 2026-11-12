@@ -2274,6 +2274,8 @@ div.skill-task-row { cursor: default; }
 .session-header-title span { color: var(--muted); font-size: 0.85rem; }
 .session-header-meta { display: grid; justify-items: end; padding-right: 20px; border-right: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
 .session-header-meta strong { color: var(--text); font-size: 0.95rem; font-weight: 500; }
+/* "Nộp bài" sits right after "Tạm dừng phiên", closer than the bar's 24px gap. */
+.session-finish-btn { min-height: 38px; margin-left: -12px; padding: 6px 20px; font-size: 0.88rem; }
 .session-pause-btn {
   min-height: 38px;
   padding: 6px 20px;

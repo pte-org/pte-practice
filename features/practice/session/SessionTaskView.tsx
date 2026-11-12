@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
@@ -51,6 +51,7 @@ interface SessionTaskViewProps {
   onSubmit: () => void;
   onSkip?: () => void;
   onPause: () => void;
+  finishAction?: ReactNode;
   /** Current question has been submitted and is displaying results inline. */
   isSubmitted?: boolean;
   result?: PracticeItemResult | null;
@@ -137,7 +138,8 @@ export function SessionTaskView(props: SessionTaskViewProps) {
       header={<SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
         parts={sessionParts(session)} questionNumber={questionNum} questionCount={session.totalItemCount}
         pauseDisabled={locked || recorderBusy}
-        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />}
+        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause}
+        finishAction={props.finishAction} />}
       footer={<SessionFooter
         busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={locked || recorderBusy || prevDisabled}
         showSkip={props.showSkip} skipDisabled={locked || recorderBusy} onSkip={props.onSkip}
