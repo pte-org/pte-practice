@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AppIcon, CountdownTimer, Stepper, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
@@ -27,6 +27,8 @@ interface TimedTaskFrameProps {
   hasSavedRecording: boolean;
   /** Reloads the session to get a fresh prompt link; called at most once when the prompt fails to load. */
   onRefreshPrompt: () => Promise<void>;
+  /** A speaking answer has just been recorded: the session sends it and moves on, as in the real test. */
+  onAnswerReady?: () => void;
   children: (view: { timed: TimedRendererControl; locked: boolean; attempt: number }) => ReactNode;
 }
 
@@ -46,6 +48,16 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
       showToast(t("timed.timeUp"), { tone: "warning" });
     }
   }, [phase, showToast, t]);
+
+  // Only the step into "done" sends the answer; a question opened with a recording already saved starts in "done".
+  const previousPhase = useRef(phase);
+  const answerReady = useRef(props.onAnswerReady);
+  useEffect(() => { answerReady.current = props.onAnswerReady; });
+  useEffect(() => {
+    const before = previousPhase.current;
+    previousPhase.current = phase;
+    if (isSpeaking && phase === "done" && before !== "done") answerReady.current?.();
+  }, [phase, isSpeaking]);
 
   const timed = useMemo<TimedRendererControl>(() => ({
     playPrompt: phase === "prompt",
