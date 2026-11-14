@@ -23,15 +23,22 @@ export const ReviewQuestionNav = ({ items, index, onSelect }: ReviewPagerProps):
     navRef.current?.querySelector<HTMLElement>("[aria-current]")?.scrollIntoView({ block: "nearest", inline: "center" });
   }, [index]);
   return (
-    <nav ref={navRef} className="review-question-nav" aria-label={t("review.questionNav")}>
-      {items.map((item, position) => (
-        <button key={item.publicId} type="button" onClick={() => onSelect(position)}
-          className={`review-chip review-chip-${chipTone(item)}${position === index ? " review-chip-active" : ""}`}
-          aria-current={position === index ? "step" : undefined} title={item.displayName}>
-          {item.orderIndex + 1}
-        </button>
-      ))}
-    </nav>
+    <div>
+      <nav ref={navRef} className="review-question-nav" aria-label={t("review.questionNav")}>
+        {items.map((item, position) => (
+          <button key={item.publicId} type="button" onClick={() => onSelect(position)}
+            className={`review-chip review-chip-${chipTone(item)}${position === index ? " review-chip-active" : ""}`}
+            aria-current={position === index ? "step" : undefined} title={item.displayName}>
+            {item.orderIndex + 1}
+          </button>
+        ))}
+      </nav>
+      <ul className="review-chip-legend" aria-hidden="true">
+        <li><span className="review-chip review-chip-scored" />{t("review.chipScored")}</li>
+        <li><span className="review-chip review-chip-answered" />{t("review.chipAnswered")}</li>
+        <li><span className="review-chip review-chip-empty" />{t("review.chipEmpty")}</li>
+      </ul>
+    </div>
   );
 };
 

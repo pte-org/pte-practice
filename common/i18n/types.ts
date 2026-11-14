@@ -432,6 +432,9 @@ export interface LocaleDict {
     metaSkill: string;
     metaStatus: string;
     questionNav: string;
+    chipScored: string;
+    chipAnswered: string;
+    chipEmpty: string;
     pagerPosition: string;
     answerPane: string;
     questionLabel: string;

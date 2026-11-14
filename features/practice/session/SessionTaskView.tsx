@@ -3,8 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import type { PracticeApiClient } from "../api";
-import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "../contracts";
+import type { PracticeSession, PracticeTaskResponse } from "../contracts";
 import type { PracticeTaskFixture } from "../fixtures";
 import { skillKey } from "../presentation";
 import { isClientRuntimeSupported } from "../renderer-allowlist";
@@ -14,8 +13,6 @@ import { getCanonicalTaskInstruction } from "../task-instructions";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
 import { FieldWarning } from "./FieldWarning";
-import { MOCK_TEST_KIND } from "../constants";
-import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
@@ -27,7 +24,6 @@ import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "
 export type MissingField = "answer" | null;
 
 interface SessionTaskViewProps {
-  api: PracticeApiClient;
   session: PracticeSession;
   task: PracticeTaskResponse;
   fixture: PracticeTaskFixture | null;
@@ -52,11 +48,8 @@ interface SessionTaskViewProps {
   onSkip?: () => void;
   onPause: () => void;
   finishAction?: ReactNode;
-  /** Current question has been submitted and is displaying results inline. */
+  /** An earlier, already answered question shown read-only; its score is on the review screen, not here. */
   isSubmitted?: boolean;
-  result?: PracticeItemResult | null;
-  timeSpentSeconds?: number;
-  onResultSettled?: (result: PracticeItemResult) => void;
   showPrev?: boolean;
   onPrev?: () => void;
   prevDisabled?: boolean;
@@ -73,7 +66,6 @@ interface SessionTaskViewProps {
 /** One question of the session page: header, segmented progress, the task in a card, and the bottom bar. */
 export function SessionTaskView(props: SessionTaskViewProps) {
   const {
-    api,
     session,
     task,
     fixture,
@@ -84,8 +76,6 @@ export function SessionTaskView(props: SessionTaskViewProps) {
     missing,
     value,
     isSubmitted = false,
-    result = null,
-    timeSpentSeconds,
     showPrev = false,
     onPrev,
     prevDisabled = false,
@@ -166,23 +156,12 @@ export function SessionTaskView(props: SessionTaskViewProps) {
           {timedFrame && fixture ? (
             <TimedTaskFrame key={task.publicId} timing={timedFrame} isSpeaking={isSpeaking}
               hasPromptAudio={Boolean(fixture.audioUrl)} hasSavedRecording={isSpeaking && hasSavedRecording}
-              onRefreshPrompt={props.onRefreshPrompt}>
+              onRefreshPrompt={props.onRefreshPrompt} onAnswerReady={props.onSubmitAnswer}>
               {({ timed, locked: frameLocked, attempt }) => renderBody(timed, frameLocked, attempt)}
             </TimedTaskFrame>
           ) : renderBody()}
           {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
         </div>
-        {isSubmitted ? (
-          <InlineResultCard
-            api={api}
-            sessionId={session.publicId}
-            itemId={task.publicId}
-            initialResult={result}
-            timeSpentSeconds={timeSpentSeconds}
-            canRequestScoring={session.kind !== MOCK_TEST_KIND}
-            onResultSettled={props.onResultSettled}
-          />
-        ) : null}
       </div>
     </PracticeFrame>
   );

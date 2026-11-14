@@ -14,6 +14,7 @@ import { COMMON_TEXT } from "@/common/constants";
 import { createPracticeApiClient, PracticeApiError } from "./api";
 import type { PracticeCatalog, PracticeEntitlement } from "./contracts";
 import { PREVIEW_CATALOG } from "./preview-catalog";
+import { practiceRecordingStore } from "./media/recordingStore";
 import { clearPracticeDrafts, clearPracticeSession } from "./session-storage";
 import { usePracticeLifecycle } from "./usePracticeLifecycle";
 import { accessStateForUi, type PracticeAccessState, type PracticeAuthStatus as AuthStatus,
@@ -63,6 +64,8 @@ export const PracticeProvider = ({ children }: PracticeProviderProps): ReactElem
 
   const signOut = useCallback(() => {
     clearPracticeDrafts();
+    // Recordings are personal: the next person signing in on this device must not get them back.
+    void practiceRecordingStore().clearAll();
     endSession();
   }, [endSession]);
 

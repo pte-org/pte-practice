@@ -6,9 +6,14 @@
 .review-question-nav { display: flex; gap: 8px; overflow-x: auto; padding: 6px 6px 8px; scroll-behavior: smooth; scrollbar-width: thin; }
 .review-chip { flex: 0 0 auto; min-width: 36px; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
   color: var(--muted-strong); font: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
-.review-chip-answered { border-color: color-mix(in srgb, var(--action) 40%, var(--line)); color: var(--action); }
-.review-chip-scored { border-color: color-mix(in srgb, var(--action) 45%, var(--line)); background: var(--action-tint); color: var(--action); }
-.review-chip-empty { color: var(--muted); }
+/* Three tones the learner can tell apart at a glance: scored (filled), answered (outlined), no answer (dashed, faded). */
+.review-chip-answered { border-color: var(--action); color: var(--action); }
+.review-chip-scored { border-color: var(--action); background: var(--action); color: var(--surface); }
+.review-chip-empty { border-style: dashed; background: transparent; color: var(--muted); opacity: 0.7; }
+.review-chip-legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 0; padding: 0; list-style: none;
+  color: var(--muted-strong); font-size: 0.8rem; }
+.review-chip-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.review-chip-legend .review-chip { min-width: 14px; height: 14px; padding: 0; border-radius: 4px; cursor: default; }
 .review-chip-active { outline: 2px solid var(--action); outline-offset: 2px; }
 
 .review-panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; }
