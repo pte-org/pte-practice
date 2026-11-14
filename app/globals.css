@@ -776,6 +776,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .task-word-bank { display: flex; flex-wrap: wrap; gap: 8px; }
 .task-word { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-soft); color: var(--muted-strong); cursor: grab; }
 .task-word-active { border-color: var(--accent); color: var(--text); }
+.task-word-used { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
 .task-highlight-text { padding: 18px; border-radius: 10px; background: var(--surface-raised); color: var(--muted-strong); line-height: 2.1; }
 .task-highlight-text button { margin: 0 3px; padding: 2px 4px; border: 0; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
 .task-highlight-text button:hover, .task-token-selected { background: var(--accent-soft) !important; color: var(--accent) !important; }

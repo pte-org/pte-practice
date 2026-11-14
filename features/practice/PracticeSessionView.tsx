@@ -396,6 +396,16 @@ export function PracticeSessionView() {
     void submit();
   };
 
+  /** Timed answering ended: send what is typed (skipping the word-range prompt), or skip an empty question. */
+  const handleTimeUp = () => {
+    if (currentAnswered !== null || state.phase === "submitting") return;
+    const task = activeTask;
+    if (!task) return;
+    if (hasAnswer(effectiveDraft(task, draftTaskId, draft))) { void submit(true); return; }
+    // A skipped question opened from history is not the live one, so only the live question can be skipped here.
+    if (viewingHistoryIndex === null) void skip();
+  };
+
   const handlePrev = () => {
     if (viewingHistoryIndex !== null) {
       if (viewingHistoryIndex > 0) {
@@ -530,6 +540,7 @@ export function PracticeSessionView() {
         submitDisabled={state.phase === "submitting"}
         submitLabel={t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
+        onTimeUp={handleTimeUp}
         showNext={showNext}
         nextLabel={
           session.status === "COMPLETED" || currentAnswered?.nextSession?.status === "COMPLETED"
