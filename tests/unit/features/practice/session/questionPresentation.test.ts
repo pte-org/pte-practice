@@ -33,4 +33,14 @@ describe("ASQ question presentation", () => {
     expect(requiresQuestionAudio("ANSWER_SHORT_QUESTION", missingAudio, true)).toBe(false);
     expect(requiresQuestionAudio("READ_ALOUD", missingAudio, false)).toBe(false);
   });
+
+  it("hides the transcript of every audio-only task until submission", () => {
+    for (const code of ["REPEAT_SENTENCE", "RE_TELL_LECTURE", "WRITE_FROM_DICTATION", "SUMMARIZE_SPOKEN_TEXT",
+      "SELECT_MISSING_WORD", "HIGHLIGHT_CORRECT_SUMMARY"]) {
+      expect(hideQuestionTranscript(code, false)).toBe(true);
+      expect(hideQuestionTranscript(code, true)).toBe(false);
+      expect(questionFixture(code, { ...fixture, taskCode: code }, false).prompt).toBe("");
+    }
+    expect(hideQuestionTranscript("FILL_IN_THE_BLANKS_TYPE_IN", false)).toBe(false);
+  });
 });

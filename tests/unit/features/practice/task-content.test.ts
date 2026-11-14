@@ -78,7 +78,10 @@ describe("practice task content", () => {
         ],
       }),
     });
-    expect(fixture?.paragraphs).toEqual([{ id: "0", text: "A" }, { id: "1", text: "B" }]);
+    // Shuffled with a seed so the learner never starts from the answer, but the ids stay the order indexes.
+    expect(fixture?.paragraphs).toHaveLength(2);
+    expect(fixture?.paragraphs).toEqual(expect.arrayContaining([{ id: "0", text: "A" }, { id: "1", text: "B" }]));
+    expect(fixture?.paragraphs?.map((item) => item.id)).not.toEqual(["0", "1"]);
   });
 
   it("keeps the {{n}} markers and a shared word bank for drag and drop", () => {
@@ -93,7 +96,7 @@ describe("practice task content", () => {
       }),
     });
     expect(fixture?.text).toBe("Good {{0}} can {{1}} risk.");
-    expect(fixture?.blankOptions).toEqual(["planning", "reduce"]);
+    expect(fixture?.blankOptions?.slice().sort()).toEqual(["planning", "reduce"]);
   });
 
   it("groups dropdown options by blank index", () => {
@@ -109,7 +112,8 @@ describe("practice task content", () => {
         ],
       }),
     });
-    expect(fixture?.blankOptionsByIndex).toEqual({ "0": ["reliable", "rare"], "1": ["easy", "complex"] });
+    expect(fixture?.blankOptionsByIndex?.["0"]?.slice().sort()).toEqual(["rare", "reliable"]);
+    expect(fixture?.blankOptionsByIndex?.["1"]?.slice().sort()).toEqual(["complex", "easy"]);
   });
 
   it("splits Highlight Incorrect Words into whitespace tokens keyed by word index", () => {
