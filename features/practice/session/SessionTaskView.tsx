@@ -98,12 +98,15 @@ export function SessionTaskView(props: SessionTaskViewProps) {
     if (notice) showToast(notice, { tone: "error" });
   }, [notice, showToast]);
 
+  // The server withholds an audio-only transcript until the item is answered; the result then carries it.
+  const shownFixture = fixture && isSubmitted && !fixture.prompt && result?.promptText
+    ? { ...fixture, prompt: result.promptText } : fixture;
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
   const audioUnavailable = requiresQuestionAudio(task.taskCode, fixture, isSubmitted);
   // Read-aloud, written-text, blank, highlight, and describe-image renderers draw the passage/media themselves; showing it here too doubles it.
   const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens || (task.taskCode === "DESCRIBE_IMAGE" && fixture?.imageUrl));
   const promptText = hideQuestionTranscript(task.taskCode, isSubmitted) ? ""
-    : fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
+    : shownFixture ? (rendererShowsPrompt ? "" : shownFixture.prompt) : t("ui.sessionUnsupported");
   const timing = task.timing;
   const isSpeaking = task.section === "SPEAKING";
   const hasSavedRecording = typeof value.mediaPublicId === "string" && value.mediaPublicId.length > 0;
