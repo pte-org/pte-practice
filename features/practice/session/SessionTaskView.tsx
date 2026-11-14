@@ -46,6 +46,8 @@ interface SessionTaskViewProps {
   onActivityChange: (busy: boolean) => void;
   /** Reloads the session so the prompt gets a fresh media link. */
   onRefreshPrompt: () => Promise<void>;
+  /** The timed answering clock ran out. */
+  onTimeUp?: () => void;
   onSubmit: () => void;
   onSkip?: () => void;
   onPause: () => void;
@@ -161,7 +163,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
           {timedFrame && fixture ? (
             <TimedTaskFrame key={task.publicId} timing={timedFrame} isSpeaking={isSpeaking}
               hasPromptAudio={Boolean(fixture.audioUrl)} hasSavedRecording={isSpeaking && hasSavedRecording}
-              onRefreshPrompt={props.onRefreshPrompt}>
+              onRefreshPrompt={props.onRefreshPrompt} onTimeUp={props.onTimeUp}>
               {({ timed, locked: frameLocked, attempt }) => renderBody(timed, frameLocked, attempt)}
             </TimedTaskFrame>
           ) : renderBody()}

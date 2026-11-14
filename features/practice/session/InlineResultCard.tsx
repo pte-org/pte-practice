@@ -120,7 +120,7 @@ function InlineResultCardInner({
   const score = result.score ?? 0;
   let verdictText = t("session.correct");
   let verdictTone: "correct" | "incorrect" | "partial" = "correct";
-  let verdictIcon: "checkCircle" | "closeCircle" = "checkCircle";
+  let verdictIcon: "checkCircle" | "closeCircle" | "alert" = "checkCircle";
 
   if (score >= 100) {
     verdictText = t("session.correct");
@@ -137,7 +137,7 @@ function InlineResultCardInner({
   } else {
     verdictText = t("session.partiallyCorrect");
     verdictTone = "partial";
-    verdictIcon = "closeCircle";
+    verdictIcon = "alert";
   }
 
   const subScoreEntries = result.subScores ? Object.entries(result.subScores) : [];

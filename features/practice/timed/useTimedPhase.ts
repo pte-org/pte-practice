@@ -5,9 +5,26 @@ import {
   initialTimedState, timedReducer, type InitialTimedOptions, type TimedEvent, type TimedState,
 } from "./timed-phase";
 
+const GESTURE_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+let sawUserGesture = false;
+
+/**
+ * Firefox and Safari do not implement `navigator.userActivation`, so the first gesture is also recorded here and
+ * survives client-side navigation between questions.
+ */
+if (typeof window !== "undefined") {
+  const markGesture = () => {
+    sawUserGesture = true;
+    for (const type of GESTURE_EVENTS) window.removeEventListener(type, markGesture, true);
+  };
+  for (const type of GESTURE_EVENTS) window.addEventListener(type, markGesture, true);
+}
+
 /** True when the page has had no user gesture yet (first load, reload), so audio would be blocked until one happens. */
 export function needsStartGate(): boolean {
-  return typeof navigator === "undefined" || !navigator.userActivation?.hasBeenActive;
+  if (typeof navigator === "undefined") return true;
+  if (sawUserGesture) return false;
+  return !navigator.userActivation?.hasBeenActive;
 }
 
 type TimedOptions = Omit<InitialTimedOptions, "needsGate">;
