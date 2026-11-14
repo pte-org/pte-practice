@@ -4,6 +4,7 @@ import { type Dispatch, type MutableRefObject, useEffect, useMemo, useRef } from
 import { createPracticeIdempotencyKey, type PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
 import type { PracticeSessionAction, PracticeSessionPhase } from "../session-state";
+import { isVersionConflict } from "./session-draft";
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 
@@ -51,8 +52,21 @@ export function useHeartbeat({ api, phase, sessionRef, dispatch, errorMessage }:
           dispatch({ type: "mutation_succeeded", session: next });
           return next;
         })
-        .catch((reason: unknown) => {
+        .catch(async (reason: unknown) => {
           syncRequired.current = true;
+          // A keep-alive carries no student work: on a stale version adopt the server's session instead of
+          // replacing the task with an error page. Only a failed reload is surfaced.
+          if (isVersionConflict(reason)) {
+            try {
+              const latest = await api.getSession(session.publicId);
+              sessionRef.current = latest;
+              syncRequired.current = false;
+              dispatch({ type: "mutation_succeeded", session: latest });
+              return latest;
+            } catch (reloadReason: unknown) {
+              reason = reloadReason;
+            }
+          }
           dispatch({ type: "failed", message: errorMessageRef.current(reason) });
           return null;
         });
