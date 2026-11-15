@@ -59,7 +59,20 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
   const recorder = useRef<WavRecorderHandle | null>(null);
   const maxLevel = useRef(0);
 
-  useEffect(() => () => { recorder.current?.cancel(); }, []);
+  const stopTimer = useRef<number | null>(null);
+  const unmounted = useRef(false);
+
+  // Closing the dialog mid-test must end the test: no timer left to stop a cancelled recording or make a blob URL.
+  useEffect(() => {
+    unmounted.current = false; // StrictMode runs the cleanup once and mounts again in development
+    return () => {
+      unmounted.current = true;
+      if (stopTimer.current !== null) window.clearTimeout(stopTimer.current);
+      stopTimer.current = null;
+      recorder.current?.cancel();
+      recorder.current = null;
+    };
+  }, []);
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
 
   useEffect(() => {
@@ -115,11 +128,13 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
       });
       setIsPermissionDenied(false);
       setPhase("recording");
-      window.setTimeout(async () => {
+      stopTimer.current = window.setTimeout(async () => {
+        stopTimer.current = null;
         const active = recorder.current;
         if (!active) return;
         recorder.current = null;
         const recording = await active.stop();
+        if (unmounted.current) return;
         setPeaks(recording.peaks);
         setUrl(URL.createObjectURL(recording.blob));
         const v = micVerdict(maxLevel.current);

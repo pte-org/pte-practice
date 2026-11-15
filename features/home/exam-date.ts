@@ -131,3 +131,15 @@ export function examDateBounds(today = new Date()): { min: string; max: string; 
 
   return { min, max, todayStr: min };
 }
+
+/** True when an ISO date (YYYY-MM-DD) is inside the range the server accepts: today up to two years ahead. */
+export function isExamDateInBounds(iso: string, bounds: { min: string; max: string }): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) && iso >= bounds.min && iso <= bounds.max;
+}
+
+/** Years the picker offers: only those that contain at least one day inside the allowed range. */
+export function examDateYears(bounds: { min: string; max: string }): number[] {
+  const first = Number(bounds.min.slice(0, 4));
+  const last = Number(bounds.max.slice(0, 4));
+  return Array.from({ length: Math.max(0, last - first + 1) }, (_, index) => first + index);
+}

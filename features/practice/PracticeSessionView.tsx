@@ -467,6 +467,9 @@ export function PracticeSessionView() {
   let showSkip = false;
   let showPrev = false;
   let prevDisabled = false;
+  // A finished session can still be browsed, but the server no longer takes answers: a skipped question seen
+  // from the history is read-only there (while the session is running it can still be answered).
+  const completedReadOnly = viewingHistoryIndex !== null && !isItemScored && session.status === "COMPLETED";
 
   if (viewingHistoryIndex !== null) {
     showPrev = true;
@@ -478,7 +481,7 @@ export function PracticeSessionView() {
     } else {
       const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
       const hasUserAnswer = hasAnswer(currentDraft);
-      if (hasUserAnswer) {
+      if (hasUserAnswer && !completedReadOnly) {
         showSubmit = true;
         showSkip = false;
         showNext = false;
@@ -545,6 +548,7 @@ export function PracticeSessionView() {
         submitLabel={t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
         onTimeUp={handleTimeUp}
+        readOnly={completedReadOnly}
         showNext={showNext}
         nextLabel={
           session.status === "COMPLETED" || currentAnswered?.nextSession?.status === "COMPLETED"
