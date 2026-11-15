@@ -27,6 +27,7 @@ export const PREVIEW_CATALOG: PracticeCatalog = {
       timedAvailable: false,
       timedUnavailableReason: null,
       answeredQuestionCount: 0,
+      availableQuestionCount: 0,
       averageScore: null,
     })),
     practiceQuestionCount: 0,

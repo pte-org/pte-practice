@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type { PracticeSession } from "../contracts";
 import { clearPracticeDraft, getPracticeDraft, savePracticeDraft } from "../session-storage";
 import { hasLocalRecording } from "../media/recordingDrafts";
+import { practiceRecordingStore } from "../media/recordingStore";
 
 /**
  * The student's unsent answer for the current item. A local draft belongs to one item (`draftTaskId`); for any other
@@ -22,6 +23,25 @@ export function useSessionDraft() {
     recordings.current.delete(`${sessionId}:${itemId}`);
     setHasRecordingDrafts(recordings.current.size > 0);
     clearPracticeDraft(sessionId, itemId);
+    void practiceRecordingStore().remove(sessionId, itemId);
+  }, []);
+
+  /**
+   * Brings back the recordings this device kept for the session (the tab was closed or reloaded before they were
+   * submitted); returns the items that got one back so the caller can show the current one.
+   */
+  const restoreRecordings = useCallback(async (sessionId: string): Promise<string[]> => {
+    const kept = await practiceRecordingStore().listForSession(sessionId);
+    const restored: string[] = [];
+    for (const record of kept) {
+      const key = `${sessionId}:${record.itemId}`;
+      if (recordings.current.has(key)) continue;
+      recordings.current.set(key, { sessionId, itemId: record.itemId,
+        payload: { recordingBlob: record.blob, durationSeconds: record.durationSeconds } });
+      restored.push(record.itemId);
+    }
+    if (restored.length > 0) setHasRecordingDrafts(true);
+    return restored;
   }, []);
 
   const recordingDrafts = useCallback((sessionId: string) =>
@@ -46,13 +66,17 @@ export function useSessionDraft() {
     if (hasLocalRecording(value)) {
       recordings.current.set(`${sessionPublicId}:${itemPublicId}`, { sessionId: sessionPublicId, itemId: itemPublicId, payload: value });
       clearPracticeDraft(sessionPublicId, itemPublicId);
+      void practiceRecordingStore().save({ sessionId: sessionPublicId, itemId: itemPublicId,
+        blob: value.recordingBlob as Blob, // hasLocalRecording checked it is a Blob
+        durationSeconds: typeof value.durationSeconds === "number" ? value.durationSeconds : 0 });
     } else {
       recordings.current.delete(`${sessionPublicId}:${itemPublicId}`);
+      void practiceRecordingStore().remove(sessionPublicId, itemPublicId);
       savePracticeDraft(sessionPublicId, itemPublicId, value);
     }
     setHasRecordingDrafts(recordings.current.size > 0);
   }, []);
 
   return { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer, readDraft, forgetDraft,
-    recordingDrafts, hasRecordingDrafts };
+    recordingDrafts, hasRecordingDrafts, restoreRecordings };
 }

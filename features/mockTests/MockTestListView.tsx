@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppIcon, LoadingState, Modal, ProgressRing, useToast } from "@/common/components";
+import { AppIcon, ErrorBanner, LoadingState, Modal, ProgressRing, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { createPracticeApiClient } from "@/features/practice/api";
 import { mockTarget } from "@/features/practice/mode/mode-target";
@@ -57,12 +57,7 @@ export function MockTestListView() {
     <div className="mock-tests">
       {state.status === "loading" ? <LoadingState message={t("mockTests.loading")} /> : null}
       {state.status === "error" ? (
-        <div className="catalog-note" role="alert" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span>{t("mockTests.loadError")}</span>
-          <button className="text-button" type="button" onClick={handleRetry}>
-            {t("common.tryAgain")}
-          </button>
-        </div>
+        <ErrorBanner message={t("mockTests.loadError")} retryLabel={t("common.tryAgain")} onRetry={handleRetry} />
       ) : null}
       {state.status === "ready" && state.tests.length === 0
         ? <p className="card catalog-note" role="status">{t("mockTests.emptyBank")}</p> : null}
@@ -76,7 +71,9 @@ export function MockTestListView() {
                 <span className={`mock-test-icon${action === "CONTINUE" ? " mock-test-icon-ring" : ""}`}>
                   {action === "CONTINUE" && attempt
                     ? <ProgressRing label={`${attempt.answeredItemCount}/${attempt.totalItemCount}`} variant="progress"
-                        value={attempt.answeredItemCount} max={Math.max(1, attempt.totalItemCount)} size={44} />
+                        value={attempt.answeredItemCount} max={Math.max(1, attempt.totalItemCount)} size={44}>
+                        <AppIcon name="practice" size={18} />
+                      </ProgressRing>
                     : <AppIcon name="practice" size={22} />}
                 </span>
                 <span className="mock-test-copy">

@@ -1,3 +1,4 @@
+import { ICON_PATHS } from "@/common/components/icon-paths";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LocaleProvider } from "@/common/i18n";
@@ -13,6 +14,7 @@ const sampleTask: PracticeCatalogTask = {
   availability: "RUNNABLE",
   rendererKey: "READ_ALOUD_V1",
   answeredQuestionCount: 5,
+  availableQuestionCount: 20,
   averageScore: 78,
 };
 
@@ -20,7 +22,7 @@ const renderWithLocale = (element: React.ReactElement) =>
   renderToStaticMarkup(<LocaleProvider>{element}</LocaleProvider>);
 
 describe("TaskActionButtons", () => {
-  it("renders chevron right button when activeSession exists", () => {
+  it("labels the main action Continue and links to the live session", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
@@ -30,13 +32,14 @@ describe("TaskActionButtons", () => {
       />
     );
 
-    expect(html).toContain("task-chevron-btn");
+    expect(html).toContain("task-primary-action");
+    expect(html).toContain(">Continue<");
     expect(html).toContain("sessionId=sess-123");
     expect(html).toContain("pte-button task-new-set-button");
     expect(html).not.toContain('role="dialog"');
   });
 
-  it("renders chevron right button when no activeSession exists", () => {
+  it("labels the main action Practise when nothing was done yet", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
@@ -46,13 +49,29 @@ describe("TaskActionButtons", () => {
       />
     );
 
-    expect(html).toContain("task-chevron-btn");
+    expect(html).toContain("task-primary-action");
+    expect(html).toContain(">Practise<");
   });
 
-  it("renders chevron right button when completedSession exists", () => {
+  it("offers Keep practising while some questions of the task type are still unanswered", () => {
     const html = renderWithLocale(
       <TaskActionButtons
         task={sampleTask}
+        activeSession={null}
+        completedSession={{ sessionPublicId: "sess-completed", answeredItemCount: 5, totalItemCount: 5, score: 85 }}
+        canStart={true}
+        onStart={vi.fn()}
+      />
+    );
+
+    expect(html).toContain(">Keep practising<");
+    expect(html).not.toContain(">Practise again<");
+  });
+
+  it("offers Review and Practise again once every question is answered", () => {
+    const html = renderWithLocale(
+      <TaskActionButtons
+        task={{ ...sampleTask, answeredQuestionCount: 20 }}
         activeSession={null}
         completedSession={{ sessionPublicId: "sess-completed", answeredItemCount: 10, totalItemCount: 10, score: 85 }}
         canStart={true}
@@ -60,7 +79,11 @@ describe("TaskActionButtons", () => {
       />
     );
 
-    expect(html).toContain("task-chevron-btn");
+    expect(html).toContain(">Review<");
+    expect(html).toContain(">Practise again<");
+    expect(html).toContain("sessionId=sess-completed");
+    // Starting over shows the circular retake icon instead of the arrow.
+    expect(html).toContain(ICON_PATHS.retake);
   });
 
   it("disables the chevron button when canStart is false", () => {

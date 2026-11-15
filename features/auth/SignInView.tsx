@@ -5,13 +5,13 @@ import { Suspense, useState, type ReactElement } from "react";
 import { AppIcon } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { useTheme } from "@/common/providers/ThemeProvider";
-import { PRACTICE_ROUTES } from "@/features/practice/constants";
 import type { PracticeSessionTokens } from "@/features/practice/contracts";
 import { clearPracticeSession, savePracticeSession } from "@/features/practice/session-storage";
 import { AuthBackdrop } from "./AuthBackdrop";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { BRAND_NAME } from "./constants";
 import { OrbitPanel } from "./OrbitPanel";
+import { returnPath } from "./return-path";
 import { SignInForm } from "./SignInForm";
 import "./sign-in.css";
 
@@ -48,7 +48,7 @@ export const SignInView = (): ReactElement => {
    * session, and a stalled client transition can no longer leave the form stuck on "Signing in...".
    */
   function enterApp() {
-    window.location.replace(PRACTICE_ROUTES.home);
+    window.location.replace(returnPath(window.location.search));
   }
 
   function handleCancelChange() {

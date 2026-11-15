@@ -6,7 +6,7 @@ import { createPracticeIdempotencyKey, PracticeApiError, type PracticeApiClient 
 import { PRACTICE_ROUTES } from "../constants";
 import { canStartPractice, type PracticeSession } from "../contracts";
 import { usePractice } from "../PracticeProvider";
-import { DEFAULT_MODE_PREFERENCE, isQuestionCountOption } from "../mode/mode-preference";
+import { ALL_QUESTIONS_COUNT, DEFAULT_MODE_PREFERENCE, isQuestionCountOption } from "../mode/mode-preference";
 import { runnableTasks } from "../mode/mode-target";
 import type { PracticeSessionAction } from "../session-state";
 
@@ -51,7 +51,9 @@ export function useSessionLifecycle(options: UseSessionLifecycleOptions): { relo
   const sessionId = searchParams.get("sessionId");
   const timingMode = mockTestId && searchParams.get("mode") === "TIMED" ? "TIMED" : "UNTIMED";
   const requestedCount = Number(searchParams.get("count"));
-  const questionCount = isQuestionCountOption(requestedCount) ? requestedCount : DEFAULT_MODE_PREFERENCE.questionCount;
+  const chosenCount = isQuestionCountOption(requestedCount) ? requestedCount : DEFAULT_MODE_PREFERENCE.questionCount;
+  // "All questions" (0) is sent as no count, which the server reads as every published question.
+  const questionCount = chosenCount === ALL_QUESTIONS_COUNT ? undefined : chosenCount;
   const hasTarget = Boolean(taskCode || skillCode || mockTestId);
   const requestKey = sessionId ? `resume:${sessionId}`
     : mockTestId ? `mock:${mockTestId}|${restartMockTest}|${timingMode}`

@@ -30,8 +30,10 @@ export const PracticeSupport = ({ taskCode, hints }: PracticeSupportProps): Reac
       </CollapsibleSection>
       {hints}
       {chat ? <div className="practice-ai-entry">
-        <AppIcon name="sparkle" size={24} />
-        <strong>{t("session.askAssistant")}</strong>
+        <span className="practice-ai-entry-title">
+          <AppIcon name="sparkle" size={24} />
+          <strong>{t("session.askAssistant")}</strong>
+        </span>
         <p>{t("session.askAssistantDescription")}</p>
         <button type="button" className="button" onClick={chat.open}>{t("session.askAssistant")}</button>
       </div> : null}

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import type { PracticeApiClient } from "../api";
-import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "../contracts";
+import type { PracticeSession, PracticeTaskResponse } from "../contracts";
 import type { PracticeTaskFixture } from "../fixtures";
 import { skillKey } from "../presentation";
 import { isClientRuntimeSupported } from "../renderer-allowlist";
@@ -14,19 +13,18 @@ import { getCanonicalTaskInstruction } from "../task-instructions";
 import { TimedTaskFrame } from "../timed/TimedTaskFrame";
 import { shouldMountTimedFrame } from "../timed/timed-frame";
 import { FieldWarning } from "./FieldWarning";
-import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
 import { footerDisabled } from "./footer-actions";
 import { PracticeFrame } from "./PracticeFrame";
+import { AnswerHintCard } from "./AnswerHintCard";
 import { PracticeSupport } from "./PracticeSupport";
 import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "./questionPresentation";
 
 export type MissingField = "answer" | null;
 
 interface SessionTaskViewProps {
-  api: PracticeApiClient;
   session: PracticeSession;
   task: PracticeTaskResponse;
   fixture: PracticeTaskFixture | null;
@@ -47,18 +45,16 @@ interface SessionTaskViewProps {
   onActivityChange: (busy: boolean) => void;
   /** Reloads the session so the prompt gets a fresh media link. */
   onRefreshPrompt: () => Promise<void>;
-  /** The question can be looked at but not answered (a finished session). */
+  /** The question can be looked at but not answered (a skipped question of a finished session). */
   readOnly?: boolean;
   /** The timed answering clock ran out. */
   onTimeUp?: () => void;
   onSubmit: () => void;
   onSkip?: () => void;
   onPause: () => void;
-  /** Current question has been submitted and is displaying results inline. */
+  finishAction?: ReactNode;
+  /** An earlier, already answered question shown read-only; its score is on the review screen, not here. */
   isSubmitted?: boolean;
-  result?: PracticeItemResult | null;
-  timeSpentSeconds?: number;
-  onResultSettled?: (result: PracticeItemResult) => void;
   showPrev?: boolean;
   onPrev?: () => void;
   prevDisabled?: boolean;
@@ -75,7 +71,6 @@ interface SessionTaskViewProps {
 /** One question of the session page: header, segmented progress, the task in a card, and the bottom bar. */
 export function SessionTaskView(props: SessionTaskViewProps) {
   const {
-    api,
     session,
     task,
     fixture,
@@ -86,8 +81,6 @@ export function SessionTaskView(props: SessionTaskViewProps) {
     missing,
     value,
     isSubmitted = false,
-    result = null,
-    timeSpentSeconds,
     showPrev = false,
     onPrev,
     prevDisabled = false,
@@ -101,15 +94,12 @@ export function SessionTaskView(props: SessionTaskViewProps) {
     if (notice) showToast(notice, { tone: "error" });
   }, [notice, showToast]);
 
-  // The server withholds an audio-only transcript until the item is answered; the result then carries it.
-  const shownFixture = fixture && isSubmitted && !fixture.prompt && result?.promptText
-    ? { ...fixture, prompt: result.promptText } : fixture;
   const unsupported = !isClientRuntimeSupported(task.rendererKey) || !fixture;
   const audioUnavailable = requiresQuestionAudio(task.taskCode, fixture, isSubmitted);
   // Read-aloud, written-text, blank, highlight, and describe-image renderers draw the passage/media themselves; showing it here too doubles it.
   const rendererShowsPrompt = Boolean(fixture?.text || fixture?.tokens || (task.taskCode === "DESCRIBE_IMAGE" && fixture?.imageUrl));
   const promptText = hideQuestionTranscript(task.taskCode, isSubmitted) ? ""
-    : shownFixture ? (rendererShowsPrompt ? "" : shownFixture.prompt) : t("ui.sessionUnsupported");
+    : fixture ? (rendererShowsPrompt ? "" : fixture.prompt) : t("ui.sessionUnsupported");
   const timing = task.timing;
   const isSpeaking = task.section === "SPEAKING";
   const hasSavedRecording = typeof value.mediaPublicId === "string" && value.mediaPublicId.length > 0;
@@ -142,11 +132,13 @@ export function SessionTaskView(props: SessionTaskViewProps) {
 
   return (
     <PracticeFrame
-      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode} />}
+      sidebar={<PracticeSupport key={task.taskCode} taskCode={task.taskCode}
+        hints={<AnswerHintCard key={task.publicId} content={task.content} />} />}
       header={<SessionHeader title={props.title} subtitle={skill ? t(skill) : task.section}
         parts={sessionParts(session)} questionNumber={questionNum} questionCount={session.totalItemCount}
         pauseDisabled={locked || recorderBusy}
-        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />}
+        pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause}
+        finishAction={props.finishAction} />}
       footer={<SessionFooter
         busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={disabled.prev}
         showSkip={props.showSkip} skipDisabled={disabled.skip} onSkip={props.onSkip}
@@ -173,22 +165,12 @@ export function SessionTaskView(props: SessionTaskViewProps) {
           {timedFrame && fixture ? (
             <TimedTaskFrame key={task.publicId} timing={timedFrame} isSpeaking={isSpeaking}
               hasPromptAudio={Boolean(fixture.audioUrl)} hasSavedRecording={isSpeaking && hasSavedRecording}
-              onRefreshPrompt={props.onRefreshPrompt} onTimeUp={props.onTimeUp}>
+              onRefreshPrompt={props.onRefreshPrompt} onTimeUp={props.onTimeUp} onAnswerReady={props.onSubmitAnswer}>
               {({ timed, locked: frameLocked, attempt }) => renderBody(timed, frameLocked, attempt)}
             </TimedTaskFrame>
           ) : renderBody()}
           {missing === "answer" ? <FieldWarning message={t("ui.sessionNoAnswer")} /> : null}
         </div>
-        {isSubmitted ? (
-          <InlineResultCard
-            api={api}
-            sessionId={session.publicId}
-            itemId={task.publicId}
-            initialResult={result}
-            timeSpentSeconds={timeSpentSeconds}
-            onResultSettled={props.onResultSettled}
-          />
-        ) : null}
       </div>
     </PracticeFrame>
   );

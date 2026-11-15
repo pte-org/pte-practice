@@ -59,7 +59,7 @@ describe("dashboard resume disclosure", () => {
     expect(html.match(/resume-item-featured/g)).toHaveLength(1);
     expect(html).toContain("View all");
     expect(html).toContain('class="resume-count">22</span>');
-    expect(html).toContain('class="pte-button resume-toggle"');
+    expect(html).toContain('class="icon-button resume-toggle" aria-label="View all"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).toContain('aria-controls="dashboard-resume-content"');
     expect(html.match(/sessionId=0"/g)).toHaveLength(1);

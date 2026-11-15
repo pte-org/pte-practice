@@ -11,56 +11,38 @@ import { countPracticeWords } from "./media/text-utils";
 import { sessionDisplayName } from "./presentation";
 import { useLeaveGuard } from "./session/useLeaveGuard";
 import { createPracticeApiClient, PracticeApiError } from "./api";
-import { PRACTICE_ROUTES } from "./constants";
-import type { PracticeItemResult, PracticeSession, PracticeTaskResponse } from "./contracts";
-import type { PracticeTaskFixture } from "./fixtures";
+import { MOCK_TEST_KIND, PRACTICE_ROUTES } from "./constants";
+import type { PracticeItemResult, PracticeSession } from "./contracts";
 import { uploadPracticeRecording } from "./media/api";
-import { createRecordingCommitter } from "./media/recordingDrafts";
+import { createRecordingCommitter, hasLocalRecording } from "./media/recordingDrafts";
 import { createRecordingDraftSaver } from "./session/recordingCommit";
 import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./session-state";
 import { fixtureFromPracticeTask } from "./task-content";
 import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./session/session-draft";
-import { footerActions } from "./session/footer-actions";
+import { footerButtons } from "./session/footer-buttons";
+import { historyFromReview, pendingResult, type HistoryItem } from "./session/session-history";
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
+import { FinishSessionButton } from "./session/FinishSessionButton";
 import { SessionTaskView, type MissingField } from "./session/SessionTaskView";
 import { useHeartbeat } from "./session/useHeartbeat";
 import { useSessionDraft } from "./session/useSessionDraft";
 import { useSessionLifecycle } from "./session/useSessionLifecycle";
 import { useSessionMutations } from "./session/useSessionMutations";
 
-interface HistoryItem {
-  task: PracticeTaskResponse;
-  fixture: PracticeTaskFixture | null;
-  answer: Record<string, unknown>;
-  result: PracticeItemResult | null;
-  timeSpentSeconds: number;
-  isSkipped?: boolean;
-}
-
-interface CurrentAnswered {
-  task: PracticeTaskResponse;
-  fixture: PracticeTaskFixture | null;
-  answer: Record<string, unknown>;
-  result: PracticeItemResult;
-  timeSpentSeconds: number;
-  nextSession: PracticeSession;
-}
-
 export function PracticeSessionView() {
   const router = useRouter();
   const { t } = useTranslation();
   const api = useMemo(() => createPracticeApiClient(), []);
   const [state, dispatch] = useReducer(practiceSessionReducer, INITIAL_PRACTICE_SESSION_STATE);
-  const [currentAnswered, setCurrentAnswered] = useState<CurrentAnswered | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
   const [missing, setMissing] = useState<MissingField>(null);
   const sessionRef = useRef<PracticeSession | null>(null);
   const questionStartTime = useRef<number>(0);
   const { draft, draftTaskId, setDraft, setDraftTaskId, hydrateDraft, editAnswer, readDraft, forgetDraft,
-    recordingDrafts, hasRecordingDrafts } = useSessionDraft();
+    recordingDrafts, hasRecordingDrafts, restoreRecordings } = useSessionDraft();
   const [commitRecording] = useState(createRecordingCommitter);
   const [saveRecordingDrafts] = useState(createRecordingDraftSaver);
   const { showToast } = useToast();
@@ -86,7 +68,6 @@ export function PracticeSessionView() {
   const hydratedSessionId = useRef<string | null>(null);
   const resetScreen = useCallback(() => {
     // This view stays mounted across tasks; the previous task's warning must not leak into the next session.
-    setCurrentAnswered(null);
     setHistory([]);
     setViewingHistoryIndex(null);
     setMissing(null);
@@ -109,68 +90,30 @@ export function PracticeSessionView() {
     if (session.answeredItemCount > 0 || (session.currentTask && session.currentTask.orderIndex > 0)) {
       hydratedSessionId.current = session.publicId;
       void api.getReview(session.publicId).then((review) => {
-        const completedItems = review.items.filter(
-          (item) => item.status === "ANSWERED" || item.status === "SKIPPED"
-        );
-        if (completedItems.length === 0) return;
-
-        const newHistory: HistoryItem[] = completedItems.map((item) => {
-          const pastTask: PracticeTaskResponse = {
-            publicId: item.publicId,
-            orderIndex: item.orderIndex,
-            taskCode: item.taskCode,
-            displayName: item.displayName,
-            section: item.section,
-            rendererKey: item.rendererKey,
-            contractVersion: 1,
-            answerSchemaVersion: 1,
-            status: item.status,
-            savedPayload: item.savedPayload,
-            confidence: null,
-            content: {
-              promptText: item.promptText,
-              minWordCount: null,
-              maxWordCount: null,
-              audioPromptRef: null,
-              imagePromptRef: null,
-              options: item.options,
-              audioUrl: null,
-              imageUrl: null,
-            },
-            timing: null,
-          };
-          const pastFixture = fixtureFromPracticeTask(pastTask);
-          const pastAnswer = parsePayload(item.savedPayload);
-          const pastResult: PracticeItemResult | null = item.status === "ANSWERED" ? {
-            itemPublicId: item.publicId,
-            taskCode: item.taskCode,
-            state: item.score !== null ? "SCORED" : "SCORING",
-            score: item.score ?? 0,
-            scoreStatus: null,
-            subScores: {},
-            feedback: null,
-            transcript: null,
-            failureCode: null,
-            retryable: false,
-            scoredAt: null,
-          } : null;
-
-          return {
-            task: pastTask,
-            fixture: pastFixture,
-            answer: pastAnswer,
-            result: pastResult,
-            timeSpentSeconds: 0,
-            isSkipped: item.status === "SKIPPED",
-          };
-        });
-
+        const newHistory = historyFromReview(review.items);
+        if (newHistory.length === 0) return;
         setHistory((prev) => (prev.length === 0 ? newHistory : prev));
       }).catch(() => {
         // Non-fatal if review fetch fails
       });
     }
   }, [api, state.session]);
+
+  // Recordings made before the tab was closed or reloaded come back from this device; the current one is shown.
+  const restoredFor = useRef<string | null>(null);
+  const loadedSessionId = state.session?.publicId;
+  useEffect(() => {
+    if (!loadedSessionId || restoredFor.current === loadedSessionId) return;
+    restoredFor.current = loadedSessionId;
+    void restoreRecordings(loadedSessionId).then((itemIds) => {
+      const current = sessionRef.current?.currentTask;
+      if (!current || !itemIds.includes(current.publicId)) return;
+      const kept = readDraft(loadedSessionId, current.publicId);
+      if (!kept) return;
+      setDraftTaskId(current.publicId);
+      setDraft(kept.payload);
+    });
+  }, [loadedSessionId, readDraft, restoreRecordings, setDraft, setDraftTaskId]);
 
   const currentTaskId = state.session?.currentTask?.publicId;
   useEffect(() => {
@@ -181,10 +124,10 @@ export function PracticeSessionView() {
   const fixture = useMemo(() => sessionTask ? fixtureFromPracticeTask(sessionTask) : null, [sessionTask]);
   const activeTask = viewingHistoryIndex !== null
     ? history[viewingHistoryIndex]?.task ?? sessionTask
-    : (currentAnswered ? currentAnswered.task : sessionTask);
+    : sessionTask;
   const activeFixture = viewingHistoryIndex !== null
     ? history[viewingHistoryIndex]?.fixture ?? fixture
-    : (currentAnswered ? currentAnswered.fixture : fixture);
+    : fixture;
 
   useEffect(() => {
     const session = state.session;
@@ -206,6 +149,16 @@ export function PracticeSessionView() {
       return;
     }
     router.push(PRACTICE_ROUTES.home);
+  };
+  // Leaves without saving the answer in progress: unsaved recordings are dropped, earlier saved answers stay. A
+  // session with nothing saved is dropped on the server too, so Home does not list it as in progress.
+  const exitWithoutSaving = async () => {
+    const session = sessionRef.current ?? state.session;
+    if (session) for (const entry of recordingDrafts(session.publicId)) forgetDraft(session.publicId, entry.itemId);
+    closeConfirm();
+    // A failed discard only leaves the empty session listed; leaving must still work.
+    if (session) await api.discardSession(session.publicId).catch(() => false);
+    router.replace(PRACTICE_ROUTES.home);
   };
   const unavailable = () => Promise.reject(new PracticeApiError(t("ui.sessionError"), 0, "SESSION_UNAVAILABLE"));
 
@@ -300,99 +253,27 @@ export function PracticeSessionView() {
     },
     (next) => {
       forgetDraft(session.publicId, task.publicId);
-      const newResult: PracticeItemResult = next.itemResult ?? {
-        itemPublicId: task.publicId,
-        taskCode: task.taskCode,
-        state: "SCORED",
-        score: 0,
-        scoreStatus: null,
-        subScores: {},
-        feedback: null,
-        transcript: null,
-        failureCode: null,
-        retryable: false,
-        scoredAt: null,
-      };
-
+      const newResult: PracticeItemResult = next.itemResult
+        // No result back means the answer is only saved: it waits for "Chấm điểm", it did not score 0.
+        ?? { ...pendingResult(task.publicId, task.taskCode), state: "NONE" };
+      const answered = { answer: answerDraft, result: newResult, isSkipped: false, timeSpentSeconds: timeSpent };
       if (viewingHistoryIndex !== null) {
-        setHistory((prev) => prev.map((item, idx) => idx === viewingHistoryIndex ? {
-          ...item,
-          answer: answerDraft,
-          result: newResult,
-          isSkipped: false,
-          timeSpentSeconds: timeSpent,
-        } : item));
-        sessionRef.current = next;
-        dispatch({ type: "mutation_succeeded", session: next });
+        setHistory((prev) => prev.map((item, idx) => idx === viewingHistoryIndex ? { ...item, ...answered } : item));
       } else {
-        setCurrentAnswered({
-          task,
-          fixture: activeFixture,
-          answer: answerDraft,
-          result: newResult,
-          timeSpentSeconds: timeSpent,
-          nextSession: next,
-        });
-        sessionRef.current = next;
-        dispatch({ type: "mutation_succeeded", session: next });
+        // The answer is saved: move straight on, its result stays reachable with "Trước".
+        setHistory((prev) => [...prev, { task, fixture: activeFixture, ...answered }]);
+        setViewingHistoryIndex(null);
+        setDraft({});
+        setDraftTaskId(next.currentTask?.publicId ?? null);
       }
+      sessionRef.current = next;
+      dispatch({ type: "mutation_succeeded", session: next });
     });
   };
 
-  const handleResultSettled = useCallback((settledResult: PracticeItemResult) => {
-    if (viewingHistoryIndex !== null) {
-      setHistory((prev) => prev.map((item, idx) => idx === viewingHistoryIndex ? {
-        ...item,
-        result: settledResult,
-      } : item));
-    } else {
-      setCurrentAnswered((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          result: settledResult,
-        };
-      });
-    }
-  }, [viewingHistoryIndex]);
-
   const handleNext = () => {
-    // 1. If viewing history, navigate forward until returning to current question
-    if (viewingHistoryIndex !== null) {
-      if (viewingHistoryIndex < history.length - 1) {
-        setViewingHistoryIndex(viewingHistoryIndex + 1);
-      } else {
-        setViewingHistoryIndex(null);
-      }
-      return;
-    }
-
-    // 2. If current task is already submitted and showing inline result, advance to next question
-    if (currentAnswered) {
-      const finishedItem: HistoryItem = {
-        task: currentAnswered.task,
-        fixture: currentAnswered.fixture,
-        answer: currentAnswered.answer,
-        result: currentAnswered.result,
-        timeSpentSeconds: currentAnswered.timeSpentSeconds,
-        isSkipped: false,
-      };
-      setHistory((prev) => [...prev, finishedItem]);
-      const next = currentAnswered.nextSession ?? sessionRef.current ?? state.session;
-      if (next) {
-        sessionRef.current = next;
-      }
-      setCurrentAnswered(null);
-      setViewingHistoryIndex(null);
-      setDraft({});
-      setDraftTaskId(next?.currentTask?.publicId ?? null);
-      // The next question is only now on screen; the time spent reading the last result is not part of it.
-      questionStartTime.current = Date.now();
-      return;
-    }
-
-    // 3. Current question not submitted yet: Next acts as skip
-    void skip();
+    if (viewingHistoryIndex === null) { void skip(); return; }
+    setViewingHistoryIndex(viewingHistoryIndex < history.length - 1 ? viewingHistoryIndex + 1 : null);
   };
 
   const handleSubmitAnswer = () => {
@@ -401,7 +282,7 @@ export function PracticeSessionView() {
 
   /** Timed answering ended: send what is typed (skipping the word-range prompt), or skip an empty question. */
   const handleTimeUp = () => {
-    if (currentAnswered !== null || state.phase === "submitting") return;
+    if (state.phase === "submitting") return;
     const task = activeTask;
     if (!task) return;
     if (hasAnswer(effectiveDraft(task, draftTaskId, draft))) { void submit(true); return; }
@@ -440,7 +321,7 @@ export function PracticeSessionView() {
 
   // A new session starts straight away: the mode was chosen before it was created, so there is no overview step.
   if (state.phase === "overview") return <SessionLoading />;
-  if (state.phase === "completed" && !currentAnswered && viewingHistoryIndex === null) {
+  if (state.phase === "completed" && viewingHistoryIndex === null) {
     return <SessionCompleteCard session={session} api={api} onBackHome={goHome}
       onReview={() => router.push(`${PRACTICE_ROUTES.practiceReview}?sessionId=${session.publicId}`)} />;
   }
@@ -449,30 +330,14 @@ export function PracticeSessionView() {
 
   const activeHistoryItem = viewingHistoryIndex !== null ? history[viewingHistoryIndex] : null;
   const isItemScored = activeHistoryItem ? activeHistoryItem.result !== null : false;
-  const isViewingOrSubmitted = viewingHistoryIndex !== null ? isItemScored : currentAnswered !== null;
-  const isScoring = (currentAnswered !== null && currentAnswered.result.state === "SCORING")
-    || (activeHistoryItem !== null && activeHistoryItem.result?.state === "SCORING");
-
-  const activeValue = viewingHistoryIndex !== null && activeHistoryItem
-    ? (isItemScored ? activeHistoryItem.answer : effectiveDraft(currentTask, draftTaskId, draft))
-    : (currentAnswered ? currentAnswered.answer : effectiveDraft(currentTask, draftTaskId, draft));
-  const activeResult = viewingHistoryIndex !== null && activeHistoryItem
-    ? activeHistoryItem.result
-    : (currentAnswered ? currentAnswered.result : null);
-  const activeTimeSpent = viewingHistoryIndex !== null && activeHistoryItem
-    ? activeHistoryItem.timeSpentSeconds
-    : (currentAnswered ? currentAnswered.timeSpentSeconds : undefined);
-
-  const { showSubmit, showNext, showSkip, showPrev, prevDisabled, readOnly: completedReadOnly } = footerActions({
-    viewingHistory: viewingHistoryIndex !== null,
-    historyIndex: viewingHistoryIndex,
-    historyLength: history.length,
-    isItemScored,
-    answered: currentAnswered !== null,
-    isScoring,
-    submitting: state.phase === "submitting",
-    hasAnswer: hasAnswer(effectiveDraft(currentTask, draftTaskId, draft)),
-    sessionCompleted: session.status === "COMPLETED",
+  const isViewingOrSubmitted = isItemScored;
+  const isScoring = activeHistoryItem?.result?.state === "SCORING";
+  const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
+  const activeValue = activeHistoryItem && isItemScored ? activeHistoryItem.answer : currentDraft;
+  const buttons = footerButtons({
+    viewingHistory: viewingHistoryIndex !== null, atFirstHistoryItem: viewingHistoryIndex === 0,
+    historyLength: history.length, itemScored: isItemScored, isScoring,
+    submitting: state.phase === "submitting", hasAnswer: hasAnswer(currentDraft),
   });
 
   const title = sessionDisplayName(session, (code) => (code === currentTask.taskCode ? currentTask.displayName : code), t);
@@ -485,7 +350,6 @@ export function PracticeSessionView() {
       enabled={session.kind !== "MOCK_TEST"}>
       <SessionTaskView
         key={currentTask.publicId}
-        api={api}
         session={session}
         task={currentTask}
         fixture={activeFixture}
@@ -497,41 +361,44 @@ export function PracticeSessionView() {
         missing={missing}
         value={activeValue}
         isSubmitted={isViewingOrSubmitted}
-        result={activeResult}
-        timeSpentSeconds={activeTimeSpent}
-        onResultSettled={handleResultSettled}
-        showPrev={showPrev}
+        showPrev={buttons.showPrev}
         onPrev={handlePrev}
-        prevDisabled={prevDisabled}
-        showSkip={showSkip}
+        prevDisabled={buttons.prevDisabled}
+        showSkip={buttons.showSkip}
         onSkip={() => void skip()}
-        showSubmit={showSubmit}
+        showSubmit={buttons.showSubmit}
         submitDisabled={state.phase === "submitting"}
-        submitLabel={t("session.submitAnswer")}
+        submitLabel={buttons.submitAdvances ? t("session.next") : t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
         onTimeUp={handleTimeUp}
-        readOnly={completedReadOnly}
-        showNext={showNext}
-        nextLabel={
-          session.status === "COMPLETED" || currentAnswered?.nextSession?.status === "COMPLETED"
-            ? t("score.continue")
-            : t("session.next")
-        }
+        readOnly={session.status === "COMPLETED" && viewingHistoryIndex !== null && !isItemScored}
+        showNext={buttons.showNext}
+        nextLabel={session.status === "COMPLETED" ? t("score.continue") : t("session.next")}
         onChange={(value) => {
           if (!isViewingOrSubmitted) {
             setMissing(null);
             editAnswer(session.publicId, currentTask.publicId, value);
+            // Upload as soon as recording stops; "Tiếp theo" then reuses this upload instead of waiting for it.
+            if (hasLocalRecording(value)) void commitRecording(value, (blob, duration) =>
+              uploadPracticeRecording(api, blob, session.publicId, currentTask.publicId, duration)).catch(() => undefined);
           }
         }}
         onLoadPlayback={() => api.getRecordingPlayback(session.publicId, currentTask.publicId).then((playback) => playback.url)}
         onActivityChange={setRecorderBusy}
         onRefreshPrompt={refreshPrompt}
         onSubmit={handleNext}
-        onPause={() => setConfirm("pause")}
+        onPause={() => {
+          // Nothing done yet means nothing to save: leave at once (the server drops the empty session), no dialog.
+          const untouched = session.answeredItemCount === 0 && !hasRecordingDrafts
+            && !hasAnswer(effectiveDraft(currentTask, draftTaskId, draft));
+          if (untouched) void exitWithoutSaving(); else setConfirm("pause");
+        }}
+        finishAction={session.kind === MOCK_TEST_KIND ? undefined : <FinishSessionButton api={api} sessionId={session.publicId}
+          answeredCount={session.answeredItemCount} totalCount={session.totalItemCount} disabled={state.phase === "submitting" || recorderBusy || !online} />}
       />
-      <ConfirmDialog open={confirm === "pause"} title={t("session.pauseTitle")} description={t("session.pauseDescription")}
-        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.cancel")}
-        onClose={closeConfirm} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
+      <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
+        confirmLabel={t("session.pauseConfirm")} cancelLabel={t("session.exitWithoutSaving")} closeLabel={t("session.cancel")}
+        onClose={closeConfirm} onCancel={() => void exitWithoutSaving()} onConfirm={() => { closeConfirm(); void saveAndExit(); }} />
       {confirm !== null && typeof confirm === "object" ? (
         <ConfirmDialog open tone="warning" title={t("session.wordsTitle").replace("{n}", String(confirm.words))}
           description={t("session.wordsDescription").replace("{min}", String(confirm.min ?? 0))

@@ -2,6 +2,9 @@ import { COMMON_API_ERROR_TEXT, COMMON_TEXT } from "../../common/constants";
 import type { IconName } from "../../common/components";
 import type { CatalogAvailability } from "./contracts";
 
+/** Code of a request that never reached the server (offline, server down); never a sign of bad credentials. */
+export const NETWORK_ERROR_CODE = "NETWORK_ERROR";
+
 export const API_PATHS = {
   login: "/api/v1/auth/login",
   changePassword: "/api/v1/auth/change-password",
@@ -17,6 +20,8 @@ export const API_PATHS = {
 
 /** Between an achieved trait score and its maximum, e.g. "4 / 6". */
 export const SUB_SCORE_MAX_SEPARATOR = " / ";
+/** A mock test's speaking and writing answers are scored together, once the whole test is submitted. */
+export const MOCK_TEST_KIND = "MOCK_TEST";
 
 /**
  * Labels of the Pearson trait keys a rubric-scored result carries (backend rubric catalog). Keys of older results
@@ -246,7 +251,8 @@ export const PRACTICE_STORAGE_KEYS = {
   deviceCheckEvent: "pte.practice.device-check-changed",
 } as const;
 
-export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
+/** 0 means "every published question": the count is then left out of the start request and the server takes all. */
+export const DEFAULT_PRACTICE_QUESTION_COUNT = 0;
 export const DEFAULT_API_BASE_URL = "http://localhost:8080";
 export const ENTITLEMENT_STALE_THRESHOLD_MS = 10_000;
 export const PRACTICE_SESSION_CLEARED_EVENT = "pte-practice-session-cleared";

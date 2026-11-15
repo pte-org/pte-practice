@@ -1,10 +1,10 @@
 import type { PracticeTimingMode } from "../session-contracts";
 import { DEFAULT_PRACTICE_QUESTION_COUNT, PRACTICE_STORAGE_KEYS } from "../constants";
 
-/** 50 is the server maximum and stands for "all the questions of this task type". */
-export const QUESTION_COUNT_OPTIONS = [5, 10, 50] as const;
+/** 0 stands for "all the questions of this task type"; the session has no upper limit. */
+export const QUESTION_COUNT_OPTIONS = [5, 10, 0] as const;
 export type QuestionCountOption = typeof QUESTION_COUNT_OPTIONS[number];
-export const ALL_QUESTIONS_COUNT: QuestionCountOption = 50;
+export const ALL_QUESTIONS_COUNT: QuestionCountOption = 0;
 
 export interface ModePreference {
   timingMode: PracticeTimingMode;
@@ -48,8 +48,8 @@ export function parseModePreference(raw: string | null): ModePreference {
     const record = typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
     return {
       timingMode: record.timingMode === "TIMED" ? "TIMED" : DEFAULT_MODE_PREFERENCE.timingMode,
-      questionCount: isQuestionCountOption(record.questionCount)
-        ? record.questionCount : DEFAULT_MODE_PREFERENCE.questionCount,
+      // There is no count picker any more; older stored counts (5, 10) must not keep limiting the session.
+      questionCount: DEFAULT_MODE_PREFERENCE.questionCount,
     };
   } catch {
     return DEFAULT_MODE_PREFERENCE;

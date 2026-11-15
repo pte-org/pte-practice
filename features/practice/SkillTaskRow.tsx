@@ -60,7 +60,7 @@ export const SkillTaskRow = ({
     ) {
       return;
     }
-    actionRef.current?.querySelector<HTMLElement>(".task-chevron-btn")?.click();
+    actionRef.current?.querySelector<HTMLElement>(".task-primary-action")?.click();
   };
 
   return (
@@ -74,9 +74,12 @@ export const SkillTaskRow = ({
       <span className="skill-task-copy">
         <strong>{taskDisplayName(task.code, task.displayName, t)}</strong>
         <span>
-          {task.answeredQuestionCount > 0
-            ? `${task.answeredQuestionCount} ${t("presentation.answers")}`
-            : t("presentation.statusPending")}
+          {task.availableQuestionCount > 0
+            ? t("presentation.answeredOfTotal").replace("{answered}", String(Math.min(task.answeredQuestionCount,
+              task.availableQuestionCount))).replace("{total}", String(task.availableQuestionCount))
+            : task.answeredQuestionCount > 0
+              ? `${task.answeredQuestionCount} ${t("presentation.answers")}`
+              : t("presentation.statusPending")}
           {activeSession ? (
             <span className="active-session-indicator">
               {" "}· {t("progress.inProgress")} ({activeSession.answeredItemCount}/{activeSession.totalItemCount})

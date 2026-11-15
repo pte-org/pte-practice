@@ -57,6 +57,9 @@
 .practice-support .collapsible-head { padding: 0; }
 .practice-support .collapsible-toggle { width: 100%; gap: 10px; font-size: 0.875rem; }
 .practice-ai-entry { display: grid; justify-items: start; gap: 12px; padding: 20px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent) 3%, var(--surface))); color: var(--accent); }
+.practice-ai-entry-title { display: flex; align-items: center; gap: 8px; }
+.answer-hint-list { margin: 0; padding: 14px 16px 14px 34px; display: grid; gap: 6px; border-radius: 12px; background: var(--accent-soft); color: var(--ink, inherit); }
+.answer-hint-list li::marker { color: var(--accent); }
 .practice-ai-entry p { margin: 0; }
 .practice-ai-entry .button { width: 100%; border-radius: 12px; }
 .practice-skeleton-card { display: grid; gap: 24px; padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }

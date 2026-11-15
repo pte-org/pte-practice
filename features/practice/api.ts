@@ -1,4 +1,4 @@
-import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL } from "./constants";
+import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL, NETWORK_ERROR_CODE } from "./constants";
 import type {
   PracticeCatalog,
   PracticeEntitlement,
@@ -23,6 +23,7 @@ import {
 } from "./contracts";
 import { clearPracticeSession, getPracticeSession, savePracticeSession } from "./session-storage";
 import { refreshOnce } from "./token-refresh";
+import { scoringRequests } from "./scoring-api";
 import type { ChangePasswordBody } from "../auth/change-password-body";
 
 export class PracticeApiError extends Error {
@@ -127,6 +128,7 @@ export function createPracticeApiClient() {
       requireItemResult(await request<unknown>(
         `${API_PATHS.practiceSessions}/${sessionPublicId}/items/${itemPublicId}/scoring/retry`,
         { method: "POST", headers: { "Idempotency-Key": idempotencyKey } })),
+    ...scoringRequests(request, (code) => new PracticeApiError(API_ERROR_TEXT.invalidSession, 502, code)),
     getReview: async (sessionPublicId: string): Promise<PracticeReview> =>
       normalizeReview(await request<unknown>(`${API_PATHS.practiceSessions}/${sessionPublicId}/review`), sessionPublicId),
     requestResponseAudio: (body: {
@@ -203,7 +205,7 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new PracticeApiError(API_ERROR_TEXT.network, 0, "NETWORK_ERROR");
+    throw new PracticeApiError(API_ERROR_TEXT.network, 0, NETWORK_ERROR_CODE);
   }
 
   if (response.status === 401 && allowRefresh && session?.refreshToken) {
@@ -244,7 +246,7 @@ async function refreshSession(refreshToken: string): Promise<boolean> {
       body: JSON.stringify({ refreshToken }),
     });
   } catch {
-    throw new PracticeApiError(API_ERROR_TEXT.network, 0, "NETWORK_ERROR");
+    throw new PracticeApiError(API_ERROR_TEXT.network, 0, NETWORK_ERROR_CODE);
   }
   // Only an explicit authentication refusal invalidates credentials. Outages remain retryable.
   if (response.status === 401 || response.status === 403) return false;

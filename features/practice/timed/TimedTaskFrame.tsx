@@ -29,6 +29,8 @@ interface TimedTaskFrameProps {
   onRefreshPrompt: () => Promise<void>;
   /** The answering clock ran out: the session submits what is typed so far (or skips an empty answer). */
   onTimeUp?: () => void;
+  /** A speaking answer has just been recorded: the session sends it and moves on, as in the real test. */
+  onAnswerReady?: () => void;
   children: (view: { timed: TimedRendererControl; locked: boolean; attempt: number }) => ReactNode;
 }
 
@@ -52,6 +54,16 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
     showToast(t("timed.timeUp"), { tone: "warning" });
     onTimeUpRef.current?.();
   }, [phase, showToast, t]);
+
+  // Only the step into "done" sends the answer; a question opened with a recording already saved starts in "done".
+  const previousPhase = useRef(phase);
+  const answerReady = useRef(props.onAnswerReady);
+  useEffect(() => { answerReady.current = props.onAnswerReady; });
+  useEffect(() => {
+    const before = previousPhase.current;
+    previousPhase.current = phase;
+    if (isSpeaking && phase === "done" && before !== "done") answerReady.current?.();
+  }, [phase, isSpeaking]);
 
   const timed = useMemo<TimedRendererControl>(() => ({
     playPrompt: phase === "prompt",

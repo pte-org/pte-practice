@@ -10,12 +10,15 @@ type ItemResultWatch = "watching" | "settled" | "timeout" | "error";
 export interface ItemResultControls {
   result: PracticeItemResult | null;
   watch: ItemResultWatch;
+  /** A "Chấm điểm" or retry request is on its way. */
   retrying: boolean;
-  /** Set when the retry request itself failed. */
+  /** Set when that request itself failed. */
   retryError: string | null;
   /** Resume polling after a timeout or a run of failed requests. */
   recheck: () => void;
   retryScoring: () => void;
+  /** "Chấm điểm": sends an unscored (NONE) answer to the AI scorer, then follows it like any scoring answer. */
+  requestScoring: () => void;
 }
 
 /**
@@ -60,10 +63,10 @@ export function useItemResult(
     setPollRun((run) => run + 1);
   }, []);
 
-  const retryScoring = useCallback(() => {
+  const send = useCallback((call: () => Promise<PracticeItemResult>) => {
     setRetrying(true);
     setRetryError(null);
-    api.retryScoring(sessionId, itemId)
+    call()
       .then((next) => {
         latest.current = next;
         setResult(next);
@@ -72,7 +75,12 @@ export function useItemResult(
       })
       .catch((reason: unknown) => setRetryError(reason instanceof Error ? reason.message : "retry failed"))
       .finally(() => setRetrying(false));
-  }, [api, sessionId, itemId, recheck]);
+  }, [recheck]);
 
-  return { result, watch, retrying, retryError, recheck, retryScoring };
+  const retryScoring = useCallback(() => send(() => api.retryScoring(sessionId, itemId)),
+    [api, sessionId, itemId, send]);
+  const requestScoring = useCallback(() => send(() => api.requestScoring(sessionId, itemId)),
+    [api, sessionId, itemId, send]);
+
+  return { result, watch, retrying, retryError, recheck, retryScoring, requestScoring };
 }

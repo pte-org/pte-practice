@@ -8,8 +8,8 @@ describe("practiceSessionUrl", () => {
   });
 
   it("encodes the untimed all-questions choice", () => {
-    expect(practiceSessionUrl("WRITE_ESSAY", { timingMode: "UNTIMED", questionCount: 50 }))
-      .toBe("/practice-tests/session?task=WRITE_ESSAY&mode=UNTIMED&count=50");
+    expect(practiceSessionUrl("WRITE_ESSAY", { timingMode: "UNTIMED", questionCount: 0 }))
+      .toBe("/practice-tests/session?task=WRITE_ESSAY&mode=UNTIMED&count=0");
   });
 });
 

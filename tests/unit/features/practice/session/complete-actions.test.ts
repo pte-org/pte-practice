@@ -4,9 +4,9 @@ import { continueHref, sessionAverageScore } from "@/features/practice/session/c
 describe("continueHref", () => {
   it("restarts the same task type or skill untimed with the default count", () => {
     expect(continueHref({ kind: "TASK", skillCode: null, taskCode: "READ_ALOUD" }))
-      .toBe("/practice-tests/session?task=READ_ALOUD&mode=UNTIMED&count=10");
+      .toBe("/practice-tests/session?task=READ_ALOUD&mode=UNTIMED&count=0");
     expect(continueHref({ kind: "SKILL", skillCode: "READING", taskCode: null }))
-      .toBe("/practice-tests/session?skill=READING&mode=UNTIMED&count=10");
+      .toBe("/practice-tests/session?skill=READING&mode=UNTIMED&count=0");
   });
 
   it("has no action after a mock test or without the data", () => {

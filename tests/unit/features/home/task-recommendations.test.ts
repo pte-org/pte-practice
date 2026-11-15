@@ -7,7 +7,7 @@ const entry = (id: string, taskCode: string | null, changes: Partial<PracticePro
   sessionStatus: "IN_PROGRESS", startedAt: "2026-11-07T01:00:00Z", completedAt: null,
   lastActivityAt: "2026-11-07T02:00:00Z", answeredItemCount: 2, draftItemCount: 0,
   skippedItemCount: 0, totalItemCount: 10, lowConfidenceCount: 0, mediumConfidenceCount: 0,
-  highConfidenceCount: 0, score: null, kind: "TASK", skillCode: "SPEAKING", taskCode, ...changes,
+  highConfidenceCount: 0, unscoredAiCount: 0, scoringCount: 0, scoringFailedCount: 0, score: null, kind: "TASK", skillCode: "SPEAKING", taskCode, ...changes,
 });
 const build = (entries: PracticeProgressEntry[]) => buildTaskRecommendations(entries, (code) => `Task ${code}`, (key) => key);
 

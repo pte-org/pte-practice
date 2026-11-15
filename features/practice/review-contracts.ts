@@ -1,6 +1,7 @@
 import { normalizeEstimatedScores } from "../mockTests/mock-test-contracts";
 import { asRecord } from "./contract-helpers";
 import type { PracticeReview, PracticeTaskContentOption } from "./contracts";
+import { normalizePracticeItemResult } from "./session-contracts";
 
 function reviewOptions(value: unknown): PracticeTaskContentOption[] {
   return Array.isArray(value) ? value.flatMap((entry) => {
@@ -25,8 +26,11 @@ export function normalizeReview(response: unknown, sessionPublicId: string): Pra
       savedPayload: typeof item.savedPayload === "string" ? item.savedPayload : null,
       rendererKey: typeof item.rendererKey === "string" ? item.rendererKey : null,
       options: reviewOptions(item.options),
-      score: typeof item.aiScore === "number" ? item.aiScore : typeof item.objectiveScore === "number" ? item.objectiveScore : null }];
+      score: typeof item.aiScore === "number" ? item.aiScore : typeof item.objectiveScore === "number" ? item.objectiveScore : null,
+      result: normalizePracticeItemResult(item.result),
+      cefrLevel: typeof item.cefrLevel === "string" ? item.cefrLevel : null }];
   }) : [];
   return { sessionPublicId: typeof record.sessionPublicId === "string" ? record.sessionPublicId : sessionPublicId, items,
-    estimatedScores: normalizeEstimatedScores(record.estimatedScores) };
+    estimatedScores: normalizeEstimatedScores(record.estimatedScores),
+    kind: typeof record.kind === "string" ? record.kind : null };
 }
