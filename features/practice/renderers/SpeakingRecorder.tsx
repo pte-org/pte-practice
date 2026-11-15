@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppIcon, LoadingState } from "@/common/components";
 import { useTranslation, type TranslationKey } from "@/common/i18n";
-import { recordingIssue } from "../answer-checks";
+import { recordingReviewIssue } from "../answer-checks";
 import type { TaskRendererProps } from "./RendererTypes";
 import { AudioWaveform } from "../media/AudioWaveform";
 import { PromptAudioPlayer } from "../media/PromptAudioPlayer";
@@ -177,7 +177,7 @@ export function SpeakingRecorder({
     setPeaks(recording.peaks);
     setLocalUrl(URL.createObjectURL(recording.blob));
     // Untimed only: a timed question must save whatever was recorded, its rhythm does not wait.
-    const found = timed ? null : recordingIssue(pending.current.durationSeconds, maxLevel.current);
+    const found = recordingReviewIssue(Boolean(timed), pending.current.durationSeconds, maxLevel.current);
     setIssue(found);
     if (found) {
       // Silent or very short: nothing is kept yet, so the learner can listen back and then redo or keep it.

@@ -143,3 +143,25 @@ export function examDateYears(bounds: { min: string; max: string }): number[] {
   const last = Number(bounds.max.slice(0, 4));
   return Array.from({ length: Math.max(0, last - first + 1) }, (_, index) => first + index);
 }
+
+export type ManualExamDate =
+  | { kind: "incomplete" }
+  | { kind: "valid" | "outOfRange"; iso: string; year: number; monthIndex: number };
+
+/**
+ * Reads a typed date ("25/12/2026", "25-12-2026" or "25.12.2026"). Text that is not yet a real calendar date is
+ * `incomplete`; a real date outside the allowed range is `outOfRange`, so the caller can show a message and keep it
+ * from being saved.
+ */
+export function parseManualExamDate(text: string, bounds: { min: string; max: string }): ManualExamDate {
+  const match = text.trim().match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+  if (!match) return { kind: "incomplete" };
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || year < 2000 || year > 2100) return { kind: "incomplete" };
+  if (day > new Date(year, month, 0).getDate()) return { kind: "incomplete" };
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return { kind: isExamDateInBounds(iso, bounds) ? "valid" : "outOfRange", iso, year, monthIndex: month - 1 };
+}
+

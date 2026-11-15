@@ -4,6 +4,7 @@ import {
   examDateBounds,
   examDateYears,
   isExamDateInBounds,
+  parseManualExamDate,
   formatExamDate,
   formatMonthYearHeader,
   formatShortExamDate,
@@ -128,3 +129,28 @@ describe("exam date range", () => {
     expect(examDateYears(bounds)).toEqual([2026, 2027, 2028]);
   });
 });
+
+describe("typed exam date", () => {
+  const bounds = examDateBounds(new Date(2026, 10, 15));
+
+  it("reads a date in range with any of the three separators", () => {
+    for (const text of ["25/12/2026", "25-12-2026", "25.12.2026", " 5/1/2027 "]) {
+      expect(parseManualExamDate(text, bounds).kind).toBe("valid");
+    }
+    expect(parseManualExamDate("5/1/2027", bounds)).toEqual({ kind: "valid", iso: "2027-01-05", year: 2027, monthIndex: 0 });
+  });
+
+  it("flags a real date outside the range so it cannot be saved", () => {
+    expect(parseManualExamDate("14/11/2026", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("01/01/2020", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("16/11/2028", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("01/01/2040", bounds).kind).toBe("outOfRange");
+  });
+
+  it("treats text that is not yet a real date as incomplete", () => {
+    for (const text of ["", "25/12", "25/12/26", "31/02/2027", "32/01/2027", "10/13/2027", "00/01/2027", "abc", "01/01/1999", "01/01/2101"]) {
+      expect(parseManualExamDate(text, bounds).kind, text).toBe("incomplete");
+    }
+  });
+});
+

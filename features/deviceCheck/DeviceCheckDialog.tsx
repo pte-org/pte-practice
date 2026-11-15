@@ -72,7 +72,7 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
       recorder.current?.cancel();
       recorder.current = null;
     };
-  }, []);
+  }, [stopTimer]);
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import {
   getWeekdayLabels,
   examDateYears,
   isExamDateInBounds,
+  parseManualExamDate,
 } from "./exam-date";
 
 /**
@@ -94,26 +95,16 @@ export function ExamDateLine() {
   const handleManualDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setManualDateText(val);
-
-    const match = val.trim().match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-    if (match) {
-      const d = Number(match[1]);
-      const m = Number(match[2]);
-      const y = Number(match[3]);
-      if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 2000 && y <= 2100) {
-        const daysInMonth = new Date(y, m, 0).getDate();
-        if (d <= daysInMonth) {
-          const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-          // A date the server would refuse is not kept as the selection, so Save cannot send it.
-          setSelectedDate(isExamDateInBounds(iso, bounds) ? iso : "");
-          setDateOutOfRange(!isExamDateInBounds(iso, bounds));
-          setViewYear(y);
-          setViewMonth(m - 1);
-          return;
-        }
-      }
+    const parsed = parseManualExamDate(val, bounds);
+    if (parsed.kind === "incomplete") {
+      setDateOutOfRange(false);
+      return;
     }
-    setDateOutOfRange(false);
+    // A date the server would refuse is not kept as the selection, so Save cannot send it.
+    setSelectedDate(parsed.kind === "valid" ? parsed.iso : "");
+    setDateOutOfRange(parsed.kind === "outOfRange");
+    setViewYear(parsed.year);
+    setViewMonth(parsed.monthIndex);
   };
 
   const handleClose = () => {
