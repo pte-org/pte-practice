@@ -11,6 +11,7 @@ import type { PracticeReview, PracticeReviewItem } from "./contracts";
 import { describeSavedAnswer } from "./review-answer";
 import { EstimatedScores } from "../mockTests/EstimatedScores";
 import { ScoreView } from "./ScoreView";
+import { ReviewRecordingPlayer } from "./ReviewRecordingPlayer";
 
 export function PracticeReviewView() {
   const params = useSearchParams();
@@ -71,7 +72,7 @@ function ReviewItem({
         subtitle={`${skill ? t(skill) : item.section} · ${t(itemStatusKey(item.status))}`}
         actions={<span className={`score-badge score-badge-${scoreTone(item.score)}`}>{formatScore(item.score)}</span>}>
         {item.promptText ? <p className="review-prompt">{item.promptText}</p> : null}
-        <SavedAnswerView item={item} />
+        <SavedAnswerView item={item} sessionId={sessionId} api={api} />
         {item.status === "ANSWERED"
           ? <ScoreView api={api} sessionId={sessionId} itemId={item.publicId} initial={null} compact /> : null}
       </CollapsibleSection>
@@ -79,7 +80,7 @@ function ReviewItem({
   );
 }
 
-function SavedAnswerView({ item }: { item: PracticeReviewItem }) {
+function SavedAnswerView({ item, sessionId, api }: { item: PracticeReviewItem; sessionId: string; api: PracticeApiClient }) {
   const { t } = useTranslation();
   const answer = describeSavedAnswer(item.savedPayload, item.promptText, item.options);
   switch (answer.kind) {
@@ -87,9 +88,12 @@ function SavedAnswerView({ item }: { item: PracticeReviewItem }) {
       return <p className="review-answer review-answer-empty">{t("score.answerNotSubmitted")}</p>;
     case "audio":
       return (
-        <p className="review-answer review-answer-text">
-          {t("score.answerRecorded")}{answer.seconds != null ? ` · ${answer.seconds} ${t("score.answerSeconds")}` : ""}
-        </p>
+        <div className="review-answer">
+          <p className="review-answer-text">
+            {t("score.answerRecorded")}{answer.seconds != null ? ` · ${answer.seconds} ${t("score.answerSeconds")}` : ""}
+          </p>
+          <ReviewRecordingPlayer api={api} sessionId={sessionId} itemId={item.publicId} />
+        </div>
       );
     case "text":
       return <p className="review-answer review-answer-text">{answer.text}</p>;

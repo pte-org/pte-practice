@@ -36,9 +36,15 @@ describe("describeSavedAnswer", () => {
   });
 
   it("pairs each blank with the word the student used", () => {
-    expect(describeSavedAnswer('{"placements":{"1":"cat","2":"dog"}}', null, []).kind).toBe("entries");
-    expect(describeSavedAnswer('{"selections":{"2":"dog"}}', null, []))
+    // Gaps are keyed from 0 in the payload but numbered from 1 for the learner, like blanks and order.
+    expect(describeSavedAnswer('{"placements":{"0":"cat","1":"dog"}}', null, [])).toEqual({
+      kind: "entries",
+      entries: [{ label: "1", value: "cat" }, { label: "2", value: "dog" }],
+    });
+    expect(describeSavedAnswer('{"selections":{"1":"dog"}}', null, []))
       .toEqual({ kind: "entries", entries: [{ label: "2", value: "dog" }] });
+    expect(describeSavedAnswer('{"selections":{"x":"dog"}}', null, []))
+      .toEqual({ kind: "entries", entries: [{ label: "x", value: "dog" }] });
     expect(describeSavedAnswer('{"blanks":["cat",""]}', null, [])).toEqual({
       kind: "entries",
       entries: [{ label: "1", value: "cat" }, { label: "2", value: "" }],
