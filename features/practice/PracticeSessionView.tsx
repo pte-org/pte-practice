@@ -20,6 +20,7 @@ import { createRecordingDraftSaver } from "./session/recordingCommit";
 import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./session-state";
 import { fixtureFromPracticeTask } from "./task-content";
 import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./session/session-draft";
+import { footerActions } from "./session/footer-actions";
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
@@ -462,56 +463,17 @@ export function PracticeSessionView() {
     ? activeHistoryItem.timeSpentSeconds
     : (currentAnswered ? currentAnswered.timeSpentSeconds : undefined);
 
-  let showSubmit = false;
-  let showNext = false;
-  let showSkip = false;
-  let showPrev = false;
-  let prevDisabled = false;
-  // A finished session can still be browsed, but the server no longer takes answers: a skipped question seen
-  // from the history is read-only there (while the session is running it can still be answered).
-  const completedReadOnly = viewingHistoryIndex !== null && !isItemScored && session.status === "COMPLETED";
-
-  if (viewingHistoryIndex !== null) {
-    showPrev = true;
-    prevDisabled = viewingHistoryIndex === 0;
-    if (isItemScored) {
-      showSkip = false;
-      showSubmit = false;
-      showNext = !isScoring && state.phase !== "submitting";
-    } else {
-      const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
-      const hasUserAnswer = hasAnswer(currentDraft);
-      if (hasUserAnswer && !completedReadOnly) {
-        showSubmit = true;
-        showSkip = false;
-        showNext = false;
-      } else {
-        showSubmit = false;
-        showSkip = false;
-        showNext = true;
-      }
-    }
-  } else if (currentAnswered !== null) {
-    showPrev = history.length > 0;
-    showSkip = false;
-    showSubmit = false;
-    // Show Next only when scoring is settled, hide while scoring or submitting
-    showNext = !isScoring && state.phase !== "submitting";
-  } else {
-    const currentDraft = effectiveDraft(currentTask, draftTaskId, draft);
-    const hasUserAnswer = hasAnswer(currentDraft);
-    if (hasUserAnswer) {
-      showPrev = history.length > 0;
-      showSkip = false;
-      showSubmit = true;
-      showNext = false;
-    } else {
-      showPrev = history.length > 0;
-      showSkip = true;
-      showSubmit = false;
-      showNext = false;
-    }
-  }
+  const { showSubmit, showNext, showSkip, showPrev, prevDisabled, readOnly: completedReadOnly } = footerActions({
+    viewingHistory: viewingHistoryIndex !== null,
+    historyIndex: viewingHistoryIndex,
+    historyLength: history.length,
+    isItemScored,
+    answered: currentAnswered !== null,
+    isScoring,
+    submitting: state.phase === "submitting",
+    hasAnswer: hasAnswer(effectiveDraft(currentTask, draftTaskId, draft)),
+    sessionCompleted: session.status === "COMPLETED",
+  });
 
   const title = sessionDisplayName(session, (code) => (code === currentTask.taskCode ? currentTask.displayName : code), t);
 

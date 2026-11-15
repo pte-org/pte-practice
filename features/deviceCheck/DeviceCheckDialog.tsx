@@ -7,6 +7,7 @@ import { AudioWaveform } from "@/features/practice/media/AudioWaveform";
 import { PromptAudioPlayer } from "@/features/practice/media/PromptAudioPlayer";
 import { RecorderError, startWavRecording, type WavRecorderHandle } from "@/features/practice/media/audio-recorder";
 import { padLevels, WAVEFORM_BAR_COUNT } from "@/features/practice/media/waveform";
+import { createOneShotTimer } from "./one-shot-timer";
 import {
   hasVietnameseInput, micVerdict, READING_SIZES, readReadingSize, wordsPerMinute, writeReadingSize,
   type DeviceCheckKind, type MicVerdict, type ReadingSize,
@@ -59,7 +60,7 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
   const recorder = useRef<WavRecorderHandle | null>(null);
   const maxLevel = useRef(0);
 
-  const stopTimer = useRef<number | null>(null);
+  const [stopTimer] = useState(createOneShotTimer);
   const unmounted = useRef(false);
 
   // Closing the dialog mid-test must end the test: no timer left to stop a cancelled recording or make a blob URL.
@@ -67,8 +68,7 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
     unmounted.current = false; // StrictMode runs the cleanup once and mounts again in development
     return () => {
       unmounted.current = true;
-      if (stopTimer.current !== null) window.clearTimeout(stopTimer.current);
-      stopTimer.current = null;
+      stopTimer.cancel();
       recorder.current?.cancel();
       recorder.current = null;
     };
@@ -128,8 +128,7 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
       });
       setIsPermissionDenied(false);
       setPhase("recording");
-      stopTimer.current = window.setTimeout(async () => {
-        stopTimer.current = null;
+      stopTimer.start(async () => {
         const active = recorder.current;
         if (!active) return;
         recorder.current = null;
