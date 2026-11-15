@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildCalendarDays,
   examDateBounds,
+  examDateYears,
+  isExamDateInBounds,
   formatExamDate,
   formatMonthYearHeader,
   formatShortExamDate,
@@ -109,3 +111,20 @@ describe("examDateBounds", () => {
   });
 });
 
+describe("exam date range", () => {
+  const bounds = examDateBounds(new Date(2026, 10, 15));
+
+  it("accepts today, the last allowed day and days in between, and refuses the rest", () => {
+    expect(isExamDateInBounds("2026-11-15", bounds)).toBe(true);
+    expect(isExamDateInBounds("2028-11-15", bounds)).toBe(true);
+    expect(isExamDateInBounds("2027-06-01", bounds)).toBe(true);
+    expect(isExamDateInBounds("2026-11-14", bounds)).toBe(false);
+    expect(isExamDateInBounds("2028-11-16", bounds)).toBe(false);
+    expect(isExamDateInBounds("2020-01-01", bounds)).toBe(false);
+    expect(isExamDateInBounds("not-a-date", bounds)).toBe(false);
+  });
+
+  it("offers only the years that contain an allowed day", () => {
+    expect(examDateYears(bounds)).toEqual([2026, 2027, 2028]);
+  });
+});

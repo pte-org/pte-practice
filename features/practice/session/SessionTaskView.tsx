@@ -46,6 +46,8 @@ interface SessionTaskViewProps {
   onActivityChange: (busy: boolean) => void;
   /** Reloads the session so the prompt gets a fresh media link. */
   onRefreshPrompt: () => Promise<void>;
+  /** The question can be looked at but not answered (a finished session). */
+  readOnly?: boolean;
   /** The timed answering clock ran out. */
   onTimeUp?: () => void;
   onSubmit: () => void;
@@ -122,7 +124,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
       sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed}
       onLoadPlayback={props.onLoadPlayback}
       onActivityChange={props.onActivityChange}
-      disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted} onChange={props.onChange} />
+      disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted || Boolean(props.readOnly)} onChange={props.onChange} />
   ) : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>;
 
   useEffect(() => {
