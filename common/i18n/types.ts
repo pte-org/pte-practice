@@ -394,6 +394,9 @@ export interface LocaleDict {
     back: string;
     loading: string;
     loadError: string;
+    listenBack: string;
+    listenLoading: string;
+    playbackError: string;
     requiredSession: string;
     completedTitle: string;
     completedSummary: string;

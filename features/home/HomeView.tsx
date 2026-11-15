@@ -17,7 +17,7 @@ export const HomeView = (): ReactElement => {
   return (
     <div className="dashboard-section" data-testid="home-page">
       <DashboardTaskTypes sections={catalog.sections} unlocked={isPracticeUnlocked}
-        accessState={accessState} contentState={catalogStatus === "error" ? "error" : "loading"}
+        accessState={accessState} contentState={catalogStatus === "error" ? "error" : catalogStatus === "ready" ? "ready" : "loading"}
         ready={dataReady} entries={progress.entries} onStart={openFor} />
       {catalogStatus === "error" ? <p role="alert">{t("home.accessActiveContentNotReady")}</p> : null}
       {!isPracticeUnlocked ? <p className="quiet-note">{t("home.explorePracticeAreas")}</p> : null}
