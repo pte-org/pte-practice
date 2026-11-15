@@ -385,6 +385,8 @@ export function PracticeSessionView() {
       setViewingHistoryIndex(null);
       setDraft({});
       setDraftTaskId(next?.currentTask?.publicId ?? null);
+      // The next question is only now on screen; the time spent reading the last result is not part of it.
+      questionStartTime.current = Date.now();
       return;
     }
 

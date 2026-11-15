@@ -179,6 +179,11 @@ export function SpeakingRecorder({
     // Untimed only: a timed question must save whatever was recorded, its rhythm does not wait.
     const found = timed ? null : recordingIssue(pending.current.durationSeconds, maxLevel.current);
     setIssue(found);
+    if (found) {
+      // Silent or very short: nothing is kept yet, so the learner can listen back and then redo or keep it.
+      setState("review");
+      return;
+    }
     await saveRecording(pending.current);
   }, [maxSeconds, saveRecording, state, timed]);
 
@@ -285,7 +290,6 @@ export function SpeakingRecorder({
 
         {message ? <p className="task-recording-message" role="alert">{message}</p> : null}
         {hasLocalRecording(value) && state === "recorded" ? <p className="quiet-note">{t("session.recordingLocalDraft")}</p> : null}
-        {issue && state === "recorded" ? <p className="task-recording-message" role="alert">{t(`session.recording_${issue}` as TranslationKey)}</p> : null}
 
         <div className="task-recording-actions">
           {state === "recording" ? (
@@ -304,7 +308,7 @@ export function SpeakingRecorder({
                 <AppIcon name="retake" size={18} /> {RECORDING_TEXT.recordAgain}
               </button>
               <button className="button button-outline button-pill" type="button" disabled={disabled}
-                onClick={() => { if (pending.current) void saveRecording(pending.current); }}>
+                onClick={() => { setIssue(null); if (pending.current) void saveRecording(pending.current); }}>
                 {t("session.keepRecording")}
               </button>
             </>
