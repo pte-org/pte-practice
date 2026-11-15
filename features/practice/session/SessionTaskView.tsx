@@ -18,6 +18,7 @@ import { InlineResultCard } from "./InlineResultCard";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
+import { footerDisabled } from "./footer-actions";
 import { PracticeFrame } from "./PracticeFrame";
 import { PracticeSupport } from "./PracticeSupport";
 import { hideQuestionTranscript, questionFixture, requiresQuestionAudio } from "./questionPresentation";
@@ -115,6 +116,10 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   const timedFrame = shouldMountTimedFrame(session) && timing && fixture && !unsupported && !audioUnavailable && !isSubmitted ? timing : null;
   const skill = skillKey(task.section);
   const locked = busy || offline;
+  const disabled = footerDisabled({
+    locked, unsupported, audioUnavailable, recorderBusy,
+    prevDisabled, submitDisabled: props.submitDisabled, nextDisabled: props.nextDisabled,
+  });
   const instruction = session.timingMode === "UNTIMED"
     ? getCanonicalTaskInstruction(task.taskCode, timing, true) || fixture?.instruction || t("ui.sessionAnswerTaskBelow")
     : fixture?.instruction || getCanonicalTaskInstruction(task.taskCode, timing) || t("ui.sessionAnswerTaskBelow");
@@ -143,11 +148,11 @@ export function SessionTaskView(props: SessionTaskViewProps) {
         pauseDisabled={locked || recorderBusy}
         pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause} />}
       footer={<SessionFooter
-        busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={locked || recorderBusy || prevDisabled}
-        showSkip={props.showSkip} skipDisabled={locked || recorderBusy} onSkip={props.onSkip}
-        showSubmit={props.showSubmit} submitDisabled={locked || unsupported || audioUnavailable || recorderBusy || props.submitDisabled}
+        busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={disabled.prev}
+        showSkip={props.showSkip} skipDisabled={disabled.skip} onSkip={props.onSkip}
+        showSubmit={props.showSubmit} submitDisabled={disabled.submit}
         submitLabel={props.submitLabel} onSubmit={props.onSubmitAnswer}
-        showNext={props.showNext} nextDisabled={locked || unsupported || recorderBusy || props.nextDisabled}
+        showNext={props.showNext} nextDisabled={disabled.next}
         nextLabel={recorderBusy ? t("session.savingRecording") : (nextLabel ?? t("session.next"))}
         onNext={props.onSubmit} />}>
       <div className="exam-body">

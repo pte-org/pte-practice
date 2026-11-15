@@ -23,3 +23,26 @@ export function createOneShotTimer(): OneShotTimer {
     get pending() { return id !== null; },
   };
 }
+
+/** A timer that repeats until cancelled; starting it again replaces a running one. */
+export interface IntervalTimer {
+  start: (callback: () => void, everyMs: number) => void;
+  cancel: () => void;
+  readonly running: boolean;
+}
+
+export function createIntervalTimer(): IntervalTimer {
+  let id: ReturnType<typeof setInterval> | null = null;
+  const cancel = () => {
+    if (id !== null) clearInterval(id);
+    id = null;
+  };
+  return {
+    start: (callback, everyMs) => {
+      cancel();
+      id = setInterval(callback, everyMs);
+    },
+    cancel,
+    get running() { return id !== null; },
+  };
+}
