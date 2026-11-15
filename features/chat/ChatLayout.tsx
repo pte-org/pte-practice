@@ -20,6 +20,8 @@ interface ChatLayoutProps {
   taskCode: string | null | undefined;
   /** Text of the exercise on screen; the assistant uses it when a question is about that exercise. */
   exercisePrompt?: string | null;
+  /** False hides the assistant entirely (no panel, no shortcut, no launcher), for example during a mock test. */
+  enabled?: boolean;
   children: ReactNode;
 }
 
@@ -27,8 +29,8 @@ interface ChatLayoutProps {
  * Wraps an exercise with a small floating chat box. With the flag off the exercise renders exactly as before the
  * chat existed and nothing here runs, not even a quota request.
  */
-export function ChatLayout({ taskCode, exercisePrompt, children }: ChatLayoutProps): ReactElement {
-  if (!CHAT_ENABLED) return <>{children}</>;
+export function ChatLayout({ taskCode, exercisePrompt, enabled = true, children }: ChatLayoutProps): ReactElement {
+  if (!CHAT_ENABLED || !enabled) return <>{children}</>;
   return <EnabledChatLayout taskCode={taskCode} exercisePrompt={exercisePrompt}>{children}</EnabledChatLayout>;
 }
 

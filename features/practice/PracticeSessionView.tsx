@@ -513,7 +513,9 @@ export function PracticeSessionView() {
   const closeConfirm = () => setConfirm(null);
 
   return (
-    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}>
+    // A mock test is an exam rehearsal: the assistant would answer for the learner, so it is not offered there.
+    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}
+      enabled={session.kind !== "MOCK_TEST"}>
       <SessionTaskView
         key={currentTask.publicId}
         api={api}
