@@ -534,6 +534,7 @@ export const en: LocaleDict = {
     saveSuccess: "Exam date updated.",
     clearSuccess: "Exam date cleared.",
     saveError: "Could not update exam date. Please try again.",
+    outOfRange: "Choose a date from today up to two years ahead.",
     loading: "Loading…",
     chooseDate: "Select exam date",
     unselected: "No date selected",

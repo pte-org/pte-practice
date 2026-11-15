@@ -534,6 +534,7 @@ export const vi: LocaleDict = {
     saveSuccess: "Đã cập nhật ngày thi.",
     clearSuccess: "Đã xoá ngày thi.",
     saveError: "Không thể cập nhật ngày thi. Vui lòng thử lại.",
+    outOfRange: "Hãy chọn ngày từ hôm nay đến tối đa hai năm tới.",
     loading: "Đang tải…",
     chooseDate: "Chọn ngày thi",
     unselected: "Chưa chọn ngày",

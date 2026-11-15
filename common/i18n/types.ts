@@ -534,6 +534,7 @@ export interface LocaleDict {
     saveSuccess: string;
     clearSuccess: string;
     saveError: string;
+    outOfRange: string;
     loading: string;
     chooseDate: string;
     unselected: string;

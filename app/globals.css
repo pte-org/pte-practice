@@ -3045,3 +3045,4 @@ html { scrollbar-gutter: stable; }
 }
 
 
+.exam-calendar-field-error { margin: 6px 4px 0; color: var(--danger, #d93025); font-size: 0.8125rem; }
