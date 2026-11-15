@@ -49,7 +49,7 @@ export function DeviceCheckDialog({ kind, onClose, onPassed, onFailed }: DeviceC
 }
 
 function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void }) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"idle" | "recording" | "done" | "error">("idle");
   const [levels, setLevels] = useState<number[]>([]);
   const [peaks, setPeaks] = useState<number[] | null>(null);
