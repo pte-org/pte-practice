@@ -7,6 +7,7 @@ import { AudioWaveform } from "@/features/practice/media/AudioWaveform";
 import { PromptAudioPlayer } from "@/features/practice/media/PromptAudioPlayer";
 import { RecorderError, startWavRecording, type WavRecorderHandle } from "@/features/practice/media/audio-recorder";
 import { padLevels, WAVEFORM_BAR_COUNT } from "@/features/practice/media/waveform";
+import { createOneShotTimer } from "./one-shot-timer";
 import {
   hasVietnameseInput, micVerdict, READING_SIZES, readReadingSize, wordsPerMinute, writeReadingSize,
   type DeviceCheckKind, type MicVerdict, type ReadingSize,
@@ -48,7 +49,7 @@ export function DeviceCheckDialog({ kind, onClose, onPassed, onFailed }: DeviceC
 }
 
 function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void }) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"idle" | "recording" | "done" | "error">("idle");
   const [levels, setLevels] = useState<number[]>([]);
   const [peaks, setPeaks] = useState<number[] | null>(null);
@@ -59,7 +60,19 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
   const recorder = useRef<WavRecorderHandle | null>(null);
   const maxLevel = useRef(0);
 
-  useEffect(() => () => { recorder.current?.cancel(); }, []);
+  const [stopTimer] = useState(createOneShotTimer);
+  const unmounted = useRef(false);
+
+  // Closing the dialog mid-test must end the test: no timer left to stop a cancelled recording or make a blob URL.
+  useEffect(() => {
+    unmounted.current = false; // StrictMode runs the cleanup once and mounts again in development
+    return () => {
+      unmounted.current = true;
+      stopTimer.cancel();
+      recorder.current?.cancel();
+      recorder.current = null;
+    };
+  }, [stopTimer]);
   useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
 
   useEffect(() => {
@@ -115,11 +128,12 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
       });
       setIsPermissionDenied(false);
       setPhase("recording");
-      window.setTimeout(async () => {
+      stopTimer.start(async () => {
         const active = recorder.current;
         if (!active) return;
         recorder.current = null;
         const recording = await active.stop();
+        if (unmounted.current) return;
         setPeaks(recording.peaks);
         setUrl(URL.createObjectURL(recording.blob));
         const v = micVerdict(maxLevel.current);

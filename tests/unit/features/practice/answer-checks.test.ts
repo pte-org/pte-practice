@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recordingIssue, wordCountIssue } from "@/features/practice/answer-checks";
+import { recordingIssue, recordingReviewIssue, wordCountIssue } from "@/features/practice/answer-checks";
 
 describe("wordCountIssue", () => {
   it("flags answers under the minimum or over the maximum", () => {
@@ -17,3 +17,17 @@ describe("recordingIssue", () => {
     expect(recordingIssue(5, 0.2)).toBeNull();
   });
 });
+
+describe("recordingReviewIssue", () => {
+  it("makes an untimed silent or very short take wait for the learner to keep or redo it", () => {
+    expect(recordingReviewIssue(false, 0.5, 0.2)).toBe("short");
+    expect(recordingReviewIssue(false, 5, 0.005)).toBe("silent");
+    expect(recordingReviewIssue(false, 5, 0.2)).toBeNull();
+  });
+
+  it("never holds back a timed take, whatever it sounds like", () => {
+    expect(recordingReviewIssue(true, 0.5, 0)).toBeNull();
+    expect(recordingReviewIssue(true, 5, 0.005)).toBeNull();
+  });
+});
+

@@ -6,6 +6,9 @@ import { parseBlankPrompt } from "../blank-prompt";
 import { useLocale } from "../../../common/i18n/LocaleProvider";
 import type { TaskRendererProps } from "./RendererTypes";
 
+const WORD_TYPE = "text/plain";
+const GAP_TYPE = "application/x-blank-gap";
+
 export function BlankRenderer({ fixture, value, disabled = false, onChange }: TaskRendererProps) {
   const { t } = useLocale();
   const [activeWord, setActiveWord] = useState<string | null>(null);
@@ -16,8 +19,25 @@ export function BlankRenderer({ fixture, value, disabled = false, onChange }: Ta
   const bank = fixture.blankOptions ?? [];
   const segments = parseBlankPrompt(fixture.text ?? fixture.prompt);
 
+  const bankCounts = countWords(bank);
+  const usedCounts = countWords(Object.values(chosen).filter((word): word is string => typeof word === "string" && word !== ""));
+
   function update(gap: number, word: string) {
     onChange(setBlankWord(value, field, gap, word));
+  }
+
+  /** A word can be placed only as many times as the bank lists it (a gap's own word does not count against it). */
+  function place(gap: number, word: string) {
+    const current = typeof chosen[String(gap)] === "string" ? chosen[String(gap)] as string : "";
+    const used = (usedCounts.get(word) ?? 0) - (current === word ? 1 : 0);
+    if (!bankCounts.has(word) || used >= (bankCounts.get(word) ?? 0)) return;
+    update(gap, word);
+    setActiveWord(null);
+  }
+
+  function onGapClick(gap: number, selected: string) {
+    if (activeWord) place(gap, activeWord);
+    else if (selected) update(gap, "");
   }
 
   function renderGap(gap: number) {
@@ -36,13 +56,37 @@ export function BlankRenderer({ fixture, value, disabled = false, onChange }: Ta
     return (
       <button className={`task-drop-slot${selected ? " task-drop-slot-filled" : ""}`} type="button"
         disabled={disabled} aria-label={label}
-        onClick={() => update(gap, activeWord ?? "")}
+        draggable={!disabled && Boolean(selected)}
+        onClick={() => onGapClick(gap, selected)}
+        onDragStart={(event) => { event.dataTransfer.setData(GAP_TYPE, String(gap)); event.dataTransfer.setData(WORD_TYPE, selected); }}
         onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => { event.preventDefault(); update(gap, event.dataTransfer.getData("text/plain")); }}>
+        onDrop={(event) => {
+          event.preventDefault();
+          const from = event.dataTransfer.getData(GAP_TYPE);
+          const word = event.dataTransfer.getData(WORD_TYPE);
+          // Dragging from another gap moves the word, so it is never counted twice.
+          if (from !== "" && Number(from) !== gap) update(Number(from), "");
+          place(gap, word);
+        }}>
         {selected || t("score.dropWord")}
       </button>
     );
   }
+
+  // Each bank entry is "used" while placements still account for its occurrence of that word.
+  const seen = new Map<string, number>();
+  const wordButtons = bank.map((word, index) => {
+    const occurrence = seen.get(word) ?? 0;
+    seen.set(word, occurrence + 1);
+    const used = occurrence < (usedCounts.get(word) ?? 0);
+    return (
+      <button key={`${word}-${index}`} type="button"
+        className={`task-word${activeWord === word ? " task-word-active" : ""}${used ? " task-word-used" : ""}`}
+        draggable={!disabled && !used} disabled={disabled || used}
+        onClick={() => setActiveWord(activeWord === word ? null : word)}
+        onDragStart={(event) => event.dataTransfer.setData(WORD_TYPE, word)}>{word}</button>
+    );
+  });
 
   return (
     <div className="task-blank-panel">
@@ -52,14 +96,22 @@ export function BlankRenderer({ fixture, value, disabled = false, onChange }: Ta
           : <span className="task-blank-gap" key={index}>{renderGap(segment.index)}</span>)}
       </p>
       {!isDropdown ? (
-        <div className="task-word-bank" aria-label={t("score.wordBank")}>
-          {bank.map((word) => (
-            <button key={word} type="button" className={`task-word${activeWord === word ? " task-word-active" : ""}`}
-              draggable={!disabled} disabled={disabled} onClick={() => setActiveWord(activeWord === word ? null : word)}
-              onDragStart={(event) => event.dataTransfer.setData("text/plain", word)}>{word}</button>
-          ))}
+        <div className="task-word-bank" aria-label={t("score.wordBank")}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            const from = event.dataTransfer.getData(GAP_TYPE);
+            if (from !== "" && !disabled) update(Number(from), "");
+          }}>
+          {wordButtons}
         </div>
       ) : null}
     </div>
   );
+}
+
+function countWords(words: readonly string[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const word of words) counts.set(word, (counts.get(word) ?? 0) + 1);
+  return counts;
 }

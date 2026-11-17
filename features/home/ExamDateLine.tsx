@@ -11,6 +11,9 @@ import {
   formatMonthYearHeader,
   formatShortExamDate,
   getWeekdayLabels,
+  examDateYears,
+  isExamDateInBounds,
+  parseManualExamDate,
 } from "./exam-date";
 
 /**
@@ -32,6 +35,7 @@ export function ExamDateLine() {
   const [manualInput, setManualInput] = useState<boolean>(false);
   const [showYearPicker, setShowYearPicker] = useState<boolean>(false);
   const [manualDateText, setManualDateText] = useState<string>("");
+  const [dateOutOfRange, setDateOutOfRange] = useState<boolean>(false);
 
   useEffect(() => {
     let active = true;
@@ -55,9 +59,7 @@ export function ExamDateLine() {
   const [minYear, minMonth] = bounds.min.split("-").map(Number);
   const [maxYear, maxMonth] = bounds.max.split("-").map(Number);
 
-  const baseYear = Math.min(new Date().getFullYear(), minYear);
-  const endYear = Math.max(baseYear + 14, 2040);
-  const years = Array.from({ length: endYear - baseYear + 1 }, (_, i) => baseYear + i);
+  const years = examDateYears(bounds);
 
   const handleOpen = () => {
     const initial = examDate || bounds.todayStr;
@@ -73,6 +75,7 @@ export function ExamDateLine() {
     }
     setManualInput(false);
     setShowYearPicker(false);
+    setDateOutOfRange(false);
     setOpen(true);
   };
 
@@ -92,22 +95,16 @@ export function ExamDateLine() {
   const handleManualDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setManualDateText(val);
-
-    const match = val.trim().match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-    if (match) {
-      const d = Number(match[1]);
-      const m = Number(match[2]);
-      const y = Number(match[3]);
-      if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 2000 && y <= 2100) {
-        const daysInMonth = new Date(y, m, 0).getDate();
-        if (d <= daysInMonth) {
-          const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-          setSelectedDate(iso);
-          setViewYear(y);
-          setViewMonth(m - 1);
-        }
-      }
+    const parsed = parseManualExamDate(val, bounds);
+    if (parsed.kind === "incomplete") {
+      setDateOutOfRange(false);
+      return;
     }
+    // A date the server would refuse is not kept as the selection, so Save cannot send it.
+    setSelectedDate(parsed.kind === "valid" ? parsed.iso : "");
+    setDateOutOfRange(parsed.kind === "outOfRange");
+    setViewYear(parsed.year);
+    setViewMonth(parsed.monthIndex);
   };
 
   const handleClose = () => {
@@ -183,10 +180,11 @@ export function ExamDateLine() {
     if (selectedDate && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
       const [, m, d] = selectedDate.split("-");
       const daysInMonth = new Date(year, Number(m), 0).getDate();
-      if (Number(d) <= daysInMonth) {
-        const iso = `${year}-${m}-${d}`;
+      const iso = `${year}-${m}-${d}`;
+      if (Number(d) <= daysInMonth && isExamDateInBounds(iso, bounds)) {
         setSelectedDate(iso);
         setManualDateText(`${d}/${m}/${year}`);
+        setDateOutOfRange(false);
       }
     }
   };
@@ -247,7 +245,7 @@ export function ExamDateLine() {
             <button
               type="button"
               className="exam-calendar-save-btn"
-              disabled={busy || !selectedDate || selectedDate === examDate}
+              disabled={busy || !selectedDate || selectedDate === examDate || !isExamDateInBounds(selectedDate, bounds)}
               onClick={handleSave}
             >
               {t("examDate.save")}
@@ -288,6 +286,7 @@ export function ExamDateLine() {
                   onChange={handleManualDateChange}
                   autoFocus
                 />
+                {dateOutOfRange ? <p className="exam-calendar-field-error" role="alert">{t("examDate.outOfRange")}</p> : null}
               </div>
             </div>
           ) : (

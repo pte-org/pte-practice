@@ -280,6 +280,16 @@ export function PracticeSessionView() {
     void submit();
   };
 
+  /** Timed answering ended: send what is typed (skipping the word-range prompt), or skip an empty question. */
+  const handleTimeUp = () => {
+    if (state.phase === "submitting") return;
+    const task = activeTask;
+    if (!task) return;
+    if (hasAnswer(effectiveDraft(task, draftTaskId, draft))) { void submit(true); return; }
+    // A skipped question opened from history is not the live one, so only the live question can be skipped here.
+    if (viewingHistoryIndex === null) void skip();
+  };
+
   const handlePrev = () => {
     if (viewingHistoryIndex !== null) {
       if (viewingHistoryIndex > 0) {
@@ -335,7 +345,9 @@ export function PracticeSessionView() {
   const closeConfirm = () => setConfirm(null);
 
   return (
-    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}>
+    // A mock test is an exam rehearsal: the assistant would answer for the learner, so it is not offered there.
+    <ChatLayout taskCode={currentTask.taskCode} exercisePrompt={activeFixture?.prompt}
+      enabled={session.kind !== "MOCK_TEST"}>
       <SessionTaskView
         key={currentTask.publicId}
         session={session}
@@ -358,6 +370,8 @@ export function PracticeSessionView() {
         submitDisabled={state.phase === "submitting"}
         submitLabel={buttons.submitAdvances ? t("session.next") : t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
+        onTimeUp={handleTimeUp}
+        readOnly={session.status === "COMPLETED" && viewingHistoryIndex !== null && !isItemScored}
         showNext={buttons.showNext}
         nextLabel={session.status === "COMPLETED" ? t("score.continue") : t("session.next")}
         onChange={(value) => {

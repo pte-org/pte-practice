@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildCalendarDays,
   examDateBounds,
+  examDateYears,
+  isExamDateInBounds,
+  parseManualExamDate,
   formatExamDate,
   formatMonthYearHeader,
   formatShortExamDate,
@@ -106,6 +109,48 @@ describe("examDateBounds", () => {
     expect(bounds.min).toBe("2026-10-25");
     expect(bounds.max).toBe("2028-10-25");
     expect(bounds.todayStr).toBe("2026-10-25");
+  });
+});
+
+describe("exam date range", () => {
+  const bounds = examDateBounds(new Date(2026, 10, 15));
+
+  it("accepts today, the last allowed day and days in between, and refuses the rest", () => {
+    expect(isExamDateInBounds("2026-11-15", bounds)).toBe(true);
+    expect(isExamDateInBounds("2028-11-15", bounds)).toBe(true);
+    expect(isExamDateInBounds("2027-06-01", bounds)).toBe(true);
+    expect(isExamDateInBounds("2026-11-14", bounds)).toBe(false);
+    expect(isExamDateInBounds("2028-11-16", bounds)).toBe(false);
+    expect(isExamDateInBounds("2020-01-01", bounds)).toBe(false);
+    expect(isExamDateInBounds("not-a-date", bounds)).toBe(false);
+  });
+
+  it("offers only the years that contain an allowed day", () => {
+    expect(examDateYears(bounds)).toEqual([2026, 2027, 2028]);
+  });
+});
+
+describe("typed exam date", () => {
+  const bounds = examDateBounds(new Date(2026, 10, 15));
+
+  it("reads a date in range with any of the three separators", () => {
+    for (const text of ["25/12/2026", "25-12-2026", "25.12.2026", " 5/1/2027 "]) {
+      expect(parseManualExamDate(text, bounds).kind).toBe("valid");
+    }
+    expect(parseManualExamDate("5/1/2027", bounds)).toEqual({ kind: "valid", iso: "2027-01-05", year: 2027, monthIndex: 0 });
+  });
+
+  it("flags a real date outside the range so it cannot be saved", () => {
+    expect(parseManualExamDate("14/11/2026", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("01/01/2020", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("16/11/2028", bounds).kind).toBe("outOfRange");
+    expect(parseManualExamDate("01/01/2040", bounds).kind).toBe("outOfRange");
+  });
+
+  it("treats text that is not yet a real date as incomplete", () => {
+    for (const text of ["", "25/12", "25/12/26", "31/02/2027", "32/01/2027", "10/13/2027", "00/01/2027", "abc", "01/01/1999", "01/01/2101"]) {
+      expect(parseManualExamDate(text, bounds).kind, text).toBe("incomplete");
+    }
   });
 });
 
