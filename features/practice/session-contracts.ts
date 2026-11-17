@@ -75,6 +75,8 @@ export interface PracticeItemResult {
   subScoreMax?: Record<string, number>;
   feedback: string | null;
   transcript: string | null;
+  /** Transcript of an audio-only task; the server releases it only once the item is answered. */
+  promptText?: string | null;
   failureCode: string | null;
   retryable: boolean;
   scoredAt: string | null;
@@ -206,6 +208,7 @@ export function normalizePracticeItemResult(value: unknown): PracticeItemResult 
     ...(Object.keys(subScoreMax).length > 0 ? { subScoreMax } : {}),
     feedback: asNullableString(record.feedback),
     transcript: asNullableString(record.transcript),
+    promptText: asNullableString(record.promptText),
     failureCode: asNullableString(record.failureCode),
     retryable: Boolean(record.retryable),
     scoredAt: asNullableString(record.scoredAt),

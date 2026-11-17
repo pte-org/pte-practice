@@ -27,6 +27,8 @@ interface TimedTaskFrameProps {
   hasSavedRecording: boolean;
   /** Reloads the session to get a fresh prompt link; called at most once when the prompt fails to load. */
   onRefreshPrompt: () => Promise<void>;
+  /** The answering clock ran out: the session submits what is typed so far (or skips an empty answer). */
+  onTimeUp?: () => void;
   /** A speaking answer has just been recorded: the session sends it and moves on, as in the real test. */
   onAnswerReady?: () => void;
   children: (view: { timed: TimedRendererControl; locked: boolean; attempt: number }) => ReactNode;
@@ -34,7 +36,7 @@ interface TimedTaskFrameProps {
 
 /** Clock, stepper and controls of one timed question; the renderer is drawn by `children` with the control to use. */
 export function TimedTaskFrame(props: TimedTaskFrameProps) {
-  const { timing, isSpeaking, hasPromptAudio, hasSavedRecording, onRefreshPrompt, children } = props;
+  const { timing, isSpeaking, hasPromptAudio, hasSavedRecording, onRefreshPrompt, onTimeUp, children } = props;
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { state, dispatch } = useTimedPhase({ timing, isSpeaking, hasPromptAudio, hasSavedRecording });
@@ -43,10 +45,14 @@ export function TimedTaskFrame(props: TimedTaskFrameProps) {
   const [promptRefresh] = useState(createOnceCommand);
   const { phase } = state;
 
+  // The latest handler is read when the clock ends, so it never submits a stale draft.
+  const onTimeUpRef = useRef(onTimeUp);
+  useEffect(() => { onTimeUpRef.current = onTimeUp; });
+
   useEffect(() => {
-    if (phase === "timeUp") {
-      showToast(t("timed.timeUp"), { tone: "warning" });
-    }
+    if (phase !== "timeUp") return;
+    showToast(t("timed.timeUp"), { tone: "warning" });
+    onTimeUpRef.current?.();
   }, [phase, showToast, t]);
 
   // Only the step into "done" sends the answer; a question opened with a recording already saved starts in "done".

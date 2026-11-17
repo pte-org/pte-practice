@@ -26,6 +26,7 @@ describe("practice item result contract", () => {
       subScores: { content: 80, fluency: 70 },
       feedback: "Good pace.",
       transcript: "regular practice helps",
+      promptText: null,
       failureCode: null,
       retryable: false,
       scoredAt: "2026-10-24T01:00:00Z",

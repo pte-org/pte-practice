@@ -49,7 +49,7 @@ export const SkillTaskList = ({ sections, isPracticeUnlocked, onStartIntent, pro
               {showGroupProgress ? <ProgressRing label={`${section.answeredQuestionCount}/${section.practiceQuestionCount}`}
                 variant={section.answeredQuestionCount ? "progress" : "empty"}
                 value={section.answeredQuestionCount} max={Math.max(1, section.practiceQuestionCount)} size={40}>
-                <AppIcon name="reading" size={16} />
+                <AppIcon name={iconForSection(section.code)} size={16} />
               </ProgressRing> : null}
             </div> : null}
             {section.taskTypes.map((task) => {

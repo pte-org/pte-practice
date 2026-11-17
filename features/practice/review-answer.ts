@@ -49,7 +49,7 @@ export function describeSavedAnswer(payload: string | null, promptText: string |
     if (typeof byGap === "object" && byGap !== null) {
       return {
         kind: "entries",
-        entries: Object.entries(byGap).map(([gap, word]) => ({ label: gap, value: typeof word === "string" ? word : "" })),
+        entries: Object.entries(byGap).map(([gap, word]) => ({ label: gapLabel(gap), value: typeof word === "string" ? word : "" })),
       };
     }
   }
@@ -63,6 +63,11 @@ export function describeSavedAnswer(payload: string | null, promptText: string |
     };
   }
   return { kind: "raw", text: payload };
+}
+
+/** Gaps are keyed by their position from 0 (as in the prompt's {{0}}); the learner sees them counted from 1. */
+function gapLabel(gap: string): string {
+  return /^\d+$/.test(gap) ? String(Number(gap) + 1) : gap;
 }
 
 function parse(payload: string): Record<string, unknown> | null {

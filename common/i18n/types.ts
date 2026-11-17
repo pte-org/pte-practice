@@ -445,6 +445,9 @@ export interface LocaleDict {
     backToPracticeTests: string;
     loading: string;
     loadError: string;
+    listenBack: string;
+    listenLoading: string;
+    playbackError: string;
     requiredSession: string;
     completedTitle: string;
     completedSummary: string;
@@ -596,6 +599,7 @@ export interface LocaleDict {
     saveSuccess: string;
     clearSuccess: string;
     saveError: string;
+    outOfRange: string;
     loading: string;
     chooseDate: string;
     unselected: string;

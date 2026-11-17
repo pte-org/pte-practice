@@ -16,6 +16,7 @@ import { FieldWarning } from "./FieldWarning";
 import { sessionParts } from "./session-chrome";
 import { SessionFooter, SessionHeader } from "./SessionChrome";
 import { currentTaskPosition } from "./session-draft";
+import { footerDisabled } from "./footer-actions";
 import { PracticeFrame } from "./PracticeFrame";
 import { AnswerHintCard } from "./AnswerHintCard";
 import { PracticeSupport } from "./PracticeSupport";
@@ -44,6 +45,10 @@ interface SessionTaskViewProps {
   onActivityChange: (busy: boolean) => void;
   /** Reloads the session so the prompt gets a fresh media link. */
   onRefreshPrompt: () => Promise<void>;
+  /** The question can be looked at but not answered (a skipped question of a finished session). */
+  readOnly?: boolean;
+  /** The timed answering clock ran out. */
+  onTimeUp?: () => void;
   onSubmit: () => void;
   onSkip?: () => void;
   onPause: () => void;
@@ -101,6 +106,10 @@ export function SessionTaskView(props: SessionTaskViewProps) {
   const timedFrame = shouldMountTimedFrame(session) && timing && fixture && !unsupported && !audioUnavailable && !isSubmitted ? timing : null;
   const skill = skillKey(task.section);
   const locked = busy || offline;
+  const disabled = footerDisabled({
+    locked, unsupported, audioUnavailable, recorderBusy,
+    prevDisabled, submitDisabled: props.submitDisabled, nextDisabled: props.nextDisabled,
+  });
   const instruction = session.timingMode === "UNTIMED"
     ? getCanonicalTaskInstruction(task.taskCode, timing, true) || fixture?.instruction || t("ui.sessionAnswerTaskBelow")
     : fixture?.instruction || getCanonicalTaskInstruction(task.taskCode, timing) || t("ui.sessionAnswerTaskBelow");
@@ -110,7 +119,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
       sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed}
       onLoadPlayback={props.onLoadPlayback}
       onActivityChange={props.onActivityChange}
-      disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted} onChange={props.onChange} />
+      disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted || Boolean(props.readOnly)} onChange={props.onChange} />
   ) : <div className="task-unsupported" role="status"><p>{t("ui.sessionUnsupported")}</p></div>;
 
   useEffect(() => {
@@ -131,11 +140,11 @@ export function SessionTaskView(props: SessionTaskViewProps) {
         pauseLabel={recorderBusy ? t("session.savingRecording") : t("session.pause")} onPause={props.onPause}
         finishAction={props.finishAction} />}
       footer={<SessionFooter
-        busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={locked || recorderBusy || prevDisabled}
-        showSkip={props.showSkip} skipDisabled={locked || recorderBusy} onSkip={props.onSkip}
-        showSubmit={props.showSubmit} submitDisabled={locked || unsupported || audioUnavailable || recorderBusy || props.submitDisabled}
+        busy={locked} showPrev={showPrev} onPrev={onPrev} prevDisabled={disabled.prev}
+        showSkip={props.showSkip} skipDisabled={disabled.skip} onSkip={props.onSkip}
+        showSubmit={props.showSubmit} submitDisabled={disabled.submit}
         submitLabel={props.submitLabel} onSubmit={props.onSubmitAnswer}
-        showNext={props.showNext} nextDisabled={locked || unsupported || recorderBusy || props.nextDisabled}
+        showNext={props.showNext} nextDisabled={disabled.next}
         nextLabel={recorderBusy ? t("session.savingRecording") : (nextLabel ?? t("session.next"))}
         onNext={props.onSubmit} />}>
       <div className="exam-body">
@@ -156,7 +165,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
           {timedFrame && fixture ? (
             <TimedTaskFrame key={task.publicId} timing={timedFrame} isSpeaking={isSpeaking}
               hasPromptAudio={Boolean(fixture.audioUrl)} hasSavedRecording={isSpeaking && hasSavedRecording}
-              onRefreshPrompt={props.onRefreshPrompt} onAnswerReady={props.onSubmitAnswer}>
+              onRefreshPrompt={props.onRefreshPrompt} onTimeUp={props.onTimeUp} onAnswerReady={props.onSubmitAnswer}>
               {({ timed, locked: frameLocked, attempt }) => renderBody(timed, frameLocked, attempt)}
             </TimedTaskFrame>
           ) : renderBody()}

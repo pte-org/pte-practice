@@ -14,3 +14,12 @@ export function recordingIssue(durationSeconds: number, maxLevel: number): "shor
   if (maxLevel < SILENT_LEVEL) return "silent";
   return null;
 }
+
+/**
+ * What a finished recording must be reviewed for before it is kept. A timed question keeps whatever was recorded
+ * (its rhythm does not wait); an untimed one waits for the learner to keep or redo a silent or very short take.
+ */
+export function recordingReviewIssue(timed: boolean, durationSeconds: number, maxLevel: number): "short" | "silent" | null {
+  return timed ? null : recordingIssue(durationSeconds, maxLevel);
+}
+

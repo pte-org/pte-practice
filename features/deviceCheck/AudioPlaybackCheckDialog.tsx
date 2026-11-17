@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon, CollapsibleSection, Modal } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { AudioWaveform } from "@/features/practice/media/AudioWaveform";
 import { fallbackPeaks } from "@/features/practice/media/prompt-peaks";
+import { createIntervalTimer } from "./one-shot-timer";
 
 const SAMPLE_PEAKS = fallbackPeaks("audio-playback-check", 40);
 
@@ -24,8 +25,16 @@ export function AudioPlaybackCheckDialog({ open, onConfirm }: AudioPlaybackCheck
   const [progress, setProgress] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const sentence = t("session.audioCheckSentence");
+  const [ticker] = useState(createIntervalTimer);
+
+  // Leaving the page mid-test must also stop the progress timer and the spoken sentence.
+  useEffect(() => () => {
+    ticker.cancel();
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  }, [ticker]);
 
   const stopPlayback = () => {
+    ticker.cancel();
     setPlaying(false);
     setProgress(0);
     setElapsed(0);
@@ -45,10 +54,10 @@ export function AudioPlaybackCheckDialog({ open, onConfirm }: AudioPlaybackCheck
     setPlaying(true);
     const start = Date.now();
     const duration = 4000;
-    const interval = window.setInterval(() => {
+    ticker.start(() => {
       const diff = Date.now() - start;
       if (diff >= duration || !window.speechSynthesis.speaking) {
-        window.clearInterval(interval);
+        ticker.cancel();
       } else {
         setProgress(Math.min(1, diff / duration));
         setElapsed(diff / 1000);
