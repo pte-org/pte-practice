@@ -25,7 +25,8 @@ export function ChatQuotaNotice({ quota, onExpired }: ChatQuotaNoticeProps) {
   useEffect(() => {
     if (resetDue) onExpired();
   }, [resetDue, now, onExpired]);
-  if (!quota) return null;
+  // No daily limit: nothing to count down or warn about.
+  if (!quota || quota.unlimited) return null;
   if (resetDue) {
     return <p className="chat-notice-quota" role="status">{t("chat.quotaRefreshing")}</p>;
   }

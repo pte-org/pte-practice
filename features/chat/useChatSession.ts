@@ -6,7 +6,7 @@ import { chatErrorKey } from "./chat-errors";
 import { buildSendInput } from "./chat-exercise";
 import { historyForRequest } from "./chat-history";
 import { validateChatInput } from "./chat-input";
-import { quotaFromError } from "./chat-quota";
+import { quotaFromError, quotaFromReply } from "./chat-quota";
 import { chatReducer, INITIAL_CHAT_STATE } from "./chat-state";
 import type { ChatQuota } from "./contracts";
 
@@ -41,12 +41,7 @@ export function useChatSession({ api, taskType, exercisePrompt, language, onQuot
         }),
       );
       dispatch({ type: "sendSucceeded", question: input.text, reply });
-      onQuota({
-        used: reply.limit - reply.remaining,
-        remaining: reply.remaining,
-        limit: reply.limit,
-        resetAt: reply.resetAt,
-      });
+      onQuota(quotaFromReply(reply));
     } catch (error) {
       const exhausted = quotaFromError(error);
       if (exhausted) onQuota(exhausted);
