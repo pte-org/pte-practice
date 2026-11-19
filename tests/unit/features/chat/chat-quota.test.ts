@@ -1,13 +1,42 @@
 import { describe, expect, it } from "vitest";
 import { PracticeApiError } from "@/features/practice/api";
-import type { ChatQuota } from "@/features/chat/contracts";
-import { isQuotaExhausted, quotaFromError, quotaNoticeKind, timeUntilReset } from "@/features/chat/chat-quota";
+import type { ChatQuota, LimitedChatQuota } from "@/features/chat/contracts";
+import {
+  isQuotaExhausted, isQuotaResetDue, isQuotaUnlimited, quotaFromError, quotaFromReply, quotaNoticeKind, timeUntilReset,
+} from "@/features/chat/chat-quota";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 
-function quota(remaining: number, limit = 20): ChatQuota {
-  return { used: limit - remaining, remaining, limit, resetAt: RESET_AT };
+function quota(remaining: number, limit = 20): LimitedChatQuota {
+  return { used: limit - remaining, remaining, limit, resetAt: RESET_AT, unlimited: false };
 }
+
+const UNLIMITED: ChatQuota = { used: 50, remaining: null, limit: null, resetAt: null, unlimited: true };
+
+describe("unlimited quota", () => {
+  it("is never exhausted, never warns and never resets", () => {
+    expect(isQuotaUnlimited(UNLIMITED)).toBe(true);
+    expect(isQuotaExhausted(UNLIMITED)).toBe(false);
+    expect(quotaNoticeKind(UNLIMITED)).toBe("none");
+    expect(isQuotaResetDue(UNLIMITED, new Date("2030-01-01T00:00:00Z"))).toBe(false);
+  });
+
+  it("is built from an unlimited reply without numbers", () => {
+    const reply = { markdown: "a", onTopic: true, remaining: null, limit: null, resetAt: null, unlimited: true } as const;
+    expect(quotaFromReply(reply)).toMatchObject({ remaining: null, limit: null, resetAt: null, unlimited: true });
+  });
+
+  it("regression: a limit of 20 with nothing left still blocks", () => {
+    expect(isQuotaUnlimited(quota(0))).toBe(false);
+    expect(isQuotaExhausted(quota(0, 20))).toBe(true);
+    expect(quotaNoticeKind(quota(0, 20))).toBe("exhausted");
+  });
+
+  it("maps a limited reply to the same quota as before", () => {
+    const reply = { markdown: "a", onTopic: true, remaining: 18, limit: 20, resetAt: RESET_AT, unlimited: false } as const;
+    expect(quotaFromReply(reply)).toEqual(quota(18));
+  });
+});
 
 describe("isQuotaExhausted", () => {
   it("is true when nothing remains", () => {
@@ -91,7 +120,7 @@ describe("quotaFromError", () => {
 
   it("derives an exhausted quota from a quota-exceeded error", () => {
     const error = new PracticeApiError("limit", 429, "CHAT_QUOTA_EXCEEDED", data);
-    expect(quotaFromError(error)).toEqual({ used: 20, remaining: 0, limit: 20, resetAt: RESET_AT });
+    expect(quotaFromError(error)).toEqual({ used: 20, remaining: 0, limit: 20, resetAt: RESET_AT, unlimited: false });
   });
 
   it("returns null for another error code", () => {

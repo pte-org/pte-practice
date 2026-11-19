@@ -1,19 +1,23 @@
 import { describe, expect, it } from "vitest";
-import type { ChatQuota, ChatReply } from "@/features/chat/contracts";
+import type { ChatReply, LimitedChatQuota } from "@/features/chat/contracts";
+
+type LimitedReply = Extract<ChatReply, { unlimited: false }>;
 import { chatComposerState, chatReducer, INITIAL_CHAT_STATE, type ChatState } from "@/features/chat/chat-state";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 
-const reply = (overrides: Partial<ChatReply> = {}): ChatReply => ({
+const reply = (overrides: Partial<LimitedReply> = {}): LimitedReply => ({
   markdown: "Answer **text**",
   onTopic: true,
   remaining: 18,
   limit: 20,
   resetAt: RESET_AT,
+  unlimited: false,
   ...overrides,
 });
 
-const quota = (remaining: number): ChatQuota => ({ used: 20 - remaining, remaining, limit: 20, resetAt: RESET_AT });
+const quota = (remaining: number): LimitedChatQuota =>
+  ({ used: 20 - remaining, remaining, limit: 20, resetAt: RESET_AT, unlimited: false });
 
 const state = (overrides: Partial<ChatState> = {}): ChatState => ({ ...INITIAL_CHAT_STATE, ...overrides });
 
