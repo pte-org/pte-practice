@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { isQuotaFresh, isQuotaResetDue, quotaBadge } from "@/features/chat/chat-quota";
-import type { ChatQuota } from "@/features/chat/contracts";
+import type { LimitedChatQuota } from "@/features/chat/contracts";
 
 const RESET_AT = "2026-10-29T03:00:00Z";
-const quota = (remaining: number, resetAt = RESET_AT): ChatQuota => ({ used: 20 - remaining, remaining, limit: 20, resetAt });
+const quota = (remaining: number, resetAt = RESET_AT): LimitedChatQuota =>
+  ({ used: 20 - remaining, remaining, limit: 20, resetAt, unlimited: false });
+const UNLIMITED = { used: 50, remaining: null, limit: null, resetAt: null, unlimited: true } as const;
 
 describe("quotaBadge", () => {
   it("shows nothing until the quota is known", () => {
@@ -17,6 +19,10 @@ describe("quotaBadge", () => {
   it("marks a low count", () => {
     expect(quotaBadge(quota(3))).toEqual({ text: "3", low: true });
     expect(quotaBadge(quota(0))).toEqual({ text: "0", low: true });
+  });
+
+  it("shows no badge when the quota is unlimited", () => {
+    expect(quotaBadge(UNLIMITED)).toBeNull();
   });
 
   it("never shows a negative count", () => {

@@ -5,8 +5,8 @@ import { createChatApi } from "@/features/chat/api";
 type Request = typeof practiceRequest;
 
 const RESET_AT = "2026-10-29T03:00:00Z";
-const reply = { markdown: "Use *present perfect*.", onTopic: true, remaining: 19, limit: 20, resetAt: RESET_AT };
-const quota = { used: 1, remaining: 19, limit: 20, resetAt: RESET_AT };
+const reply = { markdown: "Use *present perfect*.", onTopic: true, remaining: 19, limit: 20, resetAt: RESET_AT, unlimited: false };
+const quota = { used: 1, remaining: 19, limit: 20, resetAt: RESET_AT, unlimited: false };
 
 function fakeRequest(result: unknown) {
   return vi.fn().mockResolvedValue(result) as unknown as ReturnType<typeof vi.fn> & Request;

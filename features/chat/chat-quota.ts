@@ -1,25 +1,30 @@
 import { PracticeApiError } from "@/features/practice/api";
 import { CHAT_ERROR_CODES, CHAT_WARNING_THRESHOLD } from "./constants";
-import type { ChatQuota } from "./contracts";
+import type { ChatQuota, ChatReply } from "./contracts";
 
 export type ChatQuotaNoticeKind = "none" | "warning" | "exhausted";
 
 const MS_PER_MINUTE = 60_000;
 const MINUTES_PER_HOUR = 60;
 
+/** The one place the panel learns that no daily limit is in force. */
+export function isQuotaUnlimited(quota: ChatQuota | null): boolean {
+  return quota?.unlimited === true;
+}
+
 export function isQuotaExhausted(quota: ChatQuota | null): boolean {
-  return quota !== null && quota.remaining <= 0;
+  return quota !== null && !quota.unlimited && quota.remaining <= 0;
 }
 
 export function quotaNoticeKind(quota: ChatQuota | null): ChatQuotaNoticeKind {
-  if (!quota) return "none";
+  if (!quota || quota.unlimited) return "none";
   if (quota.remaining <= 0) return "exhausted";
   return quota.remaining <= CHAT_WARNING_THRESHOLD ? "warning" : "none";
 }
 
 /** The small count on the closed toggle; `low` uses the same threshold as the warning notice. */
 export function quotaBadge(quota: ChatQuota | null): { text: string; low: boolean } | null {
-  if (!quota) return null;
+  if (!quota || quota.unlimited) return null;
   const remaining = Math.max(0, quota.remaining);
   return { text: String(remaining), low: remaining <= CHAT_WARNING_THRESHOLD };
 }
@@ -33,7 +38,7 @@ export function isQuotaFresh(fetchedAtMs: number | null, nowMs: number, maxAgeMs
 
 /** True once the clock passes the reset time, whether or not the server has caught up with a fresh quota. */
 export function isQuotaResetDue(quota: ChatQuota | null, now: Date): boolean {
-  if (!quota) return false;
+  if (!quota || quota.unlimited) return false;
   const resetMs = Date.parse(quota.resetAt);
   return !Number.isNaN(resetMs) && resetMs <= now.getTime();
 }
@@ -54,5 +59,17 @@ export function quotaFromError(error: unknown): ChatQuota | null {
   const { limit, resetAt } = data as Record<string, unknown>;
   if (typeof limit !== "number" || !Number.isInteger(limit) || limit < 0) return null;
   if (typeof resetAt !== "string" || Number.isNaN(Date.parse(resetAt))) return null;
-  return { used: limit, remaining: 0, limit, resetAt };
+  return { used: limit, remaining: 0, limit, resetAt, unlimited: false };
+}
+
+/** The quota a reply reports. A reply carries no count of today's questions; nothing shows it when unlimited. */
+export function quotaFromReply(reply: ChatReply): ChatQuota {
+  if (reply.unlimited) return { used: 0, remaining: null, limit: null, resetAt: null, unlimited: true };
+  return {
+    used: reply.limit - reply.remaining,
+    remaining: reply.remaining,
+    limit: reply.limit,
+    resetAt: reply.resetAt,
+    unlimited: false,
+  };
 }

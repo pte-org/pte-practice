@@ -3,8 +3,8 @@ import { normalizeChatQuota, normalizeChatReply } from "@/features/chat/contract
 
 const RESET_AT = "2026-10-29T03:00:00Z";
 
-const validQuota = { used: 5, remaining: 15, limit: 20, resetAt: RESET_AT };
-const validReply = { markdown: "**Hello**", onTopic: true, remaining: 14, limit: 20, resetAt: RESET_AT };
+const validQuota = { used: 5, remaining: 15, limit: 20, resetAt: RESET_AT, unlimited: false };
+const validReply = { markdown: "**Hello**", onTopic: true, remaining: 14, limit: 20, resetAt: RESET_AT, unlimited: false };
 
 describe("normalizeChatQuota", () => {
   it("accepts a valid quota", () => {
@@ -16,7 +16,7 @@ describe("normalizeChatQuota", () => {
   });
 
   it("accepts a fully consumed quota", () => {
-    const exhausted = { used: 20, remaining: 0, limit: 20, resetAt: RESET_AT };
+    const exhausted = { used: 20, remaining: 0, limit: 20, resetAt: RESET_AT, unlimited: false };
     expect(normalizeChatQuota(exhausted)).toEqual(exhausted);
   });
 

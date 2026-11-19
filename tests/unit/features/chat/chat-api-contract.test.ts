@@ -21,6 +21,7 @@ interface ChatApiContract {
   limits: { exercisePromptMaxChars: number };
   reply: Record<string, unknown>;
   quota: unknown;
+  unlimitedQuota?: unknown;
   quotaExceededError: { code: string; data: { resetAt: string } };
 }
 
@@ -42,15 +43,19 @@ describe.skipIf(!existsSync(CONTRACT_PATH))("chat API contract (shared with the 
 
   it("reads a reply", () => {
     // The server also sends fromCache and sessionId; this client reads only the fields below.
-    const { markdown, onTopic, remaining, limit, resetAt } = contract.reply;
-    expect(normalizeChatReply(contract.reply)).toEqual({ markdown, onTopic, remaining, limit, resetAt });
+    const { markdown, onTopic, remaining, limit, resetAt, unlimited } = contract.reply;
+    expect(normalizeChatReply(contract.reply)).toEqual({ markdown, onTopic, remaining, limit, resetAt, unlimited });
+  });
+
+  it("reads an unlimited quota", () => {
+    expect(normalizeChatQuota(contract.unlimitedQuota)).toEqual(contract.unlimitedQuota);
   });
 
   it("builds the exhausted quota from the quota-exceeded error", () => {
     const { code, data } = contract.quotaExceededError;
     const error = new PracticeApiError("m", 429, code, data);
 
-    expect(quotaFromError(error)).toEqual({ used: 20, remaining: 0, limit: 20, resetAt: data.resetAt });
+    expect(quotaFromError(error)).toEqual({ used: 20, remaining: 0, limit: 20, resetAt: data.resetAt, unlimited: false });
     expect(chatErrorKey(error)).toBe("quotaExceeded");
   });
 });
