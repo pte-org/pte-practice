@@ -198,6 +198,7 @@ export interface LocaleDict {
     passwordChanged: string;
     passwordTooShort: string;
     passwordMismatch: string;
+    passwordEdgeSpaces: string;
     changePasswordError: string;
     backToSignIn: string;
     toggleLanguage: string;

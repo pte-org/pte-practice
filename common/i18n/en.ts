@@ -198,6 +198,7 @@ export const en: LocaleDict = {
     passwordChanged: "Password changed. Taking you to practice…",
     passwordTooShort: "The new password must have at least 8 characters.",
     passwordMismatch: "The two passwords do not match.",
+    passwordEdgeSpaces: "The password cannot start or end with a space.",
     changePasswordError: "We could not change your password. Please try again.",
     backToSignIn: "Back to sign in",
     toggleLanguage: "Switch language",
