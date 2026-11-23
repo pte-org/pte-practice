@@ -35,13 +35,13 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
     if (found.username || found.password) return;
     setIsSubmitting(true);
     try {
-      const tokens = await createPracticeApiClient().login({ username: username.trim(), password });
+      const tokens = await createPracticeApiClient().login({ username: username.trim(), password: password.trim() });
       if (!hasStudentRole(tokens.accessToken)) {
         showToast(t("auth.notStudent"), { tone: "error" });
         setIsSubmitting(false);
         return;
       }
-      onSignedIn(tokens, password);
+      onSignedIn(tokens, password.trim());
     } catch (error) {
       showToast(t(signInErrorKey(error)), { tone: "error" });
       setIsSubmitting(false);
@@ -58,7 +58,7 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
             aria-invalid={validation.errors.username ? true : undefined}
             aria-describedby={validation.errors.username ? "username-error" : undefined}
             placeholder={t("auth.usernamePlaceholder")} onBlur={(event) => validation.onBlur("username", event.target.value)}
-            onChange={(event) => { setUsername(event.target.value); validation.onChange("username", event.target.value); }} />
+            onChange={(event) => { const typed = event.target.value.replace(/\s+/g, ""); setUsername(typed); validation.onChange("username", typed); }} />
           <span className="auth-field-valid" aria-hidden="true" data-visible={Boolean(username && !validation.errors.username)}><AppIcon name="tick" size={18} /></span>
         </div>
         {validation.errors.username ? <p className="auth-field-error" id="username-error" role="alert">{validation.errors.username}</p> : null}

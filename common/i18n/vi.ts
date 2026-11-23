@@ -198,6 +198,7 @@ export const vi: LocaleDict = {
     passwordChanged: "Đã đổi mật khẩu. Đang chuyển bạn vào phần luyện tập…",
     passwordTooShort: "Mật khẩu mới phải có ít nhất 8 ký tự.",
     passwordMismatch: "Hai mật khẩu không khớp.",
+    passwordEdgeSpaces: "Mật khẩu không được bắt đầu hoặc kết thúc bằng dấu cách.",
     changePasswordError: "Không thể đổi mật khẩu. Vui lòng thử lại.",
     backToSignIn: "Quay lại đăng nhập",
     toggleLanguage: "Đổi ngôn ngữ",
