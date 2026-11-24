@@ -188,7 +188,6 @@ export const en: LocaleDict = {
     rateLimited: "Too many sign-in attempts. Please wait a moment and try again.",
     networkError: "Unable to connect to the server. Check your connection and try again.",
     serviceUnavailable: "Sign-in is temporarily unavailable. Please try again later.",
-    devAccounts: "Dev only · quick fill",
     changePasswordTitle: "Set a new password",
     changePasswordDescription: "This is your first sign-in. Choose your own password to continue.",
     newPasswordLabel: "New password",

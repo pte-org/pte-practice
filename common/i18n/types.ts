@@ -188,7 +188,6 @@ export interface LocaleDict {
     rateLimited: string;
     networkError: string;
     serviceUnavailable: string;
-    devAccounts: string;
     changePasswordTitle: string;
     changePasswordDescription: string;
     newPasswordLabel: string;

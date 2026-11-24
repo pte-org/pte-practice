@@ -1002,9 +1002,6 @@ html[data-theme="dark"] .sign-in-brand strong { color: var(--text); }
 .auth-submit:active:not(:disabled) { transform: scale(0.98); }
 .auth-submit:disabled { opacity: 0.6; cursor: default; }
 .button-pill { min-height: 48px; border-radius: 999px; }
-.dev-accounts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 9px 10px; border: 1px dashed var(--amber); border-radius: 10px; color: var(--amber); font-size: 0.75rem; font-weight: 700; }
-.dev-account-chip { padding: 3px 9px; border: 1px solid var(--amber); border-radius: 999px; background: transparent; color: var(--amber); font-size: 0.72rem; font-weight: 700; cursor: pointer; }
-.dev-account-chip:hover { background: color-mix(in srgb, var(--amber) 15%, transparent); }
 
 @media (max-width: 860px) {
   .sign-in-card { grid-template-columns: 1fr; }

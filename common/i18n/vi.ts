@@ -188,7 +188,6 @@ export const vi: LocaleDict = {
     rateLimited: "Đăng nhập quá nhiều lần. Vui lòng đợi một lát rồi thử lại.",
     networkError: "Không thể kết nối máy chủ. Kiểm tra kết nối và thử lại.",
     serviceUnavailable: "Chức năng đăng nhập tạm thời không khả dụng. Vui lòng thử lại sau.",
-    devAccounts: "Chỉ dùng khi dev · điền nhanh",
     changePasswordTitle: "Đặt mật khẩu mới",
     changePasswordDescription: "Đây là lần đăng nhập đầu tiên. Hãy đặt mật khẩu của riêng bạn để tiếp tục.",
     newPasswordLabel: "Mật khẩu mới",
