@@ -5,6 +5,9 @@ import type { CatalogAvailability } from "./contracts";
 /** Code of a request that never reached the server (offline, server down); never a sign of bad credentials. */
 export const NETWORK_ERROR_CODE = "NETWORK_ERROR";
 
+/** Code the server answers with when practice is locked for the student (suspended, or the licence ran out). */
+export const NOT_ENTITLED_ERROR_CODE = "PRACTICE_NOT_ENTITLED";
+
 export const API_PATHS = {
   login: "/api/v1/auth/login",
   changePassword: "/api/v1/auth/change-password",

@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useLatestRequest } from "@/common/hooks/useLatestRequest";
-import { createPracticeApiClient } from "@/features/practice/api";
+import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
+import { NOT_ENTITLED_ERROR_CODE } from "@/features/practice/constants";
 import type { PracticeProgress } from "@/features/practice/contracts";
 import { usePractice } from "@/features/practice/PracticeProvider";
 import { EMPTY_WORKSPACE_PROGRESS, WORKSPACE_PROGRESS_STALE_MS } from "./constants";
@@ -13,6 +14,9 @@ interface WorkspaceProgress {
   status: "loading" | "ready" | "error";
   refresh: () => Promise<void>;
 }
+
+const isNotEntitled = (error: unknown): boolean =>
+  error instanceof PracticeApiError && error.code === NOT_ENTITLED_ERROR_CODE;
 
 const WorkspaceProgressContext = createContext<WorkspaceProgress | null>(null);
 interface WorkspaceProgressProviderProps { children: ReactNode }
@@ -39,8 +43,16 @@ export const WorkspaceProgressProvider = ({ children }: WorkspaceProgressProvide
         if (!gate.isLatest(id)) return;
         setProgress(loaded);
         setStatus("ready");
-      } catch {
-        if (gate.isLatest(id)) setStatus("error");
+      } catch (error) {
+        if (!gate.isLatest(id)) return;
+        // Locked practice is not a failure: the history is simply out of reach, so the screens show it empty
+        // next to the "Đã khóa" notice instead of a generic error.
+        if (isNotEntitled(error)) {
+          setProgress(EMPTY_WORKSPACE_PROGRESS);
+          setStatus("ready");
+          return;
+        }
+        setStatus("error");
       }
     })();
     inFlight.current = request;
