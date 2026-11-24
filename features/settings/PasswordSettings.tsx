@@ -5,20 +5,25 @@ import { AppIcon, Button, PasswordField } from "@/common/components";
 import { useTranslation, type TranslationKey } from "@/common/i18n";
 import { newPasswordError } from "@/features/auth/password-rules";
 import { buildChangePasswordBody } from "@/features/auth/change-password-body";
-import { MAX_PASSWORD_LENGTH } from "@/features/auth/constants";
 import { createPracticeApiClient, PracticeApiError } from "@/features/practice/api";
 import { ATTEMPT_IN_PROGRESS_ERROR_CODE, INVALID_LOGIN_ERROR_CODE } from "@/features/practice/constants";
 import { getPracticeSession } from "@/features/practice/session-storage";
 
-/** What the server refused, in the student's words. */
-function refusalKey(error: unknown): TranslationKey {
-  if (!(error instanceof PracticeApiError)) return "auth.changePasswordError";
-  if (error.code === INVALID_LOGIN_ERROR_CODE) return "settings.currentPasswordWrong";
-  if (error.code === ATTEMPT_IN_PROGRESS_ERROR_CODE) return "settings.passwordLockedInExam";
-  return "auth.changePasswordError";
+const HTTP_BAD_REQUEST = 400;
+
+/**
+ * What the server refused. A validation refusal (400) carries the server's own wording of the rule, which the
+ * organization portal shows as it is; a wrong current password and a started exam have messages of their own.
+ */
+function refusalText(error: unknown, t: (key: TranslationKey) => string): string {
+  if (!(error instanceof PracticeApiError)) return t("settings.changePasswordFailed");
+  if (error.code === INVALID_LOGIN_ERROR_CODE) return t("settings.currentPasswordWrong");
+  if (error.code === ATTEMPT_IN_PROGRESS_ERROR_CODE) return t("settings.passwordLockedInExam");
+  if (error.status === HTTP_BAD_REQUEST && error.message) return error.message;
+  return t("settings.changePasswordFailed");
 }
 
-/** Changing the password from Settings, with the same three fields and rules as the tenant portal's form. */
+/** Changing the password from Settings: the same three fields, checks and order as the tenant portal's form. */
 export const PasswordSettings = (): ReactElement => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -27,14 +32,14 @@ export const PasswordSettings = (): ReactElement => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorKey, setErrorKey] = useState<TranslationKey | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const close = (): void => {
     setOpen(false);
     setCurrentPassword("");
     setNewPassword("");
     setConfirmation("");
-    setErrorKey(null);
+    setError(null);
   };
 
   const openForm = (): void => {
@@ -44,12 +49,14 @@ export const PasswordSettings = (): ReactElement => {
 
   const submit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    const ruleError = currentPassword ? newPasswordError(newPassword, confirmation) : "settings.currentPasswordRequired";
+    // One "all fields" message first, then the rules in the portal's order: too short, edge spaces, mismatch.
+    const ruleError = !currentPassword || !newPassword || !confirmation
+      ? "settings.passwordAllRequired" : newPasswordError(newPassword, confirmation);
     if (ruleError) {
-      setErrorKey(ruleError);
+      setError(t(ruleError));
       return;
     }
-    setErrorKey(null);
+    setError(null);
     setIsSubmitting(true);
     try {
       // The server keeps this session and signs the student's other devices out.
@@ -58,8 +65,8 @@ export const PasswordSettings = (): ReactElement => {
       );
       close();
       setIsChanged(true);
-    } catch (error) {
-      setErrorKey(refusalKey(error));
+    } catch (failure) {
+      setError(refusalText(failure, t));
     } finally {
       setIsSubmitting(false);
     }
@@ -84,14 +91,13 @@ export const PasswordSettings = (): ReactElement => {
     <section className="student-settings-password">
       <h3>{t("settings.changePassword")}</h3>
       <p className="student-settings-password-hint">{t("settings.changePasswordDescription")}</p>
-      <form className="auth-form student-settings-password-form" onSubmit={(event) => void submit(event)}>
-        {errorKey ? <p className="form-error" role="alert">{t(errorKey)}</p> : null}
+      <form className="auth-form student-settings-password-form" noValidate onSubmit={(event) => void submit(event)}>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
         <PasswordField label={t("settings.currentPasswordLabel")} autoComplete="current-password" withIcon={false}
-          maxLength={MAX_PASSWORD_LENGTH} value={currentPassword} onChange={setCurrentPassword} />
-        <PasswordField label={t("auth.newPasswordLabel")} withIcon={false} maxLength={MAX_PASSWORD_LENGTH}
-          value={newPassword} onChange={setNewPassword} />
-        <PasswordField label={t("auth.confirmPasswordLabel")} withIcon={false} maxLength={MAX_PASSWORD_LENGTH}
-          value={confirmation} onChange={setConfirmation} />
+          value={currentPassword} onChange={setCurrentPassword} />
+        <PasswordField label={t("auth.newPasswordLabel")} withIcon={false} value={newPassword} onChange={setNewPassword} />
+        <PasswordField label={t("auth.confirmPasswordLabel")} withIcon={false} value={confirmation}
+          onChange={setConfirmation} />
         <Button type="submit" size="sm" fullWidth disabled={isSubmitting}>
           {isSubmitting ? t("auth.changingPassword") : t("settings.changePassword")}
         </Button>

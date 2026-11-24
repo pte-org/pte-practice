@@ -347,7 +347,8 @@ export interface LocaleDict {
     changePassword: string;
     changePasswordDescription: string;
     currentPasswordLabel: string;
-    currentPasswordRequired: string;
+    passwordAllRequired: string;
+    changePasswordFailed: string;
     currentPasswordWrong: string;
     passwordLockedInExam: string;
     passwordChanged: string;
