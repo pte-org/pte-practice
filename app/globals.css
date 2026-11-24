@@ -872,6 +872,10 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .auth-form input::placeholder { color: #756b86; }
 .auth-form input:focus { border-color: var(--accent); }
 .form-error { padding: 10px 12px; border: 1px solid rgb(228 94 104 / 28%); border-radius: 9px; background: var(--red-soft); color: #ffc1c6; font-size: 0.8rem; }
+/* That pink is written for the dark theme. On the light theme's pale red fill it all but vanishes, so there the
+   text takes the theme's own red. :where() keeps this no stronger than the plain rules, so a page that styles its
+   own errors (sign-in) still wins. */
+:where(html[data-theme="light"]) :is(.form-error, .access-banner-error, .task-count-warning) { color: var(--red); }
 .form-success { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--green); border-radius: 9px; background: var(--green-soft); color: var(--green); font-size: 0.8rem; }
 .auth-footnote { text-align: center; font-size: 0.72rem; }
 
