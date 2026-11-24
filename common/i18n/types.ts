@@ -351,6 +351,10 @@ export interface LocaleDict {
     currentPasswordWrong: string;
     passwordLockedInExam: string;
     passwordChanged: string;
+    avatar: string;
+    avatarMale: string;
+    avatarFemale: string;
+    avatarSaveError: string;
   };
   appearance: {
     title: string;

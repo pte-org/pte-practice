@@ -12,6 +12,13 @@
 .student-settings-options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 .student-settings-options label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
 .student-settings-options input { accent-color: var(--accent); }
+.student-settings-avatar h3 { margin: 0 0 12px; font-size: 1rem; }
+.student-settings-avatar-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.student-settings-avatar-options label { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; font-size: 0.875rem; }
+.student-settings-avatar-options label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.student-settings-avatar-options label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.student-settings-avatar-options input { accent-color: var(--accent); }
+.student-settings-avatar-image { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; }
 .student-settings-password { padding-top: 24px; border-top: 1px solid var(--line); }
 .student-settings-password h3 { margin: 0 0 6px; font-size: 1rem; }
 .student-settings-password-hint { margin: 0 0 12px; color: var(--muted); font-size: 0.8rem; }

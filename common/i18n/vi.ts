@@ -351,6 +351,10 @@ export const vi: LocaleDict = {
     currentPasswordWrong: "Mật khẩu hiện tại không đúng.",
     passwordLockedInExam: "Bạn đang trong ca thi nên chưa đổi được mật khẩu. Hãy thử lại sau khi nộp bài.",
     passwordChanged: "Đã đổi mật khẩu.",
+    avatar: "Giới tính",
+    avatarMale: "Nam",
+    avatarFemale: "Nữ",
+    avatarSaveError: "Không lưu được giới tính. Vui lòng thử lại.",
   },
   appearance: {
     title: "Giao diện luyện tập",

@@ -5,6 +5,7 @@ import { AppIcon, Modal } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { AppearanceSettings } from "@/features/practice/appearance/AppearanceSettings";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
+import { AvatarSettings } from "./AvatarSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { PasswordSettings } from "./PasswordSettings";
 import { AssistantNameEditor } from "@/features/chat/AssistantNameEditor";
@@ -26,6 +27,7 @@ export const StudentSettings = (): ReactElement => {
         closeLabel={t("mode.close")} size="md" isDismissDisabled={busy} className="student-settings-modal">
         {open ? <div className="student-settings-content">
           <GeneralSettings />
+          <AvatarSettings />
           <AssistantNameEditor />
           <PasswordSettings />
           <section className="student-settings-appearance">

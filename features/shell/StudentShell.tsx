@@ -19,6 +19,8 @@ import { ActiveNavProvider } from "./ActiveNav";
 import { defaultNavHref } from "./nav-active";
 import { CommandPalette } from "./CommandPalette";
 import { NavIcon, type NavIconName } from "./NavIcon";
+import { StudentAvatar } from "@/features/practice/avatar/StudentAvatar";
+import { StudentAvatarProvider } from "@/features/practice/avatar/StudentAvatarProvider";
 import { StudentSettings } from "@/features/settings/StudentSettings";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
@@ -94,6 +96,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
   }
 
   return (
+    <StudentAvatarProvider>
     <ChatLayout taskCode={null}>
     <div className={`student-shell${studioRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
       data-background-blur={appearance.blur} data-glass-opacity={appearance.opacity}>
@@ -126,7 +129,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
         <div className="rail-spacer" />
         {studioRoute ? <PipCompanion /> : null}
         <div className="account-card">
-          <div className="account-avatar" aria-hidden="true">{accountInitial(accountName)}</div>
+          <StudentAvatar className="account-avatar" />
           <div className="account-copy">
             <strong title={accountName}>{accountName}</strong>
           </div>
@@ -185,11 +188,6 @@ export function StudentShell({ children }: { children: ReactNode }) {
       {practiceModeDialog}
     </div>
     </ChatLayout>
+    </StudentAvatarProvider>
   );
-}
-
-/** First letter of the student's name for the avatar circle, or a neutral dot when there is none. */
-function accountInitial(name: string): string {
-  const first = name.trim().charAt(0);
-  return first ? first.toUpperCase() : "·";
 }

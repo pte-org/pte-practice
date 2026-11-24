@@ -351,6 +351,10 @@ export const en: LocaleDict = {
     currentPasswordWrong: "That current password is not right.",
     passwordLockedInExam: "You are in an exam, so the password cannot change yet. Try again once you have submitted.",
     passwordChanged: "Password changed.",
+    avatar: "Gender",
+    avatarMale: "Male",
+    avatarFemale: "Female",
+    avatarSaveError: "Your gender could not be saved. Please try again.",
   },
   appearance: {
     title: "Practice appearance",

@@ -30,6 +30,7 @@ export const API_PATHS = {
   practiceSessions: "/api/v1/student/practice/sessions",
   mockTests: "/api/v1/student/practice/mock-tests",
   profile: "/api/v1/student/practice/profile",
+  profileAvatar: "/api/v1/student/practice/profile/avatar",
   mediaObjects: "/api/v1/objects",
 } as const;
 
@@ -61,8 +62,8 @@ export const PRACTICE_ROUTES = {
   studyPack: "/study-pack",
   progress: "/progress",
   signIn: "/sign-in",
-  practiceSession: "/practice-tests/session",
   resetPassword: "/reset-password",
+  practiceSession: "/practice-tests/session",
   practiceReview: "/practice-tests/session/review",
 } as const;
 
