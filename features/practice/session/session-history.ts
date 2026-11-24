@@ -44,11 +44,18 @@ export function historyFromReview(items: readonly PracticeReviewItem[]): History
       task,
       fixture: fixtureFromPracticeTask(task),
       answer: parsePayload(item.savedPayload),
-      result: item.status === "ANSWERED" ? pendingResult(item.publicId, item.taskCode, item.score) : null,
+      result: item.status === "ANSWERED" ? resumedResult(item) : null,
       timeSpentSeconds: 0,
       isSkipped: item.status === "SKIPPED",
     };
   });
+}
+
+/** A resumed answer's result: its score as before, plus the right/wrong marks the review carries for a choice answer. */
+function resumedResult(item: PracticeReviewItem): PracticeItemResult {
+  const result = pendingResult(item.publicId, item.taskCode, item.score);
+  const optionVerdicts = item.result?.optionVerdicts;
+  return optionVerdicts ? { ...result, optionVerdicts } : result;
 }
 
 /** The result shown for an answer before (or without) scoring: scored when a score exists, else waiting. */

@@ -20,13 +20,15 @@ import { INITIAL_PRACTICE_SESSION_STATE, practiceSessionReducer } from "./sessio
 import { fixtureFromPracticeTask } from "./task-content";
 import { effectiveDraft, hasAnswer, parsePayload, sessionErrorMessage } from "./session/session-draft";
 import { footerButtons } from "./session/footer-buttons";
-import { historyFromReview, pendingResult, type HistoryItem } from "./session/session-history";
+import { pendingResult, type HistoryItem } from "./session/session-history";
+import { checksOnSelect, hasVerdicts, showsAnswerCheck } from "./session/instant-feedback";
 import {
   SessionCompleteCard, SessionErrorCard, SessionLoading,
 } from "./session/SessionStateCards";
 import { FinishSessionButton } from "./session/FinishSessionButton";
 import { SessionTaskView, type MissingField } from "./session/SessionTaskView";
 import { useHeartbeat } from "./session/useHeartbeat";
+import { useHistoryHydration } from "./session/useHistoryHydration";
 import { useSessionDraft } from "./session/useSessionDraft";
 import { useSessionLifecycle } from "./session/useSessionLifecycle";
 import { useSessionMutations } from "./session/useSessionMutations";
@@ -82,22 +84,7 @@ export function PracticeSessionView() {
     sessionRef.current = state.session;
   }, [state.session]);
 
-  // Hydrate history when resuming a session that already has answered or skipped questions
-  useEffect(() => {
-    const session = state.session;
-    if (!session || hydratedSessionId.current === session.publicId) return;
-
-    if (session.answeredItemCount > 0 || (session.currentTask && session.currentTask.orderIndex > 0)) {
-      hydratedSessionId.current = session.publicId;
-      void api.getReview(session.publicId).then((review) => {
-        const newHistory = historyFromReview(review.items);
-        if (newHistory.length === 0) return;
-        setHistory((prev) => (prev.length === 0 ? newHistory : prev));
-      }).catch(() => {
-        // Non-fatal if review fetch fails
-      });
-    }
-  }, [api, state.session]);
+  useHistoryHydration(api, state.session, hydratedSessionId, setHistory);
 
   // Recordings made before the tab was closed or reloaded come back from this device; the current one is shown.
   const restoredFor = useRef<string | null>(null);
@@ -225,11 +212,11 @@ export function PracticeSessionView() {
   };
 
   /** Submits; a written answer outside its word range is confirmed first unless `confirmed`. */
-  const submit = (confirmed = false) => {
+  const submit = (confirmed = false, picked?: Record<string, unknown>) => {
     const session = state.session;
     const task = activeTask;
     if (!session || !task) return Promise.resolve();
-    let answerDraft = effectiveDraft(task, draftTaskId, draft);
+    let answerDraft = picked ?? effectiveDraft(task, draftTaskId, draft);
     // Missing input is a warning on the form, not a failed session: the student keeps their draft and fixes it in place.
     if (!hasAnswer(answerDraft)) { setMissing("answer"); return Promise.resolve(); }
     setMissing(null);
@@ -262,7 +249,8 @@ export function PracticeSessionView() {
       } else {
         // The answer is saved: move straight on, its result stays reachable with "Trước".
         setHistory((prev) => [...prev, { task, fixture: activeFixture, ...answered }]);
-        setViewingHistoryIndex(null);
+        // A choice answer comes back with its verdicts: stay on it so the student sees them before moving on.
+        setViewingHistoryIndex(hasVerdicts(newResult) ? history.length : null);
         setDraft({});
         setDraftTaskId(next.currentTask?.publicId ?? null);
       }
@@ -338,6 +326,7 @@ export function PracticeSessionView() {
     viewingHistory: viewingHistoryIndex !== null, atFirstHistoryItem: viewingHistoryIndex === 0,
     historyLength: history.length, itemScored: isItemScored, isScoring,
     submitting: state.phase === "submitting", hasAnswer: hasAnswer(currentDraft),
+    instantFeedback: showsAnswerCheck(session, currentTask),
   });
 
   const title = sessionDisplayName(session, (code) => (code === currentTask.taskCode ? currentTask.displayName : code), t);
@@ -361,6 +350,7 @@ export function PracticeSessionView() {
         missing={missing}
         value={activeValue}
         isSubmitted={isViewingOrSubmitted}
+        verdicts={activeHistoryItem?.result?.optionVerdicts}
         showPrev={buttons.showPrev}
         onPrev={handlePrev}
         prevDisabled={buttons.prevDisabled}
@@ -368,7 +358,7 @@ export function PracticeSessionView() {
         onSkip={() => void skip()}
         showSubmit={buttons.showSubmit}
         submitDisabled={state.phase === "submitting"}
-        submitLabel={buttons.submitAdvances ? t("session.next") : t("session.submitAnswer")}
+        submitLabel={buttons.submitAdvances ? t(buttons.checksFirst ? "session.check" : "session.next") : t("session.submitAnswer")}
         onSubmitAnswer={handleSubmitAnswer}
         onTimeUp={handleTimeUp}
         readOnly={session.status === "COMPLETED" && viewingHistoryIndex !== null && !isItemScored}
@@ -381,6 +371,8 @@ export function PracticeSessionView() {
             // Upload as soon as recording stops; "Tiếp theo" then reuses this upload instead of waiting for it.
             if (hasLocalRecording(value)) void commitRecording(value, (blob, duration) =>
               uploadPracticeRecording(api, blob, session.publicId, currentTask.publicId, duration)).catch(() => undefined);
+            // One click settles a single-choice answer, so it is sent at once and its verdicts show straight away.
+            if (checksOnSelect(session, currentTask)) void submit(false, value);
           }
         }}
         onLoadPlayback={() => api.getRecordingPlayback(session.publicId, currentTask.publicId).then((playback) => playback.url)}

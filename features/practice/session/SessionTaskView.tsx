@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { AppIcon, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import type { PracticeSession, PracticeTaskResponse } from "../contracts";
+import type { PracticeOptionVerdict, PracticeSession, PracticeTaskResponse } from "../contracts";
 import type { PracticeTaskFixture } from "../fixtures";
 import { skillKey } from "../presentation";
 import { isClientRuntimeSupported } from "../renderer-allowlist";
@@ -53,8 +53,10 @@ interface SessionTaskViewProps {
   onSkip?: () => void;
   onPause: () => void;
   finishAction?: ReactNode;
-  /** An earlier, already answered question shown read-only; its score is on the review screen, not here. */
+  /** An answered question shown read-only: the one just sent (with its right and wrong marks) or an earlier one. */
   isSubmitted?: boolean;
+  /** Right and wrong per option of that answered question, once it is scored. */
+  verdicts?: readonly PracticeOptionVerdict[];
   showPrev?: boolean;
   onPrev?: () => void;
   prevDisabled?: boolean;
@@ -116,7 +118,7 @@ export function SessionTaskView(props: SessionTaskViewProps) {
 
   const renderBody = (timed?: TimedRendererControl, timedLocked = false, attempt = 0) => fixture ? (
     <TaskRenderer key={`${task.publicId}:${attempt}`} fixture={questionFixture(task.taskCode, fixture, isSubmitted)} rendererKey={task.rendererKey} value={value}
-      sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed}
+      sessionPublicId={session.publicId} itemPublicId={task.publicId} timed={timed} verdicts={props.verdicts}
       onLoadPlayback={props.onLoadPlayback}
       onActivityChange={props.onActivityChange}
       disabled={busy || unsupported || audioUnavailable || timedLocked || isSubmitted || Boolean(props.readOnly)} onChange={props.onChange} />

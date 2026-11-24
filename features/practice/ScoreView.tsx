@@ -8,6 +8,7 @@ import type { PracticeItemResult } from "./contracts";
 import { formatSubScore, subScoreLabel } from "./score-labels";
 import { AnswerFeedback } from "./feedback/AnswerFeedback";
 import { ScoringRequest } from "./feedback/ScoringRequest";
+import { ScoreDial } from "./ScoreDial";
 import { useItemResult } from "./useItemResult";
 
 export { formatSubScore, subScoreLabel };
@@ -80,7 +81,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false, ca
   return (
     <div className={className} data-testid="practice-score">
       {result.transcript ? <div className="score-transcript"><h3>{t("score.transcript")}</h3><p>{result.transcript}</p></div> : null}
-      <p className="score-value"><strong>{result.score}</strong> <span>{t("score.outOf")}</span></p>
+      <div className="score-dial-wrap"><ScoreDial score={result.score} /></div>
       {subScores.length > 0 ? (
         <div className="score-breakdown">
           <h3>{t("score.subScores")}</h3>

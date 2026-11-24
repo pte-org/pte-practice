@@ -828,8 +828,6 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .score-panel { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-raised); text-align: left; }
 .score-panel > p, .score-panel > small { justify-self: center; text-align: center; color: var(--muted); }
 .score-panel-compact { justify-items: stretch; padding: 14px; }
-.score-value { justify-self: center; color: var(--muted); font-size: 0.9rem; }
-.score-value strong { color: var(--text); font-size: 3rem; line-height: 1; }
 .score-breakdown, .score-feedback, .score-transcript { display: grid; gap: 7px; width: 100%; }
 .score-panel h3 { color: var(--text); font-size: 0.82rem; }
 .score-breakdown ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }

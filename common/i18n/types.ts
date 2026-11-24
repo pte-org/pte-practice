@@ -398,6 +398,8 @@ export interface LocaleDict {
     correct: string;
     incorrect: string;
     partiallyCorrect: string;
+    check: string;
+    rightAnswer: string;
     scoreLabel: string;
     speedLabel: string;
     secondsShort: string;
@@ -428,6 +430,11 @@ export interface LocaleDict {
     criteriaSource: string;
     answerPanelTitle: string;
     resultPanelTitle: string;
+    resultPanelObjective: string;
+    statRight: string;
+    statWrong: string;
+    statMissed: string;
+    correctAnswers: string;
     metaQuestion: string;
     metaTask: string;
     metaSkill: string;

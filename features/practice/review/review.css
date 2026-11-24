@@ -44,9 +44,6 @@
 
 /* Right panel: transcript first, then the score, the summary and the detailed feedback. */
 .practice-review .score-panel { display: grid; justify-items: stretch; gap: 12px; padding: 0; border: 0; background: none; }
-.practice-review .score-value { justify-self: stretch; display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 16px;
-  border-radius: 12px; background: linear-gradient(135deg, var(--green-soft), var(--accent-soft)); }
-.practice-review .score-value strong { color: var(--green); }
 
 .review-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px;
   border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
@@ -70,3 +67,17 @@
 .rubric-levels strong { flex: 0 0 64px; color: var(--text); }
 .rubric-levels span { color: var(--muted-strong); line-height: 1.5; }
 .rubric-note { color: var(--muted); font-size: 0.8rem; }
+
+/* A marked fill-in-the-blanks answer: a row per gap, tinted by whether its word was right. */
+.review-blank-rows { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.review-blank-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.review-blank-row-right { border-color: var(--green); background: var(--green-soft); }
+.review-blank-row-wrong, .review-blank-row-empty { border-color: var(--red); background: var(--red-soft); }
+.review-blank-gap { color: var(--muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.review-blank-word { color: var(--text); font-weight: 600; }
+.review-blank-verdict { margin-left: auto; color: var(--muted-strong); font-size: 0.85rem; }
+.review-blank-row-right .review-blank-verdict { color: var(--green); font-weight: 600; }
+.review-blank-verdict em { color: var(--green); font-style: normal; font-weight: 700; }
+.review-blank-slot { display: inline-grid; min-width: 26px; height: 22px; place-items: center; margin: 0 3px;
+  border-radius: 6px; background: var(--surface-soft); color: var(--muted-strong); font-size: 0.8rem; font-weight: 700; }

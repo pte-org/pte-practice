@@ -4,13 +4,16 @@ import { useState } from "react";
 import { setBlankWord } from "../answer-payloads";
 import { parseBlankPrompt } from "../blank-prompt";
 import { useLocale } from "../../../common/i18n/LocaleProvider";
+import { blankMarks } from "./blank-verdict";
 import type { TaskRendererProps } from "./RendererTypes";
+import "./choice-verdict.css";
 
 const WORD_TYPE = "text/plain";
 const GAP_TYPE = "application/x-blank-gap";
 
-export function BlankRenderer({ fixture, value, disabled = false, onChange }: TaskRendererProps) {
+export function BlankRenderer({ fixture, value, disabled = false, onChange, verdicts = [] }: TaskRendererProps) {
   const { t } = useLocale();
+  const marks = blankMarks(verdicts);
   const [activeWord, setActiveWord] = useState<string | null>(null);
   const isDropdown = fixture.taskCode === "FILL_IN_THE_BLANKS_DROPDOWN";
   const field = isDropdown ? "selections" : "placements";
@@ -40,21 +43,39 @@ export function BlankRenderer({ fixture, value, disabled = false, onChange }: Ta
     else if (selected) update(gap, "");
   }
 
+  /** Once the answer is scored, each gap says whether its word was right and, if not, which word belonged there. */
+  function renderMark(gap: number) {
+    const mark = marks.get(gap);
+    if (!mark) return null;
+    if (mark.state === "right") return <span className="task-blank-mark task-blank-mark-right">✓</span>;
+    return (
+      <span className="task-blank-mark task-blank-mark-wrong">
+        ✕ {mark.correctWord ? <em>{mark.correctWord}</em> : null}
+      </span>
+    );
+  }
+
   function renderGap(gap: number) {
     const selected = typeof chosen[String(gap)] === "string" ? chosen[String(gap)] as string : "";
     const label = `${t("score.blankLabel")} ${gap + 1}`;
+    const marked = marks.get(gap);
+    const markClass = marked ? ` task-blank-${marked.state}` : "";
     if (isDropdown) {
       const choices = fixture.blankOptionsByIndex?.[String(gap)] ?? bank;
       return (
-        <select className="task-inline-select" value={selected} disabled={disabled} aria-label={label}
-          onChange={(event) => update(gap, event.target.value)}>
-          <option value="">{t("score.chooseWord")}</option>
-          {choices.map((choice) => <option key={choice} value={choice}>{choice}</option>)}
-        </select>
+        <>
+          <select className={`task-inline-select${markClass}`} value={selected} disabled={disabled} aria-label={label}
+            onChange={(event) => update(gap, event.target.value)}>
+            <option value="">{t("score.chooseWord")}</option>
+            {choices.map((choice) => <option key={choice} value={choice}>{choice}</option>)}
+          </select>
+          {renderMark(gap)}
+        </>
       );
     }
     return (
-      <button className={`task-drop-slot${selected ? " task-drop-slot-filled" : ""}`} type="button"
+      <>
+      <button className={`task-drop-slot${selected ? " task-drop-slot-filled" : ""}${markClass}`} type="button"
         disabled={disabled} aria-label={label}
         draggable={!disabled && Boolean(selected)}
         onClick={() => onGapClick(gap, selected)}
@@ -70,6 +91,8 @@ export function BlankRenderer({ fixture, value, disabled = false, onChange }: Ta
         }}>
         {selected || t("score.dropWord")}
       </button>
+      {renderMark(gap)}
+      </>
     );
   }
 
