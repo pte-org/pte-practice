@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactElement } from "react";
-import { CollapsibleSection, LockBadge, Tabs } from "@/common/components";
+import { CollapsibleSection, Tabs } from "@/common/components";
 import { useTranslation, type TranslationKey } from "@/common/i18n";
 import type { PracticeProgressEntry } from "@/features/practice/contracts";
 import { PRACTICE_ROUTES } from "@/features/practice/constants";
@@ -23,11 +23,9 @@ interface HistorySectionProps {
   entries: readonly PracticeProgressEntry[];
   ready: boolean;
   taskName: (code: string) => string;
-  /** Practice is open to this student; when it is not, past work is listed but cannot be opened. */
-  unlocked: boolean;
 }
 
-export const HistorySection = ({ entries, ready, taskName, unlocked }: HistorySectionProps): ReactElement => {
+export const HistorySection = ({ entries, ready, taskName }: HistorySectionProps): ReactElement => {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<HistoryFilter>("ALL");
   const [limit, setLimit] = useState(HISTORY_PAGE_SIZE);
@@ -49,7 +47,7 @@ export const HistorySection = ({ entries, ready, taskName, unlocked }: HistorySe
           {visible.length === 0 ? <p className="catalog-note">{t("progress.historyFilterEmpty")}</p> : (
             <ul className="card card-flush history-list">
               {visible.slice(0, limit).map((entry) => (
-                <HistoryRow key={entry.sessionPublicId} entry={entry} taskName={taskName} unlocked={unlocked} />
+                <HistoryRow key={entry.sessionPublicId} entry={entry} taskName={taskName} />
               ))}
             </ul>
           )}
@@ -65,9 +63,7 @@ export const HistorySection = ({ entries, ready, taskName, unlocked }: HistorySe
   );
 };
 
-const HistoryRow = ({ entry, taskName, unlocked }: {
-  entry: PracticeProgressEntry; taskName: (code: string) => string; unlocked: boolean;
-}): ReactElement => {
+const HistoryRow = ({ entry, taskName }: { entry: PracticeProgressEntry; taskName: (code: string) => string }): ReactElement => {
   const { t } = useTranslation();
   const inProgress = isEntryInProgress(entry);
   const targetUrl = inProgress
@@ -77,28 +73,20 @@ const HistoryRow = ({ entry, taskName, unlocked }: {
   if (entry.scoringCount > 0) badges.push({ key: "scoring", tone: "info", text: t("progress.historyScoring").replace("{count}", String(entry.scoringCount)) });
   if (entry.scoringFailedCount > 0) badges.push({ key: "failed", tone: "error", text: t("progress.historyScoringFailed").replace("{count}", String(entry.scoringFailedCount)) });
   if (entry.unscoredAiCount > 0) badges.push({ key: "unscored", tone: "warn", text: t("progress.historyUnscored").replace("{count}", String(entry.unscoredAiCount)) });
-  const summary = (
-    <>
-      <strong>{sessionDisplayName(entry, taskName, t)}</strong>
-      <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
-    </>
-  );
 
   return (
     <li className="history-row">
-      {/* Locked practice still lists what the student did, but none of it opens again. */}
-      {unlocked ? (
-        <Link className="history-copy history-row-link" href={targetUrl}>{summary}</Link>
-      ) : <span className="history-copy">{summary}</span>}
+      <Link className="history-copy history-row-link" href={targetUrl}>
+        <strong>{sessionDisplayName(entry, taskName, t)}</strong>
+        <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
+      </Link>
       {badges.map((badge) => <span key={badge.key} className={`history-scoring history-scoring-${badge.tone}`}>{badge.text}</span>)}
       {entry.score !== null && Number.isFinite(entry.score) ? (
         <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
       ) : null}
-      {unlocked ? (
-        <Link className="button button-outline button-pill" href={targetUrl}>
-          {inProgress ? t("progress.resume") : t("progress.review")}
-        </Link>
-      ) : <LockBadge locked label={t("common.lockedAction")} />}
+      <Link className="button button-outline button-pill" href={targetUrl}>
+        {inProgress ? t("progress.resume") : t("progress.review")}
+      </Link>
     </li>
   );
 };

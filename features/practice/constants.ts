@@ -14,9 +14,6 @@ export const INVALID_LOGIN_ERROR_CODE = "INVALID_LOGIN";
 /** Code the server answers with when the student is in an exam, so their password must not move underneath them. */
 export const ATTEMPT_IN_PROGRESS_ERROR_CODE = "STUDENT_ATTEMPT_IN_PROGRESS";
 
-/** Code the server answers with when practice is locked for the student (suspended, or the licence ran out). */
-export const NOT_ENTITLED_ERROR_CODE = "PRACTICE_NOT_ENTITLED";
-
 export const API_PATHS = {
   login: "/api/v1/auth/login",
   changePassword: "/api/v1/auth/change-password",

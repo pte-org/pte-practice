@@ -86,8 +86,7 @@ export const ProgressView = (): ReactElement => {
         </div>
       </section>
 
-      <HistorySection entries={progress.entries} ready={loadState === "ready"} taskName={taskName}
-        unlocked={isPracticeUnlocked} />
+      <HistorySection entries={progress.entries} ready={loadState === "ready"} taskName={taskName} />
       {dialog}
     </div>
   );
