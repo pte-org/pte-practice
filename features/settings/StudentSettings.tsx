@@ -6,6 +6,7 @@ import { useTranslation } from "@/common/i18n";
 import { AppearanceSettings } from "@/features/practice/appearance/AppearanceSettings";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
 import { GeneralSettings } from "./GeneralSettings";
+import { PasswordSettings } from "./PasswordSettings";
 import { AssistantNameEditor } from "@/features/chat/AssistantNameEditor";
 import "@/features/practice/appearance/appearance.css";
 import "./settings.css";
@@ -26,6 +27,7 @@ export const StudentSettings = (): ReactElement => {
         {open ? <div className="student-settings-content">
           <GeneralSettings />
           <AssistantNameEditor />
+          <PasswordSettings />
           <section className="student-settings-appearance">
             <h3>{t("appearance.title")}</h3>
             <AppearanceSettings value={appearance} onBusyChange={setBusy} />

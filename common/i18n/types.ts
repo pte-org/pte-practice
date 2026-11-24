@@ -323,10 +323,21 @@ export interface LocaleDict {
     english: string;
     light: string;
     dark: string;
+    password: string;
+    passwordHint: string;
+    changePassword: string;
+    changePasswordDescription: string;
+    currentPasswordLabel: string;
+    currentPasswordRequired: string;
+    currentPasswordWrong: string;
+    passwordLockedInExam: string;
+    passwordChanged: string;
   };
   appearance: {
     title: string;
     localNotice: string;
+    advanced: string;
+    advancedHint: string;
     background: string;
     default: string;
     ocean: string;

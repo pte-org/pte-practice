@@ -18,6 +18,8 @@ export type { ErrorPageKind } from "./ErrorPage";
 export { LoadingState } from "./LoadingState";
 export { Skeleton } from "./Skeleton";
 export { LockBadge } from "./LockBadge";
+export { PasswordField } from "./PasswordField";
+export type { PasswordFieldProps } from "./PasswordField";
 export { Modal } from "./Modal";
 export type { ModalProps, ModalSize } from "./Modal";
 export { ProgressRing } from "./ProgressRing";

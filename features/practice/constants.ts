@@ -5,6 +5,15 @@ import type { CatalogAvailability } from "./contracts";
 /** Code of a request that never reached the server (offline, server down); never a sign of bad credentials. */
 export const NETWORK_ERROR_CODE = "NETWORK_ERROR";
 
+/**
+ * Code of a refused credential: a wrong password, not an expired session. A change-password call answers with it
+ * when the current password does not match, and the session it was sent with stays valid.
+ */
+export const INVALID_LOGIN_ERROR_CODE = "INVALID_LOGIN";
+
+/** Code the server answers with when the student is in an exam, so their password must not move underneath them. */
+export const ATTEMPT_IN_PROGRESS_ERROR_CODE = "STUDENT_ATTEMPT_IN_PROGRESS";
+
 /** Code the server answers with when practice is locked for the student (suspended, or the licence ran out). */
 export const NOT_ENTITLED_ERROR_CODE = "PRACTICE_NOT_ENTITLED";
 
