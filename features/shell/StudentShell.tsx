@@ -33,7 +33,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
   usePracticeAccessToast();
   const pathname = usePathname();
   const router = useRouter();
-  const { authStatus, signOut } = usePractice();
+  const { authStatus, signOut, entitlement } = usePractice();
   const { t } = useTranslation();
   const appearance = usePracticeAppearance();
   const studioRoute = isStudioRoute(pathname);
@@ -43,6 +43,9 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const workspaceBackground = studioRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
+
+  const accountEmail = entitlement?.student?.email ?? null;
+  const accountName = entitlement?.student?.fullName?.trim() || t("shell.student");
 
   const [searchOpen, setSearchOpen] = useState(false);
   // Set by the sign-out button: that student goes straight to sign-in instead of seeing the 401 page.
@@ -123,15 +126,16 @@ export function StudentShell({ children }: { children: ReactNode }) {
         <div className="rail-spacer" />
         {studioRoute ? <PipCompanion /> : null}
         <div className="account-card">
-          <div className="account-avatar" aria-hidden="true">S</div>
+          <div className="account-avatar" aria-hidden="true">{accountInitial(accountName)}</div>
           <div className="account-copy">
-            <strong>{t("shell.student")}</strong>
-            <span>{t("shell.account")}</span>
+            <strong title={accountName}>{accountName}</strong>
           </div>
           <StudentSettings />
           <button className="icon-button" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
+          {/* The e-mail gets the full width of the rail: next to the name there is no room to read one whole. */}
+          <span className="account-email" title={accountEmail ?? undefined}>{accountEmail ?? t("shell.account")}</span>
         </div>
         <p className="rail-footer">{t("shell.practiceWorkspace")}</p>
       </aside>
@@ -182,4 +186,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
     </div>
     </ChatLayout>
   );
+}
+
+/** First letter of the student's name for the avatar circle, or a neutral dot when there is none. */
+function accountInitial(name: string): string {
+  const first = name.trim().charAt(0);
+  return first ? first.toUpperCase() : "·";
 }

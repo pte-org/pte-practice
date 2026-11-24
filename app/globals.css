@@ -159,7 +159,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
   background: var(--rail);
 }
 
-.rail-brand, .mobile-brand, .account-card, .top-bar, .nav-link, .search-pill,
+.rail-brand, .mobile-brand, .top-bar, .nav-link, .search-pill,
 .top-context, .top-avatar, .hero-meta, .section-heading-row, .card-title-row,
 .catalog-card-topline, .access-banner, .skill-overview-card, .top-page-title,
 .experience-identity, .skill-tile, .insight-strip, .skill-list-row, .metric-cell {
@@ -215,7 +215,15 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .nav-icon svg { width: 21px; height: 21px; }
 
 .rail-spacer { flex: 1; }
-.account-card { gap: 10px; padding: 18px 8px 14px; border-top: 1px solid var(--line); }
+/* Avatar, name and the two buttons share the first row; the e-mail runs the full width underneath. */
+.account-card {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 4px 10px;
+  padding: 18px 8px 14px;
+  border-top: 1px solid var(--line);
+}
 .account-avatar {
   display: grid;
   flex: 0 0 auto;
@@ -227,10 +235,19 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
   color: #1a241b;
   font-weight: 800;
 }
-.account-copy { min-width: 0; flex: 1; }
-.account-copy strong, .account-copy span { display: block; }
-.account-copy strong { font-size: 0.84rem; }
-.account-copy span { color: var(--muted); font-size: 0.71rem; }
+.account-copy { min-width: 0; }
+/* A name is whatever length it is: it keeps to one line and trails off rather than wrapping. */
+.account-copy strong { display: block; overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; font-size: 0.84rem; }
+.account-email {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .icon-button, .top-avatar { cursor: pointer; }
 .icon-button {
   display: grid;
@@ -1001,6 +1018,7 @@ html[data-theme="dark"] .sign-in-brand strong { color: var(--text); }
 .auth-submit:hover:not(:disabled) { background-position: right; }
 .auth-submit:active:not(:disabled) { transform: scale(0.98); }
 .auth-submit:disabled { opacity: 0.6; cursor: default; }
+.sign-in-forgot, .sign-in-back { align-self: center; padding: 4px; font-size: 0.82rem; font-weight: 600; }
 .button-pill { min-height: 48px; border-radius: 999px; }
 
 @media (max-width: 860px) {
@@ -1015,7 +1033,6 @@ body.modal-open { overflow: hidden; }
   position: fixed;
   inset: 0;
   z-index: 1000;
-.sign-in-forgot, .sign-in-back { align-self: center; padding: 4px; font-size: 0.82rem; font-weight: 600; }
   display: grid;
   place-items: center;
   padding: 20px;
