@@ -15,6 +15,8 @@ import { readReadingSize, type DeviceCheckKind } from "@/features/deviceCheck/de
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
 import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { ActiveNavProvider } from "./ActiveNav";
+import { defaultNavHref } from "./nav-active";
 import { CommandPalette } from "./CommandPalette";
 import { NavIcon, type NavIconName } from "./NavIcon";
 import { StudentSettings } from "@/features/settings/StudentSettings";
@@ -22,7 +24,7 @@ import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import { PracticeBackground } from "@/features/practice/appearance/PracticeBackground";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
-import { isStudioRoute, isWorkspaceRoute } from "@/features/workspace/constants";
+import { isStudioRoute } from "@/features/workspace/constants";
 import { PipCompanion } from "@/features/mascot/PipCompanion";
 import { ChatLayout } from "@/features/chat/ChatLayout";
 import "./shell-chrome.css";
@@ -34,8 +36,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
   const { authStatus, signOut } = usePractice();
   const { t } = useTranslation();
   const appearance = usePracticeAppearance();
-  const workspaceRoute = isWorkspaceRoute(pathname);
   const studioRoute = isStudioRoute(pathname);
+  // The answer review names its own rail item, since it belongs to the page it was opened from, not to its path.
+  const [reviewedNavHref, setReviewedNavHref] = useState<string | null>(null);
+  const activeNavHref = reviewedNavHref ?? defaultNavHref(pathname);
   const workspaceBackground = studioRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
@@ -62,9 +66,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
   
-  const activeNavItem = NAV_ITEMS.find((item) => item.href === PRACTICE_ROUTES.home
-    ? pathname === item.href
-    : pathname.startsWith(item.href));
+  const activeNavItem = NAV_ITEMS.find((item) => item.href === activeNavHref);
 
   useEffect(() => {
     if (authStatus === "signed-out" && signingOut) router.replace(PRACTICE_ROUTES.signIn);
@@ -103,9 +105,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="side-nav">
           {NAV_ITEMS.map((item) => {
-            const isActive = item.href === PRACTICE_ROUTES.home
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+            const isActive = item.href === activeNavHref;
             return (
               <Link
                 className={`nav-link${isActive ? " nav-link-active" : ""}`}
@@ -121,7 +121,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="rail-spacer" />
-        {workspaceRoute ? <PipCompanion /> : null}
+        {studioRoute ? <PipCompanion /> : null}
         <div className="account-card">
           <div className="account-avatar" aria-hidden="true">S</div>
           <div className="account-copy">
@@ -156,7 +156,12 @@ export function StudentShell({ children }: { children: ReactNode }) {
           </button>
           <div className="student-settings-mobile"><StudentSettings /></div>
         </header>
-        <main className="main-content"><PracticeAccessNotice /><PracticeWorkspaceBoundary>{children}</PracticeWorkspaceBoundary></main>
+        <main className="main-content">
+          <PracticeAccessNotice />
+          <ActiveNavProvider onChange={setReviewedNavHref}>
+            <PracticeWorkspaceBoundary>{children}</PracticeWorkspaceBoundary>
+          </ActiveNavProvider>
+        </main>
       </div>
 
       {searchOpen ? (

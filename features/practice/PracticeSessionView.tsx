@@ -12,6 +12,7 @@ import { sessionDisplayName } from "./presentation";
 import { useLeaveGuard } from "./session/useLeaveGuard";
 import { createPracticeApiClient, PracticeApiError } from "./api";
 import { MOCK_TEST_KIND, PRACTICE_ROUTES } from "./constants";
+import { reviewHref, sessionOrigin } from "./review-return";
 import type { PracticeItemResult, PracticeSession } from "./contracts";
 import { uploadPracticeRecording } from "./media/api";
 import { createRecordingCommitter, hasLocalRecording } from "./media/recordingDrafts";
@@ -311,7 +312,7 @@ export function PracticeSessionView() {
   if (state.phase === "overview") return <SessionLoading />;
   if (state.phase === "completed" && viewingHistoryIndex === null) {
     return <SessionCompleteCard session={session} api={api} onBackHome={goHome}
-      onReview={() => router.push(`${PRACTICE_ROUTES.practiceReview}?sessionId=${session.publicId}`)} />;
+      onReview={() => router.push(reviewHref(session.publicId, sessionOrigin(session)))} />;
   }
   const currentTask = activeTask;
   if (!currentTask) return <SessionLoading />;
@@ -385,7 +386,7 @@ export function PracticeSessionView() {
             && !hasAnswer(effectiveDraft(currentTask, draftTaskId, draft));
           if (untouched) void exitWithoutSaving(); else setConfirm("pause");
         }}
-        finishAction={session.kind === MOCK_TEST_KIND ? undefined : <FinishSessionButton api={api} sessionId={session.publicId}
+        finishAction={session.kind === MOCK_TEST_KIND ? undefined : <FinishSessionButton api={api} sessionId={session.publicId} reviewFrom={sessionOrigin(session)}
           answeredCount={session.answeredItemCount} totalCount={session.totalItemCount} disabled={state.phase === "submitting" || recorderBusy || !online} />}
       />
       <ConfirmDialog open={confirm === "pause"} tone="accent" title={t("session.pauseTitle")} description={t("session.pauseDescription")}
