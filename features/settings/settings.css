@@ -23,13 +23,16 @@
 .student-settings-password h3 { margin: 0 0 6px; font-size: 1rem; }
 .student-settings-password-hint { margin: 0 0 12px; color: var(--muted); font-size: 0.8rem; }
 /* Laid out like the tenant portal's change-password form: a caption over each full-width field, buttons stacked. */
-.student-settings-password-form { display: grid; gap: 8px; }
-.student-settings-password-form label { color: var(--muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-.student-settings-password-form label:not(:first-of-type) { margin-top: 10px; }
-.student-settings-password-form .auth-field { padding-right: 6px; }
+.student-settings-password-form { display: grid; gap: 6px; }
+.student-settings-password-form label { color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.student-settings-password-form label:not(:first-of-type) { margin-top: 6px; }
+/* The sign-in field is 50px tall for a page of its own; inside Settings it matches the other inputs around it. */
+.student-settings-password-form .auth-field { height: 38px; padding: 0 6px 0 12px; border-width: 1px; border-radius: 10px; }
+.student-settings-password-form.auth-form .password-field input { padding-right: 40px; font-size: 0.875rem; }
+.student-settings-password-form .password-toggle { right: 4px; padding: 4px 6px; }
 .student-settings-password-form .auth-field input { height: 100%; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .student-settings-password-form .form-error { margin-bottom: 4px; }
-.student-settings-password-form .pte-button:first-of-type { margin-top: 18px; }
+.student-settings-password-form .pte-button:first-of-type { margin-top: 12px; }
 .student-settings-password .form-success { margin: 0 0 12px; }
 .student-settings-appearance { padding-top: 24px; border-top: 1px solid var(--line); }
 .student-settings-appearance h3 { margin: 0 0 12px; font-size: 1rem; }

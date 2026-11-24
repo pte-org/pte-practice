@@ -92,10 +92,10 @@ export const PasswordSettings = (): ReactElement => {
           value={newPassword} onChange={setNewPassword} />
         <PasswordField label={t("auth.confirmPasswordLabel")} withIcon={false} maxLength={MAX_PASSWORD_LENGTH}
           value={confirmation} onChange={setConfirmation} />
-        <Button type="submit" fullWidth disabled={isSubmitting}>
+        <Button type="submit" size="sm" fullWidth disabled={isSubmitting}>
           {isSubmitting ? t("auth.changingPassword") : t("settings.changePassword")}
         </Button>
-        <Button variant="secondary" fullWidth disabled={isSubmitting} onClick={close}>{t("session.cancel")}</Button>
+        <Button variant="secondary" size="sm" fullWidth disabled={isSubmitting} onClick={close}>{t("session.cancel")}</Button>
       </form>
     </section>
   );
