@@ -46,7 +46,10 @@
   height: calc(1px + var(--studio-top-gap));
   background: var(--page);
 }
-.student-shell.studio-shell:not([data-background="default"]) .top-bar::before { background: var(--studio-glass); backdrop-filter: blur(18px); }
+/* A background picture has no flat colour to paint over that gap, and a tinted strip shows as a band across the
+   picture. So the bar sticks flush to the top instead: no gap, nothing for the content to show through. */
+.student-shell.studio-shell:not([data-background="default"]) .top-bar { top: 0; }
+.student-shell.studio-shell:not([data-background="default"]) .top-bar::before { display: none; }
 .studio-shell .search-pill { min-width: 260px; min-height: 40px; padding: 8px 14px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 75%, transparent); box-shadow: none; font-size: 0.875rem; }
 .studio-shell .search-pill:hover { background: var(--surface); box-shadow: none; }
 .studio-shell .main-content:has(.learning-dashboard) { width: 100%; padding: 24px 0 0; }
