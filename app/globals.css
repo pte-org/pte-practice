@@ -2804,7 +2804,8 @@ html[data-theme="dark"] .media-player {
 .confirm-dialog-description { color: var(--muted-strong); }
 .button-danger { background: var(--red); color: #fff; }
 .review-card { padding: 18px 20px; }
-.complete-average { display: flex; align-items: center; gap: 8px; }
+.complete-average { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.complete-average-basis { color: var(--muted); font-size: 0.85rem; }
 @media (max-width: 640px) {
   .session-header-bar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
   .session-header-meta { padding-right: 0; border-right: 0; justify-items: start; }

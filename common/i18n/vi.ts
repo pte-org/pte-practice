@@ -460,6 +460,7 @@ export const vi: LocaleDict = {
     completedTitle: "Hoàn thành phiên",
     completedSummary: "Đã trả lời {answered} / {total} câu",
     averageScore: "Điểm trung bình",
+    averageScoreBasis: "trên {scored}/{total} câu đã chấm",
     reviewAnswers: "Xem lại bài",
     practiseAgain: "Luyện tiếp dạng này",
     home: "Trang chủ",

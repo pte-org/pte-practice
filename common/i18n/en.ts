@@ -460,6 +460,7 @@ export const en: LocaleDict = {
     completedTitle: "Session complete",
     completedSummary: "{answered} of {total} questions answered",
     averageScore: "Average score",
+    averageScoreBasis: "from {scored}/{total} scored",
     reviewAnswers: "Review answers",
     practiseAgain: "Practise this again",
     home: "Home",

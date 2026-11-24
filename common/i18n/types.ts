@@ -460,6 +460,7 @@ export interface LocaleDict {
     completedTitle: string;
     completedSummary: string;
     averageScore: string;
+    averageScoreBasis: string;
     reviewAnswers: string;
     practiseAgain: string;
     home: string;
