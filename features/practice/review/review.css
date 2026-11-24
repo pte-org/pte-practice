@@ -9,7 +9,8 @@
 /* Three tones the learner can tell apart at a glance: scored (filled), answered (outlined), no answer (dashed, faded). */
 .review-chip-answered { border-color: var(--action); color: var(--action); }
 .review-chip-scored { border-color: var(--action); background: var(--action); color: var(--surface); }
-.review-chip-empty { border-style: dashed; background: transparent; color: var(--muted); opacity: 0.7; }
+/* Dashed and in the muted text colour, not the faint line colour: a 14px legend swatch in --line was invisible. */
+.review-chip-empty { border: 1.5px dashed var(--muted); background: transparent; color: var(--muted); }
 .review-chip-legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 0; padding: 0; list-style: none;
   color: var(--muted-strong); font-size: 0.8rem; }
 .review-chip-legend li { display: inline-flex; align-items: center; gap: 6px; }
