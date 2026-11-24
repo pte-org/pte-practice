@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeItemResult, PracticeReviewItem } from "../contracts";
-import { formatScore, scoreTone, skillKey } from "../presentation";
+import { formatScore, scoreTone, skillKey, taskDisplayName } from "../presentation";
 import { ScoreView } from "../ScoreView";
 import { ObjectiveResultCard } from "./ObjectiveResultCard";
 import { isObjectiveTask } from "./objective-result";
@@ -26,7 +26,7 @@ export const ReviewQuestion = ({ item, sessionId, api, canRequestScoring, onResu
   const skill = skillKey(item.section);
   const meta = [
     { label: t("review.metaQuestion"), value: String(item.orderIndex + 1) },
-    { label: t("review.metaTask"), value: item.taskCode.replaceAll("_", " ") },
+    { label: t("review.metaTask"), value: taskDisplayName(item.taskCode, item.displayName, t) },
     { label: t("review.metaSkill"), value: skill ? t(skill) : item.section },
     { label: t("review.metaCefr"), value: item.cefrLevel ?? t("review.metaCefrNone") },
   ];
@@ -44,7 +44,7 @@ export const ReviewQuestion = ({ item, sessionId, api, canRequestScoring, onResu
         <header className="review-panel-head"><span className="review-panel-dot" />{t("review.answerPanelTitle")}
           {objective ? null : <RubricCriteriaButton api={api} taskType={item.taskCode} />}</header>
         <dl className="review-meta">
-          {meta.map((entry) => <div key={entry.label}><dt>{entry.label}</dt><dd>{entry.value}</dd></div>)}
+          {meta.map((entry) => <div key={entry.label}><dt>{entry.label}</dt><dd title={entry.value}>{entry.value}</dd></div>)}
         </dl>
         <ReviewAnswerPane item={item} api={api} />
       </section>
