@@ -11,9 +11,10 @@ import { signInErrorKey } from "./login-error";
 
 interface SignInFormProps {
   onSignedIn: (tokens: PracticeSessionTokens, password: string) => void;
+  onForgotPassword: () => void;
 }
 
-export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
+export const SignInForm = ({ onSignedIn, onForgotPassword }: SignInFormProps): ReactElement => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [username, setUsername] = useState("");
@@ -80,6 +81,9 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
       </div>
       <button className="auth-submit" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.submitting") : t("auth.submit")}
+      </button>
+      <button className="text-button sign-in-forgot" type="button" onClick={onForgotPassword}>
+        {t("auth.forgotPassword")}
       </button>
     </form>
   );

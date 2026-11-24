@@ -20,6 +20,9 @@ export const NOT_ENTITLED_ERROR_CODE = "PRACTICE_NOT_ENTITLED";
 export const API_PATHS = {
   login: "/api/v1/auth/login",
   changePassword: "/api/v1/auth/change-password",
+  passwordResetRequest: "/api/v1/auth/password-reset/request",
+  passwordResetValidate: "/api/v1/auth/password-reset/validate",
+  passwordResetConfirm: "/api/v1/auth/password-reset/confirm",
   refreshToken: "/api/v1/auth/refresh",
   entitlement: "/api/v1/student/practice/entitlement",
   catalog: "/api/v1/student/practice/catalog",
@@ -59,6 +62,7 @@ export const PRACTICE_ROUTES = {
   progress: "/progress",
   signIn: "/sign-in",
   practiceSession: "/practice-tests/session",
+  resetPassword: "/reset-password",
   practiceReview: "/practice-tests/session/review",
 } as const;
 

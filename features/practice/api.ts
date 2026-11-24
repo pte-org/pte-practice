@@ -57,6 +57,20 @@ export function createPracticeApiClient() {
         allowRefresh: false,
         authenticated: false,
       }),
+    /** Always resolves: the server answers the same whether or not the account exists. */
+    requestPasswordReset: (body: { email: string; username: string }): Promise<void> =>
+      request<void>(API_PATHS.passwordResetRequest, { method: "POST", body, authenticated: false, allowRefresh: false })
+        .then(() => undefined),
+    /** Whether a reset link can still be used, asked before anything is typed. */
+    isResetTokenUsable: async (token: string): Promise<boolean> => {
+      const response = await request<unknown>(API_PATHS.passwordResetValidate,
+        { method: "POST", body: { token }, authenticated: false, allowRefresh: false });
+      return asRecord(response).valid === true;
+    },
+    confirmPasswordReset: (token: string, newPassword: string): Promise<void> =>
+      request<void>(API_PATHS.passwordResetConfirm,
+        { method: "POST", body: { token, newPassword }, authenticated: false, allowRefresh: false })
+        .then(() => undefined),
     // A 401 here means the current password was wrong. Refreshing first would rotate the token the body carries,
     // and the server would then sign this very session out as "every other session".
     changePassword: (body: ChangePasswordBody): Promise<void> =>
