@@ -134,7 +134,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <strong title={accountName}>{accountName}</strong>
           </div>
           <StudentSettings />
-          <button className="icon-button" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+          <button className="icon-button icon-button-danger" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
           {/* The e-mail gets the full width of the rail: next to the name there is no room to read one whole. */}
