@@ -24,11 +24,19 @@ export interface PracticeSessionTokens {
 }
 
 export interface PracticeEntitlement {
-  student: { publicId: string | null; status: string } | null;
+  student: PracticeStudent | null;
   organizationContext: OrganizationContext | null;
   availableOrganizations: OrganizationContext[];
   practice: { state: EntitlementState };
   refreshAt: string | null;
+}
+
+/** The signed-in student, as their own account card shows them. */
+export interface PracticeStudent {
+  publicId: string | null;
+  status: string;
+  fullName: string | null;
+  email: string | null;
 }
 
 export interface OrganizationContext {
@@ -117,6 +125,8 @@ export function normalizeEntitlementResponse(value: unknown): PracticeEntitlemen
       ? {
           publicId: asNullableString(student.publicId),
           status: asString(student.status, "UNKNOWN"),
+          fullName: asNullableString(student.fullName),
+          email: asNullableString(student.email),
         }
       : null,
     organizationContext: normalizeOrganization(record.organizationContext),

@@ -27,7 +27,10 @@ describe("student settings", () => {
   it("embeds background controls directly without creating a second dialog", () => {
     const html = renderToStaticMarkup(<LocaleProvider><AppearanceSettings value={DEFAULT_APPEARANCE} /></LocaleProvider>);
     expect(html).toContain('type="file"');
-    expect(html).toContain("Panel opacity");
+    // The sliders live behind the folded "Advanced" group, so only its toggle is in the first render.
+    expect(html).toContain("Advanced");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain("Panel opacity");
     expect(html).not.toContain('role="dialog"');
     expect(html).not.toContain("practice-appearance-trigger");
   });

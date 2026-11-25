@@ -5,7 +5,6 @@ import { useState, type ReactElement } from "react";
 import { ConfirmDialog, useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
-import { PRACTICE_ROUTES } from "../constants";
 import { reviewHref } from "../review-return";
 
 interface FinishSessionButtonProps {
@@ -14,10 +13,12 @@ interface FinishSessionButtonProps {
   answeredCount: number;
   totalCount: number;
   disabled: boolean;
+  /** The page the session was started from, so its review returns there and the rail keeps lighting it. */
+  reviewFrom: string;
 }
 
 /** "Nộp bài": ends the session after any number of answered questions and opens its review. */
-export const FinishSessionButton = ({ api, sessionId, answeredCount, totalCount, disabled }: FinishSessionButtonProps): ReactElement => {
+export const FinishSessionButton = ({ api, sessionId, answeredCount, totalCount, disabled, reviewFrom }: FinishSessionButtonProps): ReactElement => {
   const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
@@ -33,7 +34,7 @@ export const FinishSessionButton = ({ api, sessionId, answeredCount, totalCount,
       showToast(t("session.finishError"), { tone: "warning" });
       return;
     }
-    router.replace(reviewHref(sessionId, PRACTICE_ROUTES.progress));
+    router.replace(reviewHref(sessionId, reviewFrom));
   };
 
   return (

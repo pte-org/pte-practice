@@ -2,8 +2,10 @@ import { normalizeCatalogSection, type PracticeCatalogSection } from "./catalog-
 import {
   asArray, asNullableNumber, asNullableString, asNumber, asRecord, asString, humanize,
 } from "./contract-helpers";
-import { normalizeAnswerFeedback, type PracticeAnswerFeedback } from "./feedback-contracts";
+import { normalizePracticeItemResult, type PracticeItemResult } from "./result-contracts";
 import { allowlistedRendererKey } from "./renderer-allowlist";
+
+export * from "./result-contracts";
 
 export type PracticeSessionStatus = "OVERVIEW" | "IN_PROGRESS" | "COMPLETED" | "DISCARDED" | "EXPIRED";
 export type PracticeSessionItemStatus = "PENDING" | "ANSWERED" | "SKIPPED";
@@ -57,31 +59,6 @@ export interface PracticeTaskContent {
   /** How to approach the question, never its answer; shown only when the learner asks. */
   answerHintVi?: string | null;
   answerHintEn?: string | null;
-}
-
-export type PracticeScoringState = "NONE" | "SCORING" | "SCORED" | "FAILED";
-
-export interface PracticeItemResult {
-  itemPublicId: string;
-  taskCode: string;
-  state: PracticeScoringState;
-  score: number | null;
-  scoreStatus: string | null;
-  subScores: Record<string, number>;
-  /**
-   * Maximum per sub-score, present only when the sub-scores are Pearson trait scores of a rubric version (shown as
-   * achieved / max). Absent for older results, whose sub-scores are raw numbers.
-   */
-  subScoreMax?: Record<string, number>;
-  feedback: string | null;
-  transcript: string | null;
-  /** Transcript of an audio-only task; the server releases it only once the item is answered. */
-  promptText?: string | null;
-  failureCode: string | null;
-  retryable: boolean;
-  scoredAt: string | null;
-  /** Reasons, tips and word marks of a scored answer; absent when the scorer wrote none. */
-  feedbackDetail?: PracticeAnswerFeedback;
 }
 
 export interface PracticeTaskResponse {
@@ -188,37 +165,6 @@ export function normalizeRecordingPlayback(value: unknown): PracticeRecordingPla
     expiresInSeconds: asNumber(record.expiresInSeconds, 0),
     durationSeconds: asNullableNumber(record.durationSeconds),
   };
-}
-
-export function normalizePracticeItemResult(value: unknown): PracticeItemResult | null {
-  const record = asRecord(value);
-  const itemPublicId = asString(record.itemPublicId, "");
-  const state = record.state === "NONE" || record.state === "SCORING" || record.state === "SCORED"
-    || record.state === "FAILED" ? record.state : null;
-  if (!itemPublicId || !state) return null;
-  const subScoreMax = normalizeSubScores(record.subScoreMax);
-  const feedbackDetail = normalizeAnswerFeedback(record.feedbackDetail);
-  return {
-    itemPublicId,
-    taskCode: asString(record.taskCode, ""),
-    state,
-    score: asNullableNumber(record.score),
-    scoreStatus: asNullableString(record.scoreStatus),
-    subScores: normalizeSubScores(record.subScores),
-    ...(Object.keys(subScoreMax).length > 0 ? { subScoreMax } : {}),
-    feedback: asNullableString(record.feedback),
-    transcript: asNullableString(record.transcript),
-    promptText: asNullableString(record.promptText),
-    failureCode: asNullableString(record.failureCode),
-    retryable: Boolean(record.retryable),
-    scoredAt: asNullableString(record.scoredAt),
-    ...(feedbackDetail ? { feedbackDetail } : {}),
-  };
-}
-
-export function normalizeSubScores(value: unknown): Record<string, number> {
-  return Object.fromEntries(Object.entries(asRecord(value))
-    .filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1])));
 }
 
 export function normalizeSessionStatus(value: unknown): PracticeSessionStatus | null {

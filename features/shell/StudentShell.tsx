@@ -15,14 +15,18 @@ import { readReadingSize, type DeviceCheckKind } from "@/features/deviceCheck/de
 import { DeviceCheckDialog } from "@/features/deviceCheck/DeviceCheckDialog";
 import { useDeviceChecks } from "@/features/deviceCheck/useDeviceChecks";
 import { usePracticeStart } from "@/features/practice/mode/usePracticeStart";
+import { ActiveNavProvider } from "./ActiveNav";
+import { defaultNavHref } from "./nav-active";
 import { CommandPalette } from "./CommandPalette";
 import { NavIcon, type NavIconName } from "./NavIcon";
+import { StudentAvatar } from "@/features/practice/avatar/StudentAvatar";
+import { StudentAvatarProvider } from "@/features/practice/avatar/StudentAvatarProvider";
 import { StudentSettings } from "@/features/settings/StudentSettings";
 import { useTranslation } from "@/common/i18n";
 import type { TranslationKey } from "@/common/i18n";
 import { PracticeBackground } from "@/features/practice/appearance/PracticeBackground";
 import { usePracticeAppearance } from "@/features/practice/appearance/usePracticeAppearance";
-import { isStudioRoute, isWorkspaceRoute } from "@/features/workspace/constants";
+import { isStudioRoute } from "@/features/workspace/constants";
 import { PipCompanion } from "@/features/mascot/PipCompanion";
 import { ChatLayout } from "@/features/chat/ChatLayout";
 import "./shell-chrome.css";
@@ -31,14 +35,19 @@ export function StudentShell({ children }: { children: ReactNode }) {
   usePracticeAccessToast();
   const pathname = usePathname();
   const router = useRouter();
-  const { authStatus, signOut } = usePractice();
+  const { authStatus, signOut, entitlement } = usePractice();
   const { t } = useTranslation();
   const appearance = usePracticeAppearance();
-  const workspaceRoute = isWorkspaceRoute(pathname);
   const studioRoute = isStudioRoute(pathname);
+  // The answer review names its own rail item, since it belongs to the page it was opened from, not to its path.
+  const [reviewedNavHref, setReviewedNavHref] = useState<string | null>(null);
+  const activeNavHref = reviewedNavHref ?? defaultNavHref(pathname);
   const workspaceBackground = studioRoute && !appearance.focus ? appearance.background : "default";
   const { markPassed, markFailed } = useDeviceChecks();
   const { openFor, dialog: practiceModeDialog } = usePracticeStart();
+
+  const accountEmail = entitlement?.student?.email ?? null;
+  const accountName = entitlement?.student?.fullName?.trim() || t("shell.student");
 
   const [searchOpen, setSearchOpen] = useState(false);
   // Set by the sign-out button: that student goes straight to sign-in instead of seeing the 401 page.
@@ -62,9 +71,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
   
-  const activeNavItem = NAV_ITEMS.find((item) => item.href === PRACTICE_ROUTES.home
-    ? pathname === item.href
-    : pathname.startsWith(item.href));
+  const activeNavItem = NAV_ITEMS.find((item) => item.href === activeNavHref);
 
   useEffect(() => {
     if (authStatus === "signed-out" && signingOut) router.replace(PRACTICE_ROUTES.signIn);
@@ -89,6 +96,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
   }
 
   return (
+    <StudentAvatarProvider>
     <ChatLayout taskCode={null}>
     <div className={`student-shell${studioRoute ? " studio-shell" : ""}`} data-background={workspaceBackground}
       data-background-blur={appearance.blur} data-glass-opacity={appearance.opacity}>
@@ -103,9 +111,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="side-nav">
           {NAV_ITEMS.map((item) => {
-            const isActive = item.href === PRACTICE_ROUTES.home
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+            const isActive = item.href === activeNavHref;
             return (
               <Link
                 className={`nav-link${isActive ? " nav-link-active" : ""}`}
@@ -121,17 +127,18 @@ export function StudentShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="rail-spacer" />
-        {workspaceRoute ? <PipCompanion /> : null}
+        {studioRoute ? <PipCompanion /> : null}
         <div className="account-card">
-          <div className="account-avatar" aria-hidden="true">S</div>
+          <StudentAvatar className="account-avatar" />
           <div className="account-copy">
-            <strong>{t("shell.student")}</strong>
-            <span>{t("shell.account")}</span>
+            <strong title={accountName}>{accountName}</strong>
           </div>
           <StudentSettings />
-          <button className="icon-button" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
+          <button className="icon-button icon-button-danger" type="button" onClick={handleSignOut} aria-label={t("common.signOut")} title={t("common.signOut")}>
             <AppIcon name="signOut" size={18} />
           </button>
+          {/* The e-mail gets the full width of the rail: next to the name there is no room to read one whole. */}
+          <span className="account-email" title={accountEmail ?? undefined}>{accountEmail ?? t("shell.account")}</span>
         </div>
         <p className="rail-footer">{t("shell.practiceWorkspace")}</p>
       </aside>
@@ -156,7 +163,12 @@ export function StudentShell({ children }: { children: ReactNode }) {
           </button>
           <div className="student-settings-mobile"><StudentSettings /></div>
         </header>
-        <main className="main-content"><PracticeAccessNotice /><PracticeWorkspaceBoundary>{children}</PracticeWorkspaceBoundary></main>
+        <main className="main-content">
+          <PracticeAccessNotice />
+          <ActiveNavProvider onChange={setReviewedNavHref}>
+            <PracticeWorkspaceBoundary>{children}</PracticeWorkspaceBoundary>
+          </ActiveNavProvider>
+        </main>
       </div>
 
       {searchOpen ? (
@@ -176,5 +188,6 @@ export function StudentShell({ children }: { children: ReactNode }) {
       {practiceModeDialog}
     </div>
     </ChatLayout>
+    </StudentAvatarProvider>
   );
 }

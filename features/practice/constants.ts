@@ -5,9 +5,21 @@ import type { CatalogAvailability } from "./contracts";
 /** Code of a request that never reached the server (offline, server down); never a sign of bad credentials. */
 export const NETWORK_ERROR_CODE = "NETWORK_ERROR";
 
+/**
+ * Code of a refused credential: a wrong password, not an expired session. A change-password call answers with it
+ * when the current password does not match, and the session it was sent with stays valid.
+ */
+export const INVALID_LOGIN_ERROR_CODE = "INVALID_LOGIN";
+
+/** Code the server answers with when the student is in an exam, so their password must not move underneath them. */
+export const ATTEMPT_IN_PROGRESS_ERROR_CODE = "STUDENT_ATTEMPT_IN_PROGRESS";
+
 export const API_PATHS = {
   login: "/api/v1/auth/login",
   changePassword: "/api/v1/auth/change-password",
+  passwordResetRequest: "/api/v1/auth/password-reset/request",
+  passwordResetValidate: "/api/v1/auth/password-reset/validate",
+  passwordResetConfirm: "/api/v1/auth/password-reset/confirm",
   refreshToken: "/api/v1/auth/refresh",
   entitlement: "/api/v1/student/practice/entitlement",
   catalog: "/api/v1/student/practice/catalog",
@@ -15,6 +27,7 @@ export const API_PATHS = {
   practiceSessions: "/api/v1/student/practice/sessions",
   mockTests: "/api/v1/student/practice/mock-tests",
   profile: "/api/v1/student/practice/profile",
+  profileAvatar: "/api/v1/student/practice/profile/avatar",
   mediaObjects: "/api/v1/objects",
 } as const;
 
@@ -46,6 +59,7 @@ export const PRACTICE_ROUTES = {
   studyPack: "/study-pack",
   progress: "/progress",
   signIn: "/sign-in",
+  resetPassword: "/reset-password",
   practiceSession: "/practice-tests/session",
   practiceReview: "/practice-tests/session/review",
 } as const;

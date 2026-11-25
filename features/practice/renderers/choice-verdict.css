@@ -1,0 +1,27 @@
+/* Right and wrong marks on the options of a scored choice answer; colour is never the only signal (marker + word). */
+.task-choice-outcome { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.task-choice-outcome-correct { color: var(--green); }
+.task-choice-outcome-partial { color: var(--amber); }
+.task-choice-outcome-incorrect { color: var(--red); }
+
+.task-choice-right, .task-choice-wrong, .task-choice-missed { color: var(--text); opacity: 1; cursor: default; }
+.task-choice-right { border-color: var(--green); background: var(--green-soft); }
+.task-choice-right .task-choice-marker { border-color: var(--green); color: var(--green); }
+.task-choice-wrong { border-color: var(--red); background: var(--red-soft); }
+.task-choice-wrong .task-choice-marker { border-color: var(--red); color: var(--red); }
+.task-choice-missed { border: 1px dashed var(--green); }
+.task-choice-missed .task-choice-marker { border-color: var(--green); color: var(--green); }
+
+.task-choice-verdict { margin-left: auto; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+.task-choice-right .task-choice-verdict, .task-choice-missed .task-choice-verdict { color: var(--green); }
+.task-choice-wrong .task-choice-verdict { color: var(--red); }
+
+/* Fill-in-the-blanks: each gap says whether its word was right, and which word belonged there when it was not. */
+.task-blank-right { border-color: var(--green); background: var(--green-soft); color: var(--text); }
+.task-blank-wrong, .task-blank-empty { border-color: var(--red); background: var(--red-soft); color: var(--text); }
+/* The mark is a pill of its own, so the word that belonged in the gap never reads as part of the sentence. */
+.task-blank-mark { display: inline-flex; align-items: baseline; gap: 5px; margin: 0 2px 0 6px; padding: 2px 8px;
+  border-radius: 999px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; vertical-align: middle; }
+.task-blank-mark-right { background: var(--green-soft); color: var(--green); }
+.task-blank-mark-wrong { background: var(--red-soft); color: var(--red); }
+.task-blank-mark em { color: var(--green); font-style: normal; }

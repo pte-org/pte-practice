@@ -1,0 +1,6 @@
+/* The number on the plate of a score gauge. */
+.score-dial-label { color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.score-dial-value { color: var(--text); font-size: 4rem; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.score-dial-max { color: var(--muted); font-size: 0.9rem; }
+
+.score-dial-wrap { display: grid; justify-items: center; }

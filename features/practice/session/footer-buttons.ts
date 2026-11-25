@@ -9,6 +9,8 @@ export interface FooterInput {
   submitting: boolean;
   /** The question on screen has an answer the student can send. */
   hasAnswer: boolean;
+  /** The current question is checked right after it is sent (see instant-feedback.ts), so its button reads "Kiểm tra". */
+  instantFeedback?: boolean;
 }
 
 export interface FooterButtons {
@@ -19,6 +21,8 @@ export interface FooterButtons {
   showNext: boolean;
   /** Sending the answer also moves on to the next question (the current question, as in the Pearson test). */
   submitAdvances: boolean;
+  /** Sending the answer first shows right and wrong; a further "Tiếp theo" then moves on. */
+  checksFirst: boolean;
 }
 
 /**
@@ -36,6 +40,7 @@ export function footerButtons(input: FooterInput): FooterButtons {
       showSubmit: answering,
       showNext: !answering && (!input.itemScored || (!input.isScoring && !input.submitting)),
       submitAdvances: false,
+      checksFirst: false,
     };
   }
   return {
@@ -45,5 +50,6 @@ export function footerButtons(input: FooterInput): FooterButtons {
     showSubmit: input.hasAnswer,
     showNext: false,
     submitAdvances: true,
+    checksFirst: input.instantFeedback === true,
   };
 }

@@ -159,7 +159,7 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
   background: var(--rail);
 }
 
-.rail-brand, .mobile-brand, .account-card, .top-bar, .nav-link, .search-pill,
+.rail-brand, .mobile-brand, .top-bar, .nav-link, .search-pill,
 .top-context, .top-avatar, .hero-meta, .section-heading-row, .card-title-row,
 .catalog-card-topline, .access-banner, .skill-overview-card, .top-page-title,
 .experience-identity, .skill-tile, .insight-strip, .skill-list-row, .metric-cell {
@@ -215,22 +215,36 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .nav-icon svg { width: 21px; height: 21px; }
 
 .rail-spacer { flex: 1; }
-.account-card { gap: 10px; padding: 18px 8px 14px; border-top: 1px solid var(--line); }
-.account-avatar {
+/* Avatar, name and the two buttons share the first row; the e-mail runs the full width underneath. */
+.account-card {
   display: grid;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 4px 10px;
+  padding: 18px 8px 14px;
+  border-top: 1px solid var(--line);
+}
+.account-avatar {
+  display: block;
   flex: 0 0 auto;
   width: 34px;
   height: 34px;
-  place-items: center;
   border-radius: 50%;
-  background: linear-gradient(145deg, #c9f58f, #6bda70);
-  color: #1a241b;
-  font-weight: 800;
+  object-fit: cover;
 }
-.account-copy { min-width: 0; flex: 1; }
-.account-copy strong, .account-copy span { display: block; }
-.account-copy strong { font-size: 0.84rem; }
-.account-copy span { color: var(--muted); font-size: 0.71rem; }
+.account-copy { min-width: 0; }
+/* A name is whatever length it is: it keeps to one line and trails off rather than wrapping. */
+.account-copy strong { display: block; overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; font-size: 0.84rem; }
+.account-email {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .icon-button, .top-avatar { cursor: pointer; }
 .icon-button {
   display: grid;
@@ -243,6 +257,9 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
   color: var(--muted);
 }
 .icon-button:hover { border-color: var(--line-strong); color: var(--text); }
+/* Sign out: red from the start, so it reads as the way out and is not mistaken for a neutral tool. */
+.icon-button-danger { border-color: var(--red); color: var(--red); }
+.icon-button-danger:hover { border-color: var(--red); background: var(--red-soft); color: var(--red); }
 .rail-footer { padding: 5px 8px 0; color: #746b7e; font-size: 0.68rem; }
 
 .workspace { min-width: 0; }
@@ -828,8 +845,6 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .score-panel { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-raised); text-align: left; }
 .score-panel > p, .score-panel > small { justify-self: center; text-align: center; color: var(--muted); }
 .score-panel-compact { justify-items: stretch; padding: 14px; }
-.score-value { justify-self: center; color: var(--muted); font-size: 0.9rem; }
-.score-value strong { color: var(--text); font-size: 3rem; line-height: 1; }
 .score-breakdown, .score-feedback, .score-transcript { display: grid; gap: 7px; width: 100%; }
 .score-panel h3 { color: var(--text); font-size: 0.82rem; }
 .score-breakdown ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
@@ -857,6 +872,10 @@ h3 { font-size: 1.05rem; line-height: 1.25; }
 .auth-form input::placeholder { color: #756b86; }
 .auth-form input:focus { border-color: var(--accent); }
 .form-error { padding: 10px 12px; border: 1px solid rgb(228 94 104 / 28%); border-radius: 9px; background: var(--red-soft); color: #ffc1c6; font-size: 0.8rem; }
+/* That pink is written for the dark theme. On the light theme's pale red fill it all but vanishes, so there the
+   text takes the theme's own red. :where() keeps this no stronger than the plain rules, so a page that styles its
+   own errors (sign-in) still wins. */
+:where(html[data-theme="light"]) :is(.form-error, .access-banner-error, .task-count-warning) { color: var(--red); }
 .form-success { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--green); border-radius: 9px; background: var(--green-soft); color: var(--green); font-size: 0.8rem; }
 .auth-footnote { text-align: center; font-size: 0.72rem; }
 
@@ -1003,10 +1022,8 @@ html[data-theme="dark"] .sign-in-brand strong { color: var(--text); }
 .auth-submit:hover:not(:disabled) { background-position: right; }
 .auth-submit:active:not(:disabled) { transform: scale(0.98); }
 .auth-submit:disabled { opacity: 0.6; cursor: default; }
+.sign-in-forgot, .sign-in-back { align-self: center; padding: 4px; font-size: 0.82rem; font-weight: 600; }
 .button-pill { min-height: 48px; border-radius: 999px; }
-.dev-accounts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 9px 10px; border: 1px dashed var(--amber); border-radius: 10px; color: var(--amber); font-size: 0.75rem; font-weight: 700; }
-.dev-account-chip { padding: 3px 9px; border: 1px solid var(--amber); border-radius: 999px; background: transparent; color: var(--amber); font-size: 0.72rem; font-weight: 700; cursor: pointer; }
-.dev-account-chip:hover { background: color-mix(in srgb, var(--amber) 15%, transparent); }
 
 @media (max-width: 860px) {
   .sign-in-card { grid-template-columns: 1fr; }
@@ -2806,7 +2823,8 @@ html[data-theme="dark"] .media-player {
 .confirm-dialog-description { color: var(--muted-strong); }
 .button-danger { background: var(--red); color: #fff; }
 .review-card { padding: 18px 20px; }
-.complete-average { display: flex; align-items: center; gap: 8px; }
+.complete-average { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.complete-average-basis { color: var(--muted); font-size: 0.85rem; }
 @media (max-width: 640px) {
   .session-header-bar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
   .session-header-meta { padding-right: 0; border-right: 0; justify-items: start; }

@@ -6,23 +6,21 @@ import { useSignInValidation } from "@/common/hooks/useSignInValidation";
 import { useTranslation } from "@/common/i18n";
 import { createPracticeApiClient } from "@/features/practice/api";
 import type { PracticeSessionTokens } from "@/features/practice/contracts";
-import { DEV_TEST_ACCOUNTS_ENV, IS_DEV_BUILD } from "./constants";
-import { parseDevTestAccounts } from "./dev-accounts";
 import { hasStudentRole } from "./token-claims";
 import { signInErrorKey } from "./login-error";
 
 interface SignInFormProps {
   onSignedIn: (tokens: PracticeSessionTokens, password: string) => void;
+  onForgotPassword: () => void;
 }
 
-export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
+export const SignInForm = ({ onSignedIn, onForgotPassword }: SignInFormProps): ReactElement => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const devAccounts = useMemo(() => (IS_DEV_BUILD ? parseDevTestAccounts(DEV_TEST_ACCOUNTS_ENV) : []), []);
   const messages = useMemo(() => ({ usernameRequired: t("auth.usernameRequired"), usernameInvalidEmail: t("auth.usernameRequired"),
     passwordRequired: t("auth.passwordRequired") }), [t]);
   // Roster usernames are not emails, so only "required" is checked before calling the server.
@@ -84,17 +82,9 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
       <button className="auth-submit" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.submitting") : t("auth.submit")}
       </button>
-      {devAccounts.length ? (
-        <div className="dev-accounts" role="group" aria-label={t("auth.devAccounts")}>
-          <span>{t("auth.devAccounts")}</span>
-          {devAccounts.map((account) => (
-            <button key={account.username} type="button" className="dev-account-chip"
-              onClick={() => { setUsername(account.username); setPassword(account.password); }}>
-              {account.username}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <button className="text-button sign-in-forgot" type="button" onClick={onForgotPassword}>
+        {t("auth.forgotPassword")}
+      </button>
     </form>
   );
 };
