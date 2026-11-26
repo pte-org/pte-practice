@@ -81,7 +81,8 @@ const HistoryRow = ({ entry, taskName }: { entry: PracticeProgressEntry; taskNam
         <span>{formatDate(entry.completedAt ?? entry.lastActivityAt ?? entry.startedAt)} · {entry.answeredItemCount}/{entry.totalItemCount} · {inProgress ? t("progress.inProgress") : t("progress.completed")}</span>
       </Link>
       {badges.map((badge) => <span key={badge.key} className={`history-scoring history-scoring-${badge.tone}`}>{badge.text}</span>)}
-      {entry.score !== null && Number.isFinite(entry.score) ? (
+      {/* The score averages only the answered items, so a half-done session would read as 100%. */}
+      {!inProgress && entry.score !== null && Number.isFinite(entry.score) ? (
         <span className={`score-badge score-badge-${scoreTone(entry.score)}`}>{formatScore(entry.score)}</span>
       ) : null}
       <Link className="button button-outline button-pill" href={targetUrl}>
