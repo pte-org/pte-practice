@@ -18,8 +18,11 @@ describe.skipIf(!existsSync(WEB_TOKENS_PATH))("pte-web shared action palette", (
   });
 
   it("keeps light and dark action colors exactly aligned with the web common tokens", () => {
-    const webLight = tokens(web.split('[data-theme="dark"]')[0]);
-    const webDark = tokens(web.split('[data-theme="dark"]')[1]);
+    // The dark palette starts at its own rule; the same selector also appears earlier, in the `dark:` variant comment.
+    const darkRule = web.indexOf("\n[data-theme=\"dark\"] {");
+    expect(darkRule, "dark palette rule in the web tokens").toBeGreaterThan(-1);
+    const webLight = tokens(web.slice(0, darkRule));
+    const webDark = tokens(web.slice(darkRule));
     const practiceDark = tokens(practice.split('html[data-theme="light"]')[0]);
     const practiceLight = tokens(practice.split('html[data-theme="light"]')[1].split("}")[0]);
     for (const name of ["action", "action-hover", "action-active", "action-gradient-start", "action-gradient-mid", "action-gradient-end", "action-tint", "action-tint-hover", "action-foreground"]) {
