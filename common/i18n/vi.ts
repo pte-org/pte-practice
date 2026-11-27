@@ -300,6 +300,8 @@ export const vi: LocaleDict = {
     works: "Đã ổn",
     speakerIntro: "Phát câu mẫu, rồi âm bên trái và bên phải, để kiểm tra loa hoặc tai nghe.",
     speakerPlay: "Phát câu mẫu",
+    speakerPause: "Tạm dừng",
+    speakerResume: "Tiếp tục",
     speakerLeft: "Trái",
     speakerRight: "Phải",
     speakerTips: "Kiểm tra tai nghe đã cắm, âm lượng hệ thống đã bật và đúng thiết bị phát, rồi phát lại.",

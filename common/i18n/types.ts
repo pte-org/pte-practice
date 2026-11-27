@@ -300,6 +300,8 @@ export interface LocaleDict {
     works: string;
     speakerIntro: string;
     speakerPlay: string;
+    speakerPause: string;
+    speakerResume: string;
     speakerLeft: string;
     speakerRight: string;
     speakerTips: string;
