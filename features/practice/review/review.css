@@ -1,6 +1,6 @@
 /* Answer review: one question at a time as two separate panels (answer left, AI scoring right). */
 .studio-shell .main-content:has(.practice-review) { width: 100%; padding: 24px 0 0; }
-.practice-review { display: grid; gap: 20px; --review-answer-tone: var(--accent); --review-result-tone: color-mix(in srgb, var(--accent) 45%, var(--red)); }
+.practice-review { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; --review-answer-tone: var(--accent); --review-result-tone: color-mix(in srgb, var(--accent) 45%, var(--red)); }
 
 /* One scrollable row, however many questions a session has (a mock test has 60+); the current one is scrolled into view. */
 .review-question-nav { display: flex; gap: 8px; overflow-x: auto; padding: 6px 6px 8px; scroll-behavior: smooth; scrollbar-width: thin; }
