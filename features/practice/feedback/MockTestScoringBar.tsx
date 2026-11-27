@@ -21,13 +21,13 @@ export function MockTestScoringBar({ api, review, onReview }: MockTestScoringBar
   if (scoring > 0 && unscored === 0) {
     return (
       <div className="mock-scoring-bar" role="status" aria-live="polite" data-testid="mock-scoring-progress">
-        <LoadingState compact message={t("review.scoringAll").replace("{n}", String(scoring))} />
+        <LoadingState compact message={scoring === 1 ? t("review.scoringAllOne") : t("review.scoringAll").replace("{n}", String(scoring))} />
       </div>
     );
   }
   return (
     <div className="mock-scoring-bar" data-testid="mock-scoring-bar">
-      <p>{t("review.scoreAllHint").replace("{n}", String(unscored))}</p>
+      <p>{unscored === 1 ? t("review.scoreAllHintOne") : t("review.scoreAllHint").replace("{n}", String(unscored))}</p>
       <button className="button button-primary button-pill" type="button" disabled={requesting} onClick={scoreAll}>
         <AppIcon name="sparkle" size={16} />
         {requesting ? t("score.requesting") : t("review.scoreAll")}

@@ -267,9 +267,9 @@ export const en: LocaleDict = {
     estimatedScore: "Estimated score",
     estimateTitle: "Estimated score",
     estimateNote: "Reference only, not an official score.",
-    estimatePending: "Some answers are still being scored.",
-    estimateSkipped: "skipped questions counted as zero.",
-    estimateExcluded: "questions could not be scored and are left out.",
+    estimatePending: "Some answers are not scored yet, so this estimate leaves them out. Press Score to include them.",
+    estimateSkipped: "Skipped questions counted as zero: {n}.",
+    estimateExcluded: "Questions that could not be scored and are left out: {n}.",
     emptyBank: "The question bank does not have enough questions for a mock test yet. Please check back later.",
   },
   deviceCheck: {
@@ -446,7 +446,9 @@ export const en: LocaleDict = {
   review: {
     scoreAll: "Score the test",
     scoreAllHint: "{n} speaking or writing answers are not scored yet. Press Score to have the AI score and explain each one.",
+    scoreAllHintOne: "1 speaking or writing answer is not scored yet. Press Score to have the AI score and explain it.",
     scoringAll: "Scoring {n} answers…",
+    scoringAllOne: "Scoring 1 answer…",
     scoreAllError: "We could not send the test for scoring. Try again.",
     eyebrow: "Review",
     title: "Your answers",

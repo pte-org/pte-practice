@@ -25,8 +25,8 @@ export function EstimatedScores({ scores }: { scores: EstimatedScoresData }) {
       </ul>
       <p className="estimated-note">{t("mockTests.estimateNote")}</p>
       {scores.pending ? <p className="estimated-note" role="status">{t("mockTests.estimatePending")}</p> : null}
-      {scores.skippedItemCount > 0 ? <p className="estimated-note">{scores.skippedItemCount} {t("mockTests.estimateSkipped")}</p> : null}
-      {scores.excludedItemCount > 0 ? <p className="estimated-note">{scores.excludedItemCount} {t("mockTests.estimateExcluded")}</p> : null}
+      {scores.skippedItemCount > 0 ? <p className="estimated-note">{t("mockTests.estimateSkipped").replace("{n}", String(scores.skippedItemCount))}</p> : null}
+      {scores.excludedItemCount > 0 ? <p className="estimated-note">{t("mockTests.estimateExcluded").replace("{n}", String(scores.excludedItemCount))}</p> : null}
     </section>
   );
 }
