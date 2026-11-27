@@ -30,7 +30,8 @@
   width: min(380px, calc(100vw - 48px));
   height: min(520px, calc(100vh - 128px));
   min-width: 0;
-  overflow: hidden;
+  /* `clip`, not `hidden`: a hidden box can still be scrolled by scrollIntoView, which pushed the header out of sight. */
+  overflow: clip;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
@@ -152,6 +153,8 @@
 .chat-header-button:disabled { opacity: 0.5; }
 
 .chat-messages {
+  /* Containing block for the visually hidden live regions inside the bubbles, so they scroll with the list. */
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: 14px;
