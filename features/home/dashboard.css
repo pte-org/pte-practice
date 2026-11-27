@@ -23,7 +23,8 @@
 .dashboard-welcome-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 24px; }
 .dashboard-welcome .button-primary { background: var(--accent); color: white; border: 1px solid var(--accent); min-height: 44px; border-radius: 12px; padding: 12px 18px; font-size: 14px; }
 .dashboard-welcome .button-primary:hover { background: var(--accent-strong); }
-.dashboard-product { color: var(--muted); font-size: 12px; }
+.dashboard-product { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+.dashboard-product::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .dashboard-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .dashboard-summary > div { display: grid; gap: 8px; max-width: 112px; }
 .dashboard-summary > div + div { padding-left: 24px; border-left: 1px solid color-mix(in srgb, var(--accent) 20%, transparent); }

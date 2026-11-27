@@ -20,12 +20,12 @@ export const WorkspaceHeader = ({ resumeHref }: WorkspaceHeaderProps): ReactElem
   return (
     <section className="dashboard-welcome" aria-labelledby="experience-title">
       <div className="dashboard-welcome-copy">
+        <span className="dashboard-product">{catalog.title}</span>
         <h1 id="experience-title">{copy.welcome}</h1><p>{copy.intro}</p>
         <div className="dashboard-welcome-actions">
           <Link className="button button-primary" href={resumeHref ?? `${PRACTICE_ROUTES.home}#dashboard-tasks-title`}>
             <AppIcon name="play" size={18} />{resumeHref ? copy.continue : copy.browse}
           </Link>
-          <span className="dashboard-product">{catalog.title}</span>
         </div>
       </div>
       <div className="dashboard-summary" aria-busy={!ready}>
