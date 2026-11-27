@@ -10,6 +10,7 @@ import type { PracticeItemResult, PracticeReview } from "./contracts";
 import { ReviewPager, ReviewQuestionNav } from "./review/ReviewPager";
 import { ReviewQuestion } from "./review/ReviewQuestion";
 import { REVIEW_FROM_PARAM, reviewReturnTarget } from "./review-return";
+import { useActiveNav } from "@/features/shell/ActiveNav";
 import { EstimatedScores } from "../mockTests/EstimatedScores";
 import { MockTestScoringBar } from "./feedback/MockTestScoringBar";
 import "./review/review.css";
@@ -20,6 +21,8 @@ export function PracticeReviewView() {
   const { t } = useTranslation();
   const sessionId = params.get("sessionId");
   const returnTarget = reviewReturnTarget(params.get(REVIEW_FROM_PARAM));
+  // The review is not a rail destination of its own: it lights the page it was opened from.
+  useActiveNav(returnTarget.href);
   const api = useMemo(() => createPracticeApiClient(), []);
   const [review, setReview] = useState<PracticeReview | null>(null);
   const [error, setError] = useState<string | null>(null);

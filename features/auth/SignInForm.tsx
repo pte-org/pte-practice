@@ -6,23 +6,21 @@ import { useSignInValidation } from "@/common/hooks/useSignInValidation";
 import { useTranslation } from "@/common/i18n";
 import { createPracticeApiClient } from "@/features/practice/api";
 import type { PracticeSessionTokens } from "@/features/practice/contracts";
-import { DEV_TEST_ACCOUNTS_ENV, IS_DEV_BUILD } from "./constants";
-import { parseDevTestAccounts } from "./dev-accounts";
 import { hasStudentRole } from "./token-claims";
 import { signInErrorKey } from "./login-error";
 
 interface SignInFormProps {
   onSignedIn: (tokens: PracticeSessionTokens, password: string) => void;
+  onForgotPassword: () => void;
 }
 
-export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
+export const SignInForm = ({ onSignedIn, onForgotPassword }: SignInFormProps): ReactElement => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const devAccounts = useMemo(() => (IS_DEV_BUILD ? parseDevTestAccounts(DEV_TEST_ACCOUNTS_ENV) : []), []);
   const messages = useMemo(() => ({ usernameRequired: t("auth.usernameRequired"), usernameInvalidEmail: t("auth.usernameRequired"),
     passwordRequired: t("auth.passwordRequired") }), [t]);
   // Roster usernames are not emails, so only "required" is checked before calling the server.
@@ -35,13 +33,13 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
     if (found.username || found.password) return;
     setIsSubmitting(true);
     try {
-      const tokens = await createPracticeApiClient().login({ username: username.trim(), password });
+      const tokens = await createPracticeApiClient().login({ username: username.trim(), password: password.trim() });
       if (!hasStudentRole(tokens.accessToken)) {
         showToast(t("auth.notStudent"), { tone: "error" });
         setIsSubmitting(false);
         return;
       }
-      onSignedIn(tokens, password);
+      onSignedIn(tokens, password.trim());
     } catch (error) {
       showToast(t(signInErrorKey(error)), { tone: "error" });
       setIsSubmitting(false);
@@ -58,7 +56,7 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
             aria-invalid={validation.errors.username ? true : undefined}
             aria-describedby={validation.errors.username ? "username-error" : undefined}
             placeholder={t("auth.usernamePlaceholder")} onBlur={(event) => validation.onBlur("username", event.target.value)}
-            onChange={(event) => { setUsername(event.target.value); validation.onChange("username", event.target.value); }} />
+            onChange={(event) => { const typed = event.target.value.replace(/\s+/g, ""); setUsername(typed); validation.onChange("username", typed); }} />
           <span className="auth-field-valid" aria-hidden="true" data-visible={Boolean(username && !validation.errors.username)}><AppIcon name="tick" size={18} /></span>
         </div>
         {validation.errors.username ? <p className="auth-field-error" id="username-error" role="alert">{validation.errors.username}</p> : null}
@@ -84,17 +82,9 @@ export const SignInForm = ({ onSignedIn }: SignInFormProps): ReactElement => {
       <button className="auth-submit" type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("auth.submitting") : t("auth.submit")}
       </button>
-      {devAccounts.length ? (
-        <div className="dev-accounts" role="group" aria-label={t("auth.devAccounts")}>
-          <span>{t("auth.devAccounts")}</span>
-          {devAccounts.map((account) => (
-            <button key={account.username} type="button" className="dev-account-chip"
-              onClick={() => { setUsername(account.username); setPassword(account.password); }}>
-              {account.username}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <button className="text-button sign-in-forgot" type="button" onClick={onForgotPassword}>
+        {t("auth.forgotPassword")}
+      </button>
     </form>
   );
 };

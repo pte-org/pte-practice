@@ -1,4 +1,4 @@
-import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL, NETWORK_ERROR_CODE } from "./constants";
+import { API_ERROR_TEXT, API_PATHS, DEFAULT_API_BASE_URL, INVALID_LOGIN_ERROR_CODE, NETWORK_ERROR_CODE } from "./constants";
 import type {
   PracticeCatalog,
   PracticeEntitlement,
@@ -57,8 +57,24 @@ export function createPracticeApiClient() {
         allowRefresh: false,
         authenticated: false,
       }),
+    /** Always resolves: the server answers the same whether or not the account exists. */
+    requestPasswordReset: (body: { email: string; username: string }): Promise<void> =>
+      request<void>(API_PATHS.passwordResetRequest, { method: "POST", body, authenticated: false, allowRefresh: false })
+        .then(() => undefined),
+    /** Whether a reset link can still be used, asked before anything is typed. */
+    isResetTokenUsable: async (token: string): Promise<boolean> => {
+      const response = await request<unknown>(API_PATHS.passwordResetValidate,
+        { method: "POST", body: { token }, authenticated: false, allowRefresh: false });
+      return asRecord(response).valid === true;
+    },
+    confirmPasswordReset: (token: string, newPassword: string): Promise<void> =>
+      request<void>(API_PATHS.passwordResetConfirm,
+        { method: "POST", body: { token, newPassword }, authenticated: false, allowRefresh: false })
+        .then(() => undefined),
+    // A 401 here means the current password was wrong. Refreshing first would rotate the token the body carries,
+    // and the server would then sign this very session out as "every other session".
     changePassword: (body: ChangePasswordBody): Promise<void> =>
-      request<void>(API_PATHS.changePassword, { method: "POST", body }).then(() => undefined),
+      request<void>(API_PATHS.changePassword, { method: "POST", body, allowRefresh: false }).then(() => undefined),
     getEntitlement: async (): Promise<PracticeEntitlement> => {
       const response = await request<unknown>(API_PATHS.entitlement);
       return normalizeEntitlementResponse(response);
@@ -221,9 +237,11 @@ export async function practiceRequest<T>(path: string, options: RequestOptions =
 
   const bodyValue = await parseJson(response);
   if (!response.ok) {
-    if (response.status === 401 && authenticated && session
-        && getPracticeSession()?.refreshToken === session.refreshToken) clearPracticeSession();
     const errorRecord = asRecord(bodyValue);
+    // A refused password is not an expired session: signing the student out over a typo would lose their work.
+    const refusedCredential = errorRecord.code === INVALID_LOGIN_ERROR_CODE;
+    if (response.status === 401 && authenticated && session && !refusedCredential
+        && getPracticeSession()?.refreshToken === session.refreshToken) clearPracticeSession();
     throw new PracticeApiError(
       typeof errorRecord.userMessage === "string"
         ? errorRecord.userMessage

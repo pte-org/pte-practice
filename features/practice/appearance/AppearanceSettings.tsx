@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactElement } from "react";
-import { AppIcon } from "@/common/components";
+import { AppIcon, CollapsibleSection } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
 import { BACKGROUND_BLUR_OPTIONS, GLASS_OPACITY_OPTIONS } from "./constants";
 import { BackgroundImageError, prepareBackground } from "./prepareBackground";
@@ -73,22 +73,27 @@ export const AppearanceSettings = ({ value, onBusyChange }: AppearanceSettingsPr
             if (file) void selectFile(file);
           }} />
           <p className="quiet-note">{t("appearance.imageHelp")}</p>
-          <label className="practice-appearance-range" htmlFor={`${id}-blur`}>
-            <span>{t("appearance.blur")}</span><output>{value.blur}px</output>
-            <input id={`${id}-blur`} type="range" min={0} max={3} step={1}
-              aria-valuetext={`${value.blur}px`}
-              value={BACKGROUND_BLUR_OPTIONS.indexOf(value.blur)}
-              onChange={(event) => update({ blur: BACKGROUND_BLUR_OPTIONS[Number(event.target.value)] })} />
-          </label>
-          <label className="practice-appearance-range" htmlFor={`${id}-opacity`}>
-            <span>{t("appearance.opacity")}</span><output>{value.opacity}%</output>
-            <input id={`${id}-opacity`} type="range" min={0} max={2} step={1}
-              aria-valuetext={`${value.opacity}%`}
-              value={GLASS_OPACITY_OPTIONS.indexOf(value.opacity)}
-              onChange={(event) => update({ opacity: GLASS_OPACITY_OPTIONS[Number(event.target.value)] })} />
-          </label>
-          <label className="practice-appearance-focus"><input type="checkbox" checked={value.focus}
-            onChange={(event) => update({ focus: event.target.checked })} />{t("appearance.focus")}</label>
+          {/* The fine tuning is folded away: most students only ever pick a background. */}
+          <CollapsibleSection title={t("appearance.advanced")} subtitle={t("appearance.advancedHint")}
+            defaultExpanded={false} className="practice-appearance-advanced"
+            contentClassName="practice-appearance-advanced-body">
+            <label className="practice-appearance-range" htmlFor={`${id}-blur`}>
+              <span>{t("appearance.blur")}</span><output>{value.blur}px</output>
+              <input id={`${id}-blur`} type="range" min={0} max={3} step={1}
+                aria-valuetext={`${value.blur}px`}
+                value={BACKGROUND_BLUR_OPTIONS.indexOf(value.blur)}
+                onChange={(event) => update({ blur: BACKGROUND_BLUR_OPTIONS[Number(event.target.value)] })} />
+            </label>
+            <label className="practice-appearance-range" htmlFor={`${id}-opacity`}>
+              <span>{t("appearance.opacity")}</span><output>{value.opacity}%</output>
+              <input id={`${id}-opacity`} type="range" min={0} max={2} step={1}
+                aria-valuetext={`${value.opacity}%`}
+                value={GLASS_OPACITY_OPTIONS.indexOf(value.opacity)}
+                onChange={(event) => update({ opacity: GLASS_OPACITY_OPTIONS[Number(event.target.value)] })} />
+            </label>
+            <label className="practice-appearance-focus"><input type="checkbox" checked={value.focus}
+              onChange={(event) => update({ focus: event.target.checked })} />{t("appearance.focus")}</label>
+          </CollapsibleSection>
           <button type="button" className="text-button" onClick={() => setError(resetAppearance() ? null : t("appearance.storageError"))}>
             {t("appearance.reset")}
           </button>

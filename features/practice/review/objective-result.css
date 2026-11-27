@@ -1,0 +1,39 @@
+/* Result of an answer scored against a fixed key. The panel is as tall as the question beside it, so the content is
+   centred in it: a big score gauge, the outcome, what the picks add up to, then the answer key. */
+.practice-review .review-panels-objective { align-items: stretch; }
+.review-panel-result-objective { grid-template-rows: auto minmax(0, 1fr); }
+.objective-result { display: grid; align-content: center; gap: 28px; padding: 8px 4px; }
+
+.objective-result-gauge { display: grid; justify-items: center; gap: 16px; }
+.objective-result-chip { padding: 6px 16px; border-radius: 999px; font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
+.objective-result-chip-correct { background: var(--green-soft); color: var(--green); }
+.objective-result-chip-partial { background: var(--amber-soft); color: var(--amber); }
+.objective-result-chip-incorrect { background: var(--red-soft); color: var(--red); }
+
+.objective-result-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.objective-stat { display: grid; gap: 6px; padding: 18px 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); text-align: center; }
+.objective-stat dt { order: 2; color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+.objective-stat dd { order: 1; margin: 0; color: var(--text); font-size: 2rem; font-weight: 700; line-height: 1; }
+.objective-stat-right dd { color: var(--green); }
+.objective-stat-wrong dd { color: var(--red); }
+.objective-stat-missed dd { color: var(--amber); }
+
+.objective-key { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.objective-key h4 { margin: 0; color: var(--muted-strong); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.objective-key ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.objective-key li { position: relative; padding-left: 26px; color: var(--text); font-size: 0.95rem; line-height: 1.45; }
+.objective-key li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--green); font-weight: 700; }
+
+/* The figures arrive one after another once the gauge has run up to the score. */
+@keyframes objective-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .objective-result-chip, .objective-stat, .objective-key { animation: objective-rise 0.5s ease-out both; }
+  .objective-result-chip { animation-delay: 0.7s; }
+  .objective-stat-right { animation-delay: 0.85s; }
+  .objective-stat-wrong { animation-delay: 0.95s; }
+  .objective-stat-missed { animation-delay: 1.05s; }
+  .objective-key { animation-delay: 1.2s; }
+}

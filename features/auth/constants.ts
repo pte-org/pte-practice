@@ -5,11 +5,7 @@ export const STUDENT_ROLE = "STUDENT";
 export const ROLES_CLAIM = "roles";
 /** Mirrors pte-api ChangePasswordRequest (@Size(min = 8)). */
 export const MIN_PASSWORD_LENGTH = 8;
+/** Mirrors pte-api ChangePasswordRequest (@MaxUtf8Bytes(72)); the input stops before the server has to refuse. */
+export const MAX_PASSWORD_LENGTH = 72;
 
-/**
- * Local test accounts for the quick-fill buttons, as `account:password` pairs separated by `;`.
- * Only read outside production builds; never put real student credentials here.
- */
-export const DEV_TEST_ACCOUNTS_ENV = process.env.NEXT_PUBLIC_DEV_TEST_ACCOUNTS ?? "";
-export const IS_DEV_BUILD = process.env.NODE_ENV !== "production";
 export const PASSWORD_CHANGED_NOTICE_MS = 1400;

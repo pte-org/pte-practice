@@ -20,3 +20,12 @@ export function sessionAverageScore(scores: ReadonlyArray<number | null>): numbe
   const present = scores.filter((score): score is number => score !== null && Number.isFinite(score));
   return present.length ? Math.round(present.reduce((sum, score) => sum + score, 0) / present.length) : null;
 }
+
+/**
+ * How many answers the average was taken over. A question skipped, or one still waiting for its AI score, has no
+ * score of its own and is left out, so the card says what the average covers instead of passing it off as the
+ * result of the whole session.
+ */
+export function scoredAnswerCount(scores: ReadonlyArray<number | null>): number {
+  return scores.filter((score) => score !== null && Number.isFinite(score)).length;
+}

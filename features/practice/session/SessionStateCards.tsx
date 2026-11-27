@@ -7,7 +7,7 @@ import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeSession } from "../contracts";
 import { formatScore, scoreTone } from "../presentation";
-import { continueHref, sessionAverageScore } from "./complete-actions";
+import { continueHref, scoredAnswerCount, sessionAverageScore } from "./complete-actions";
 import { SessionSkeleton } from "./SessionSkeleton";
 
 export function SessionLoading() {
@@ -30,6 +30,13 @@ export function SessionErrorCard({ message, hasRetryAction, onRetry, onBackHome 
   );
 }
 
+interface ScoreSummary {
+  /** Mean of the answers that have a score; null while none has one. */
+  average: number | null;
+  /** How many answers that mean covers. */
+  scored: number;
+}
+
 interface SessionCompleteCardProps {
   session: PracticeSession;
   api: PracticeApiClient;
@@ -40,7 +47,7 @@ interface SessionCompleteCardProps {
 /** End of a session: how many answered, the average score so far, and where to go next. */
 export function SessionCompleteCard({ session, api, onReview, onBackHome }: SessionCompleteCardProps) {
   const { t } = useTranslation();
-  const [average, setAverage] = useState<number | null>(null);
+  const [summary, setSummary] = useState<ScoreSummary>({ average: null, scored: 0 });
   const again = continueHref(session);
 
   useEffect(() => {
@@ -51,7 +58,8 @@ export function SessionCompleteCard({ session, api, onReview, onBackHome }: Sess
       api.getReview(session.publicId)
         .then((review) => {
           if (!active) return;
-          setAverage(sessionAverageScore(review.items.map((item) => item.score)));
+          const scores = review.items.map((item) => item.score);
+          setSummary({ average: sessionAverageScore(scores), scored: scoredAnswerCount(scores) });
           const stillScoring = review.items.some(
             (item) => item.status === "ANSWERED" && item.score === null
           );
@@ -76,7 +84,15 @@ export function SessionCompleteCard({ session, api, onReview, onBackHome }: Sess
       <p>{t("review.completedSummary").replace("{answered}", String(session.answeredItemCount))
         .replace("{total}", String(session.totalItemCount))}</p>
       <p className="complete-average">
-        {t("review.averageScore")}: <span className={`score-badge score-badge-${scoreTone(average)}`}>{formatScore(average)}</span>
+        {t("review.averageScore")}:
+        <span className={`score-badge score-badge-${scoreTone(summary.average)}`}>{formatScore(summary.average)}</span>
+        {/* A skipped question has no score, so the average covers fewer answers than the session has. Say so. */}
+        {summary.scored > 0 ? (
+          <span className="complete-average-basis">
+            {t("review.averageScoreBasis").replace("{scored}", String(summary.scored))
+              .replace("{total}", String(session.totalItemCount))}
+          </span>
+        ) : null}
       </p>
       <div className="session-actions">
         <button className="button button-outline button-pill" type="button" onClick={onReview}>{t("review.reviewAnswers")}</button>

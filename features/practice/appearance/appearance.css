@@ -42,6 +42,9 @@
 .practice-appearance-range output { color: var(--muted); }
 .practice-appearance-focus { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; }
 .practice-appearance-focus input { accent-color: var(--accent); }
+.practice-appearance-advanced { padding-top: 16px; border-top: 1px solid var(--line); }
+.practice-appearance-advanced .collapsible-toggle { font-size: 0.9rem; font-weight: 650; }
+.practice-appearance-advanced-body { display: grid; gap: 20px; padding-top: 8px; }
 .practice-appearance-error { color: var(--red); }
 .student-shell:not([data-background="default"]) { position: relative; isolation: isolate; }
 .student-shell:not([data-background="default"]) > :is(.side-rail, .workspace) { position: relative; z-index: 1; }

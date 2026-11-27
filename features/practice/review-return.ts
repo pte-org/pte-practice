@@ -1,5 +1,6 @@
 import type { TranslationKey } from "@/common/i18n";
-import { PRACTICE_ROUTES } from "./constants";
+import { MOCK_TEST_KIND, PRACTICE_ROUTES } from "./constants";
+import type { PracticeSession } from "./contracts";
 
 /** Query parameter that names the page the review was opened from. */
 export const REVIEW_FROM_PARAM = "from";
@@ -23,3 +24,10 @@ export const reviewHref = (sessionId: string, from?: string): string => {
 
 export const reviewReturnTarget = (from: string | null): ReviewReturnTarget =>
   (from && REVIEW_RETURN_TARGETS[from]) || HOME_TARGET;
+
+/**
+ * The page a session was started from, so the review it opens sends the student back there and the rail keeps
+ * lighting that page. A mock test belongs to Practice tests; every other session to Skill practice.
+ */
+export const sessionOrigin = (session: Pick<PracticeSession, "kind">): string =>
+  (session.kind === MOCK_TEST_KIND ? PRACTICE_ROUTES.practiceTests : PRACTICE_ROUTES.studyPack);

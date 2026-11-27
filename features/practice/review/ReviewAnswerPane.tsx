@@ -4,7 +4,11 @@ import { useEffect, useState, type ReactElement } from "react";
 import { useTranslation } from "@/common/i18n";
 import type { PracticeApiClient } from "../api";
 import type { PracticeReviewItem } from "../contracts";
+import { parseBlankPrompt } from "../blank-prompt";
 import { describeSavedAnswer } from "../review-answer";
+import { ChoiceOptionList } from "../renderers/ChoiceOptionList";
+import { reviewBlankRows, type ReviewBlankRow } from "./review-blank";
+import { reviewChoiceView } from "./review-choice";
 
 interface ReviewAnswerPaneProps {
   item: PracticeReviewItem;
@@ -14,19 +18,48 @@ interface ReviewAnswerPaneProps {
 /** Left side of a reviewed question: the question text and what the student submitted, playable when recorded. */
 export const ReviewAnswerPane = ({ item, api }: ReviewAnswerPaneProps): ReactElement => {
   const { t } = useTranslation();
+  const choice = reviewChoiceView(item);
+  const blanks = reviewBlankRows(item);
   return (
     <>
       {item.promptText ? (
         <section className="review-block review-block-question">
           <h4>{t("review.questionLabel")}</h4>
-          <p className="review-prompt">{item.promptText}</p>
+          <p className="review-prompt">
+            {/* A blanks prompt marks its gaps as {{0}}; the review numbers them instead of showing the markers. */}
+            {blanks ? parseBlankPrompt(item.promptText).map((segment, index) => segment.kind === "text"
+              ? <span key={index}>{segment.text}</span>
+              : <span key={index} className="review-blank-slot">{segment.index + 1}</span>)
+              : item.promptText}
+          </p>
         </section>
       ) : null}
       <section className="review-block review-block-answer">
         <h4>{t("review.answerPane")}</h4>
-        <SavedAnswerView item={item} api={api} />
+        {choice ? (
+          <ChoiceOptionList options={choice.options} selected={choice.selected} multiple={choice.multiple} disabled
+            verdicts={choice.verdicts} />
+        ) : blanks ? <BlankRowList rows={blanks} /> : <SavedAnswerView item={item} api={api} />}
       </section>
     </>
+  );
+};
+
+/** A marked fill-in-the-blanks answer: a row per gap with the word put in it and the word that belonged there. */
+const BlankRowList = ({ rows }: { rows: readonly ReviewBlankRow[] }): ReactElement => {
+  const { t } = useTranslation();
+  return (
+    <ol className="review-blank-rows">
+      {rows.map((row) => (
+        <li key={row.gap} className={`review-blank-row review-blank-row-${row.state}`}>
+          <span className="review-blank-gap">{t("score.blankLabel")} {row.gap + 1}</span>
+          <span className="review-blank-word">{row.chosenWord || "—"}</span>
+          {row.state === "right"
+            ? <span className="review-blank-verdict">{t("session.correct")}</span>
+            : <span className="review-blank-verdict">{t("session.rightAnswer")}: <em>{row.correctWord || "—"}</em></span>}
+        </li>
+      ))}
+    </ol>
   );
 };
 
