@@ -20,14 +20,16 @@ export const ReviewAnswerPane = ({ item, api }: ReviewAnswerPaneProps): ReactEle
   const { t } = useTranslation();
   const choice = reviewChoiceView(item);
   const blanks = reviewBlankRows(item);
+  const isBlankTask = item.taskCode.startsWith("FILL_IN_THE_BLANKS");
   return (
     <>
       {item.promptText ? (
         <section className="review-block review-block-question">
           <h4>{t("review.questionLabel")}</h4>
           <p className="review-prompt">
-            {/* A blanks prompt marks its gaps as {{0}}; the review numbers them instead of showing the markers. */}
-            {blanks ? parseBlankPrompt(item.promptText).map((segment, index) => segment.kind === "text"
+            {/* A blanks prompt marks its gaps as {{0}}; the review numbers them instead of showing the markers.
+                Type-in answers have no per-gap verdicts, so the task type decides, not the rows. */}
+            {blanks || isBlankTask ? parseBlankPrompt(item.promptText).map((segment, index) => segment.kind === "text"
               ? <span key={index}>{segment.text}</span>
               : <span key={index} className="review-blank-slot">{segment.index + 1}</span>)
               : item.promptText}

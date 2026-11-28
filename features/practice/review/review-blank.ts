@@ -19,7 +19,8 @@ export function reviewBlankRows(item: PracticeReviewItem): ReviewBlankRow[] | nu
   const verdicts = item.result?.optionVerdicts ?? [];
   if (!hasBlankVerdicts(verdicts)) return null;
   const payload = parsePayload(item.savedPayload);
-  const byGap = payload.selections ?? payload.placements;
+  // Dropdown and drag-and-drop answers are keyed by gap; a type-in answer is the typed words in gap order.
+  const byGap = payload.selections ?? payload.placements ?? payload.blanks;
   const chosen = typeof byGap === "object" && byGap !== null ? byGap as Record<string, unknown> : {};
   return [...blankMarks(verdicts).entries()]
     .sort(([left], [right]) => left - right)

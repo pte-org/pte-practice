@@ -1,4 +1,5 @@
 import type { PracticeProgress } from "@/features/practice/contracts";
+import { isEntryInProgress } from "./history-filter";
 
 export interface ProgressMetrics {
   sessions: number;
@@ -9,7 +10,11 @@ export interface ProgressMetrics {
 }
 
 export function progressMetrics(progress: PracticeProgress): ProgressMetrics {
-  const scores = progress.entries.map((entry) => entry.score).filter((score): score is number => score !== null);
+  // A session still in progress only has the average of the items answered so far.
+  const scores = progress.entries
+    .filter((entry) => !isEntryInProgress(entry))
+    .map((entry) => entry.score)
+    .filter((score): score is number => score !== null);
   return {
     sessions: progress.totalSessions,
     completed: progress.completedSessions,

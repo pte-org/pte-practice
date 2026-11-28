@@ -452,6 +452,8 @@ export interface LocaleDict {
   review: {
     scoreAll: string;
     scoreAllHint: string;
+    scoreAllHintOne: string;
+    scoringAllOne: string;
     scoringAll: string;
     scoreAllError: string;
     eyebrow: string;

@@ -65,7 +65,7 @@ export function PracticeReviewView() {
         <>
           <ReviewQuestionNav items={review.items} index={index} onSelect={setIndex} />
           {/* A new scoring state remounts the score so it starts from the review's latest result. */}
-          <ReviewQuestion key={current.publicId} item={current} sessionId={sessionId} api={api}
+          <ReviewQuestion key={`${current.publicId}:${current.result?.state ?? ""}`} item={current} sessionId={sessionId} api={api}
             canRequestScoring={!isMockTest} onResultChange={(result) => updateResult(current.publicId, result)} />
           <ReviewPager items={review.items} index={index} onSelect={setIndex} />
         </>
