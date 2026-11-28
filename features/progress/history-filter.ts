@@ -8,7 +8,7 @@ export const HISTORY_FILTERS: readonly HistoryFilter[] = ["ALL", "IN_PROGRESS", 
 export const HISTORY_PAGE_SIZE = 10;
 
 export const isEntryInProgress = (entry: PracticeProgressEntry): boolean =>
-  entry.status === "IN_PROGRESS" || entry.sessionStatus === "IN_PROGRESS";
+  entry.status === "IN_PROGRESS" && entry.sessionStatus === "IN_PROGRESS";
 
 /** A session the student still has to act on for AI scoring: unscored or failed answers. */
 export const isAwaitingScore = (entry: PracticeProgressEntry): boolean =>

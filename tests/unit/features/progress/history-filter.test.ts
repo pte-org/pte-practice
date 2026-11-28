@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PracticeProgressEntry } from "@/features/practice/contracts";
-import { historyFilterCounts, matchesHistoryFilter } from "@/features/progress/history-filter";
+import { historyFilterCounts, isEntryInProgress, matchesHistoryFilter } from "@/features/progress/history-filter";
 
 const entry = (overrides: Partial<PracticeProgressEntry> = {}): PracticeProgressEntry => ({
   sessionPublicId: "s", productCode: "PTE_CORE", title: "Read Aloud", status: "COMPLETED_PENDING_SCORE",
@@ -31,5 +31,19 @@ describe("history filter", () => {
   it("counts every filter", () => {
     expect(historyFilterCounts([live, unscored, failed, scoring]))
       .toEqual({ ALL: 4, IN_PROGRESS: 1, COMPLETED: 3, AWAITING_SCORE: 2 });
+  });
+
+  it("treats expired sessions as not resumable", () => {
+    const expired = entry({ status: "IN_PROGRESS", sessionStatus: "EXPIRED" });
+    expect(isEntryInProgress(expired)).toBe(false);
+    expect(matchesHistoryFilter(expired, "IN_PROGRESS")).toBe(false);
+    expect(matchesHistoryFilter(expired, "COMPLETED")).toBe(true);
+  });
+
+  it("requires both status and sessionStatus to be IN_PROGRESS for resumability", () => {
+    const mixedInProgress = entry({ status: "IN_PROGRESS", sessionStatus: "COMPLETED" });
+    const mixedSessionProgress = entry({ status: "COMPLETED_PENDING_SCORE", sessionStatus: "IN_PROGRESS" });
+    expect(isEntryInProgress(mixedInProgress)).toBe(false);
+    expect(isEntryInProgress(mixedSessionProgress)).toBe(false);
   });
 });
