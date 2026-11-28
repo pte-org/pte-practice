@@ -9,6 +9,7 @@ export type ChatErrorKey =
   | "network"
   | "accessDenied"
   | "unavailable"
+  | "disabled"
   | "generic";
 
 const HTTP_TOO_MANY_REQUESTS = 429;
@@ -25,6 +26,7 @@ export function chatErrorKey(error: unknown): ChatErrorKey {
     case CHAT_ERROR_CODES.inFlight: return "inFlight";
     case CHAT_ERROR_CODES.busy: return "busy";
     case CHAT_ERROR_CODES.invalidRequest: return "invalidRequest";
+    case CHAT_ERROR_CODES.disabled: return "disabled";
     default: break;
   }
   if (error.status === 0 || error.code === "NETWORK_ERROR") return "network";

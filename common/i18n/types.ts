@@ -725,6 +725,7 @@ export interface LocaleDict {
       network: string;
       accessDenied: string;
       unavailable: string;
+      disabled: string;
       generic: string;
     };
   };

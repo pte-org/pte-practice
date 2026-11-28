@@ -40,6 +40,7 @@ describe("chat constants", () => {
     expect(CHAT_PATHS).toEqual({
       messages: "/api/v1/student/chat/messages",
       quota: "/api/v1/student/chat/quota",
+      aiCapabilities: "/api/v1/ai/capabilities",
     });
   });
 
@@ -52,12 +53,13 @@ describe("chat constants", () => {
     expect(CHAT_HISTORY_MAX_TURNS).toBe(12);
   });
 
-  it("lists the four backend chat error codes", () => {
+  it("lists the five backend chat error codes", () => {
     expect(CHAT_ERROR_CODES).toEqual({
       quotaExceeded: "CHAT_QUOTA_EXCEEDED",
       inFlight: "CHAT_REQUEST_IN_FLIGHT",
       busy: "CHAT_BUSY",
       invalidRequest: "CHAT_INVALID_REQUEST",
+      disabled: "AI_CHAT_DISABLED",
     });
   });
 

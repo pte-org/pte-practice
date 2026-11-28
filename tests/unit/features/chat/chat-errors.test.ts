@@ -8,6 +8,7 @@ describe("chatErrorKey", () => {
     ["CHAT_REQUEST_IN_FLIGHT", 409, "inFlight"],
     ["CHAT_BUSY", 503, "busy"],
     ["CHAT_INVALID_REQUEST", 400, "invalidRequest"],
+    ["AI_CHAT_DISABLED", 503, "disabled"],
   ])("maps %s to %s", (code, status, key) => {
     expect(chatErrorKey(new PracticeApiError("m", status, code))).toBe(key);
   });

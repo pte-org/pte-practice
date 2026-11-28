@@ -62,11 +62,12 @@ describe("createChatApi.sendMessage", () => {
 });
 
 describe("createChatApi.getQuota", () => {
-  it("reads the quota endpoint", async () => {
+  it("reads the quota endpoint, beside the admin's AI chat switch", async () => {
     const request = fakeRequest(quota);
     const result = await createChatApi(request).getQuota();
 
-    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledTimes(2);
+    expect((request as unknown as ReturnType<typeof vi.fn>).mock.calls[1][0]).toBe("/api/v1/ai/capabilities");
     const [path, options] = (request as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(path).toBe("/api/v1/student/chat/quota");
     expect(options?.method ?? "GET").toBe("GET");

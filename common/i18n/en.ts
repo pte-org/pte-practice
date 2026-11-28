@@ -725,6 +725,7 @@ export const en: LocaleDict = {
       network: "Could not reach the server. Check your connection and try again.",
       accessDenied: "Your account does not currently have access to the AI assistant. Check your practice access or try again.",
       unavailable: "The AI assistant is currently unavailable. Please try again.",
+      disabled: "The platform admin has switched the AI assistant off for now.",
       generic: "Something went wrong. Please try again.",
     },
   },

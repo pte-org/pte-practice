@@ -11,6 +11,8 @@ export const CHAT_PANEL_MOVE_FAST_STEP = 40;
 export const CHAT_PATHS = {
   messages: `${CHAT_API_BASE}/messages`,
   quota: `${CHAT_API_BASE}/quota`,
+  /** Which AI features the platform admin has switched on; readable by any signed-in user. */
+  aiCapabilities: "/api/v1/ai/capabilities",
 } as const;
 
 /** Longest exercise text sent with a question; the server cuts at the same length (shared contract file). */
@@ -36,6 +38,7 @@ export const CHAT_ERROR_CODES = {
   inFlight: "CHAT_REQUEST_IN_FLIGHT",
   busy: "CHAT_BUSY",
   invalidRequest: "CHAT_INVALID_REQUEST",
+  disabled: "AI_CHAT_DISABLED",
 } as const;
 
 export const CHAT_INVALID_RESPONSE_CODE = "CHAT_INVALID_RESPONSE";

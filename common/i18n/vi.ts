@@ -725,6 +725,7 @@ export const vi: LocaleDict = {
       network: "Không kết nối được máy chủ. Kiểm tra mạng và thử lại.",
       accessDenied: "Tài khoản hiện chưa có quyền dùng trợ lý AI. Hãy kiểm tra quyền luyện tập hoặc thử lại.",
       unavailable: "Trợ lý AI hiện chưa khả dụng. Vui lòng thử lại.",
+      disabled: "Quản trị viên nền tảng đang tạm tắt trợ lý AI.",
       generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
     },
   },
