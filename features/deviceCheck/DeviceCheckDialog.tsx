@@ -211,12 +211,31 @@ function MicCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void 
 function SpeakerCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => void }) {
   const { t } = useTranslation();
   const [cantHear, setCantHear] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [paused, setPaused] = useState(false);
+
+  // Closing the dialog mid-sentence must not leave the voice running.
+  useEffect(() => () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  }, []);
 
   const speak = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speaking) {
+      // The same button pauses the sentence and carries on from where it stopped.
+      if (paused) window.speechSynthesis.resume();
+      else window.speechSynthesis.pause();
+      setPaused(!paused);
+      return;
+    }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance("This is a sound check. If you can hear this clearly, you are ready.");
     utterance.lang = "en-GB";
+    const finish = () => { setSpeaking(false); setPaused(false); };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    setSpeaking(true);
+    setPaused(false);
     window.speechSynthesis.speak(utterance);
   };
 
@@ -239,7 +258,7 @@ function SpeakerCheck({ onPass, onFail }: { onPass: () => void; onFail?: () => v
     <div className="device-check">
       <p>{t("deviceCheck.speakerIntro")}</p>
       <div className="device-actions device-actions-start">
-        <button className="button button-pill button-outline" type="button" onClick={speak}><AppIcon name="play" size={16} /> {t("deviceCheck.speakerPlay")}</button>
+        <button className="button button-pill button-outline" type="button" onClick={speak}><AppIcon name={speaking && !paused ? "pause" : "play"} size={16} /> {speaking ? t(paused ? "deviceCheck.speakerResume" : "deviceCheck.speakerPause") : t("deviceCheck.speakerPlay")}</button>
         <button className="button button-pill button-outline" type="button" onClick={() => tone(-1)}>{t("deviceCheck.speakerLeft")}</button>
         <button className="button button-pill button-outline" type="button" onClick={() => tone(1)}>{t("deviceCheck.speakerRight")}</button>
       </div>

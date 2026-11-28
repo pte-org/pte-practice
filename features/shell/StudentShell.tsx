@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { AppIcon, ErrorPage, LoadingState, ProductMark } from "@/common/components";
+import { AppIcon, LoadingState, ProductMark } from "@/common/components";
 import { signInHref } from "@/features/auth/return-path";
 import { SessionSkeleton } from "@/features/practice/session/SessionSkeleton";
 import { NAV_ITEMS, PRACTICE_ROUTES } from "@/features/practice/constants";
@@ -73,9 +73,12 @@ export function StudentShell({ children }: { children: ReactNode }) {
   
   const activeNavItem = NAV_ITEMS.find((item) => item.href === activeNavHref);
 
+  // Nobody signed in has anything to see here: go straight to sign-in. Signing out lands on plain sign-in; an
+  // unauthenticated visit or an expired session remembers the page, so signing in brings the student back to it.
   useEffect(() => {
-    if (authStatus === "signed-out" && signingOut) router.replace(PRACTICE_ROUTES.signIn);
-  }, [authStatus, router, signingOut]);
+    if (authStatus !== "signed-out") return;
+    router.replace(signingOut ? PRACTICE_ROUTES.signIn : signInHref(pathname));
+  }, [authStatus, pathname, router, signingOut]);
 
   // The text size the student picked in the reading check applies to every practice page.
   useEffect(() => {
@@ -85,10 +88,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
   if (authStatus === "loading") return pathname === PRACTICE_ROUTES.practiceSession
     ? <SessionSkeleton /> : <LoadingState message={t("common.loadingWorkspace")} />;
 
-  if (authStatus === "signed-out") {
-    return signingOut ? <LoadingState message={t("common.loadingWorkspace")} />
-      : <ErrorPage kind="unauthorized" fullScreen action={{ href: signInHref(pathname), label: t("errorPage.signIn") }} />;
-  }
+  if (authStatus === "signed-out") return <LoadingState message={t("common.loadingWorkspace")} />;
 
   // The practice session is its own page, like the Pearson practice session: no rail or top bar to wander off to.
   if (pathname === PRACTICE_ROUTES.practiceSession) {

@@ -300,6 +300,8 @@ export const en: LocaleDict = {
     works: "It works",
     speakerIntro: "Play the sample sentence, then the left and right tones, to check your speakers or headphones.",
     speakerPlay: "Play sample",
+    speakerPause: "Pause",
+    speakerResume: "Resume",
     speakerLeft: "Left",
     speakerRight: "Right",
     speakerTips: "Check the headphones are plugged in, the system volume is up and the right output device is selected, then play again.",
