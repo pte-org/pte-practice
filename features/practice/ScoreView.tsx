@@ -10,6 +10,7 @@ import { AnswerFeedback } from "./feedback/AnswerFeedback";
 import { ScoringRequest } from "./feedback/ScoringRequest";
 import { ScoreDial } from "./ScoreDial";
 import { useItemResult } from "./useItemResult";
+import { usePracticeScoringSwitch } from "./usePracticeScoringSwitch";
 
 export { formatSubScore, subScoreLabel };
 
@@ -31,6 +32,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false, ca
   const { t } = useTranslation();
   const { result, watch, retrying, retryError, recheck, retryScoring, requestScoring } =
     useItemResult(api, sessionId, itemId, initial);
+  const scoringOn = usePracticeScoringSwitch(api);
   useEffect(() => {
     if (result && result !== initial) onResultChange?.(result);
   }, [result, initial, onResultChange]);
@@ -68,7 +70,7 @@ export function ScoreView({ api, sessionId, itemId, initial, compact = false, ca
   if (result.state === "NONE") {
     return (
       <div className={className}>
-        <ScoringRequest canRequest={canRequestScoring} requesting={retrying} error={retryError}
+        <ScoringRequest canRequest={canRequestScoring} requesting={retrying} switchedOff={!scoringOn} error={retryError}
           onRequest={requestScoring} />
       </div>
     );

@@ -148,6 +148,7 @@ export const vi: LocaleDict = {
     requesting: "Đang gửi bài chấm…",
     requestHint: "AI sẽ nghe hoặc đọc câu trả lời và chấm theo thang điểm Pearson, kèm nhận xét.",
     requestError: "Không gửi được bài chấm. Vui lòng thử lại.",
+    scoringSwitchedOff: "Quản trị viên nền tảng đang tạm tắt chấm điểm bằng AI. Bài làm đã được lưu, hãy chấm lại sau.",
     mockScoredLater: "Câu này sẽ được chấm khi bạn bấm Chấm điểm sau khi nộp cả bài.",
     traitReasons: "Vì sao bạn được điểm này",
     tips: "Gợi ý cải thiện",

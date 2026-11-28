@@ -148,6 +148,7 @@ export interface LocaleDict {
     requesting: string;
     requestHint: string;
     requestError: string;
+    scoringSwitchedOff: string;
     mockScoredLater: string;
     traitReasons: string;
     tips: string;

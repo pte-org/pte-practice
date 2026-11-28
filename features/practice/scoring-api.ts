@@ -20,6 +20,15 @@ export function scoringRequests(request: PracticeRequest, invalid: (code: string
       if (!result) throw invalid("INVALID_ITEM_RESULT");
       return result;
     },
+    /** False while the platform admin has AI practice scoring switched off; an unreadable switch counts as on. */
+    isPracticeScoringOn: async (): Promise<boolean> => {
+      try {
+        const response = await request<{ practiceScoring?: unknown } | null>(API_PATHS.aiCapabilities);
+        return response?.practiceScoring !== false;
+      } catch {
+        return true;
+      }
+    },
     /** A short-lived playback link for the student's own recorded answer. */
     getRecordingUrl: async (mediaPublicId: string): Promise<string | null> => {
       const response = await request<{ url?: unknown }>(`${API_PATHS.mediaObjects}/${mediaPublicId}/preview-url`);

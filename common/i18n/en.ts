@@ -148,6 +148,7 @@ export const en: LocaleDict = {
     requesting: "Sending for scoring…",
     requestHint: "The AI listens to or reads your answer, scores it on the Pearson scale and explains the score.",
     requestError: "We could not send your answer for scoring. Try again.",
+    scoringSwitchedOff: "AI scoring is switched off by the platform admin for now. Your answer is saved; score it later.",
     mockScoredLater: "This answer is scored when you press Score after submitting the whole test.",
     traitReasons: "Why you got this score",
     tips: "How to improve",

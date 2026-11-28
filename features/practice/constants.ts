@@ -25,6 +25,7 @@ export const API_PATHS = {
   catalog: "/api/v1/student/practice/catalog",
   progress: "/api/v1/student/practice/progress",
   practiceSessions: "/api/v1/student/practice/sessions",
+  aiCapabilities: "/api/v1/ai/capabilities",
   mockTests: "/api/v1/student/practice/mock-tests",
   profile: "/api/v1/student/practice/profile",
   profileAvatar: "/api/v1/student/practice/profile/avatar",

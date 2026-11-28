@@ -42,6 +42,13 @@ describe("ScoringRequest", () => {
     expect(html).toContain(en.score.requestHint);
   });
 
+  it("locks the Score button and says why while the admin has AI scoring off", () => {
+    const html = render(
+      <ScoringRequest canRequest requesting={false} switchedOff error={null} onRequest={() => undefined} />);
+    expect(html).toContain(en.score.scoringSwitchedOff);
+    expect(html).toMatch(/<button[^>]* disabled=""/);
+  });
+
   it("explains that a mock test is scored after it is submitted", () => {
     const html = render(<ScoringRequest canRequest={false} requesting={false} error={null} onRequest={() => undefined} />);
     expect(html).toContain(en.score.mockScoredLater);
