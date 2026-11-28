@@ -1,4 +1,4 @@
-import type { EntitlementState } from "./contracts";
+import type { EntitlementLockReason, EntitlementState } from "./contracts";
 
 export type PracticeAuthStatus = "loading" | "authenticated" | "signed-out";
 export type PracticeDataStatus = "idle" | "loading" | "refreshing" | "ready" | "error";
@@ -13,4 +13,22 @@ export const accessStateForUi = (auth: PracticeAuthStatus, status: PracticeDataS
   if (status === "loading" || status === "idle") return "loading";
   if (entitlement === "LOCKED" || entitlement === "UNAVAILABLE" || entitlement === "AMBIGUOUS") return "locked";
   return "error";
+};
+
+/** Map lock reason to i18n message key; fallback to generic locked message if reason is unknown. */
+export const lockReasonToMessageKey = (reason: EntitlementLockReason | null | undefined): string => {
+  switch (reason) {
+    case "ORG_SUSPENDED":
+      return "ui.accessLockedOrgSuspended";
+    case "NO_SUBSCRIPTION":
+      return "ui.accessLockedNoSubscription";
+    case "QUOTA_EXCEEDED":
+      return "ui.accessLockedQuotaExceeded";
+    case "STUDENT_INACTIVE":
+      return "ui.accessLockedStudentInactive";
+    case "NOT_STUDENT":
+      return "ui.accessLockedNotStudent";
+    default:
+      return "ui.accessLocked";
+  }
 };

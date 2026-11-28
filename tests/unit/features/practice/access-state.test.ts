@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accessStateForUi } from "@/features/practice/access-state";
+import { accessStateForUi, lockReasonToMessageKey } from "@/features/practice/access-state";
 
 describe("practice access during token and data refresh", () => {
   it("retains a confirmed grant during background revalidation", () => {
@@ -17,5 +17,19 @@ describe("practice access during token and data refresh", () => {
     expect(accessStateForUi("authenticated", "ready", "UNAVAILABLE")).toBe("locked");
     expect(accessStateForUi("authenticated", "ready", "UNLOCKED")).toBe("unlocked");
     expect(accessStateForUi("signed-out", "ready", "UNLOCKED")).toBe("loading");
+  });
+});
+
+describe("lock reason to message mapping", () => {
+  it("maps each lock reason to its corresponding message key", () => {
+    expect(lockReasonToMessageKey("ORG_SUSPENDED")).toBe("ui.accessLockedOrgSuspended");
+    expect(lockReasonToMessageKey("NO_SUBSCRIPTION")).toBe("ui.accessLockedNoSubscription");
+    expect(lockReasonToMessageKey("QUOTA_EXCEEDED")).toBe("ui.accessLockedQuotaExceeded");
+    expect(lockReasonToMessageKey("STUDENT_INACTIVE")).toBe("ui.accessLockedStudentInactive");
+    expect(lockReasonToMessageKey("NOT_STUDENT")).toBe("ui.accessLockedNotStudent");
+  });
+  it("falls back to generic locked message for null or unknown reasons", () => {
+    expect(lockReasonToMessageKey(null)).toBe("ui.accessLocked");
+    expect(lockReasonToMessageKey(undefined)).toBe("ui.accessLocked");
   });
 });

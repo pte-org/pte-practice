@@ -19,7 +19,7 @@ import { clearPracticeDrafts, clearPracticeSession } from "./session-storage";
 import { usePracticeLifecycle } from "./usePracticeLifecycle";
 import { accessStateForUi, type PracticeAccessState, type PracticeAuthStatus as AuthStatus,
   type PracticeDataStatus as DataStatus } from "./access-state";
-export { accessStateForUi } from "./access-state";
+export { accessStateForUi, lockReasonToMessageKey } from "./access-state";
 
 interface PracticeContextValue {
   authStatus: AuthStatus;

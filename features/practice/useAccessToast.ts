@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useToast } from "@/common/components";
 import { useTranslation } from "@/common/i18n";
-import { accessStateForUi, usePractice } from "@/features/practice/PracticeProvider";
+import { accessStateForUi, lockReasonToMessageKey, usePractice } from "@/features/practice/PracticeProvider";
 import { PRACTICE_STORAGE_KEYS } from "./constants";
 
 const PRACTICE_UNLOCKED_TOAST_KEY = PRACTICE_STORAGE_KEYS.unlockedToast;
@@ -63,12 +63,18 @@ export function usePracticeAccessToast(): void {
         }
       }
     } else if (state === "locked") {
-      const message = error ? t("ui.accessUnavailable") : t("ui.accessLocked");
+      let messageKey: string;
+      if (error) {
+        messageKey = "ui.accessUnavailable";
+      } else {
+        messageKey = lockReasonToMessageKey(entitlement?.practice.reason);
+      }
+      const message = t(messageKey as Parameters<typeof t>[0]);
       showToast(message, { tone: "warning" });
     } else if (state === "error") {
       showToast(t("ui.accessUnknown"), { tone: "warning" });
     }
-  }, [authStatus, entitlementStatus, entitlement?.practice.state, error, showToast, t]);
+  }, [authStatus, entitlementStatus, entitlement?.practice.state, entitlement?.practice.reason, error, showToast, t]);
 }
 
 export const useAccessToast = usePracticeAccessToast;

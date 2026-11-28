@@ -8,6 +8,7 @@ export * from "./catalog-contracts";
 export * from "./session-contracts";
 
 export type EntitlementState = "UNLOCKED" | "LOCKED" | "AMBIGUOUS" | "UNAVAILABLE" | "UNKNOWN";
+export type EntitlementLockReason = "ORG_SUSPENDED" | "NO_SUBSCRIPTION" | "QUOTA_EXCEEDED" | "STUDENT_INACTIVE" | "NOT_STUDENT";
 export type PracticeProgressStatus =
   | "IN_PROGRESS"
   | "COMPLETED_PENDING_SCORE"
@@ -27,7 +28,7 @@ export interface PracticeEntitlement {
   student: PracticeStudent | null;
   organizationContext: OrganizationContext | null;
   availableOrganizations: OrganizationContext[];
-  practice: { state: EntitlementState };
+  practice: { state: EntitlementState; reason: EntitlementLockReason | null };
   refreshAt: string | null;
 }
 
@@ -119,6 +120,7 @@ export function normalizeEntitlementResponse(value: unknown): PracticeEntitlemen
   const student = asRecord(record.student);
   const practice = asRecord(record.practice);
   const state = normalizeEntitlementState(practice.state);
+  const reason = normalizeEntitlementLockReason(practice.reason);
 
   return {
     student: student
@@ -133,7 +135,7 @@ export function normalizeEntitlementResponse(value: unknown): PracticeEntitlemen
     availableOrganizations: asArray(record.availableOrganizations)
       .map(normalizeOrganization)
       .filter((organization): organization is OrganizationContext => organization !== null),
-    practice: { state },
+    practice: { state, reason },
     refreshAt: asNullableString(record.refreshAt),
   };
 }
@@ -173,6 +175,14 @@ function normalizeEntitlementState(value: unknown): EntitlementState {
     return value;
   }
   return "UNKNOWN";
+}
+
+function normalizeEntitlementLockReason(value: unknown): EntitlementLockReason | null {
+  if (value === "ORG_SUSPENDED" || value === "NO_SUBSCRIPTION" || value === "QUOTA_EXCEEDED"
+    || value === "STUDENT_INACTIVE" || value === "NOT_STUDENT") {
+    return value;
+  }
+  return null;
 }
 
 function normalizeProgressEntry(value: unknown): PracticeProgressEntry | null {

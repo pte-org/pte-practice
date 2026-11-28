@@ -49,6 +49,11 @@ export interface LocaleDict {
     accessChecking: string;
     accessUnlocked: string;
     accessLocked: string;
+    accessLockedOrgSuspended: string;
+    accessLockedNoSubscription: string;
+    accessLockedQuotaExceeded: string;
+    accessLockedStudentInactive: string;
+    accessLockedNotStudent: string;
     accessUnavailable: string;
     accessUnknown: string;
     serverUnreachable: string;
